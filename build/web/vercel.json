@@ -1,5 +1,9 @@
 {
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "buildCommand": "bash vercel-build.sh",
+  "outputDirectory": "build/web",
   "cleanUrls": true,
+  "framework": null,
   "headers": [
     {
       "source": "/(.*)",
@@ -9,17 +13,42 @@
           "value": "*"
         },
         {
+          "key": "Access-Control-Allow-Methods",
+          "value": "GET, POST, PUT, DELETE, OPTIONS"
+        },
+        {
+          "key": "Access-Control-Allow-Headers",
+          "value": "X-Requested-With, content-type, Authorization, apikey"
+        },
+        {
           "key": "Cross-Origin-Opener-Policy",
           "value": "same-origin-allow-popups"
         }
       ]
     },
     {
-      "source": "/(.*)\\.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|otf|wasm|json)",
+      "source": "/(index\\.html|flutter_bootstrap\\.js|flutter_service_worker\\.js|main\\.dart\\.js)",
       "headers": [
         {
           "key": "Cache-Control",
-          "value": "public, max-age=31536000, immutable"
+          "value": "no-cache, no-store, must-revalidate"
+        },
+        {
+          "key": "Pragma",
+          "value": "no-cache"
+        },
+        {
+          "key": "Expires",
+          "value": "0"
+        }
+      ]
+    },
+    {
+      "source": "/(.*)\\.(css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|otf|wasm)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=3600"
         }
       ]
     }
@@ -31,4 +60,3 @@
     }
   ]
 }
-

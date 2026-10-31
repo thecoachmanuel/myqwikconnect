@@ -15,7 +15,7 @@ class SplashScreenViewModel extends BaseViewModel {
 
   void init() {
     // Safety fallback: ensure screen transitions within 4 seconds even if network hangs
-    Timer(const Duration(seconds: 4), () {
+    Timer(const Duration(milliseconds: 2500), () {
       if (!_hasNavigated) {
         _navigateFallback();
       }
@@ -69,7 +69,7 @@ class SplashScreenViewModel extends BaseViewModel {
   void _navigate(Widget Function() page) {
     if (_hasNavigated) return;
     _hasNavigated = true;
-    Get.off(page);
+    Get.offAll(page);
   }
 
   void fetchProfile() async {

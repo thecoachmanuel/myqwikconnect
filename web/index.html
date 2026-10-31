@@ -5,13 +5,14 @@
 
   <meta charset="UTF-8">
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <meta name="description" content="Orange - Connect, Chat & Dating App">
   <meta name="theme-color" content="#FE1B03">
 
   <!-- iOS meta tags & icons -->
   <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Orange">
   <link rel="apple-touch-icon" href="icons/Icon-192.png">
 
@@ -22,15 +23,160 @@
   <link rel="manifest" href="manifest.json">
 
   <style>
-    body {
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+    html, body {
       margin: 0;
       padding: 0;
-      background-color: #FAFAFA;
+      width: 100%;
+      height: 100%;
+      background-color: #FFFFFF;
       overflow: hidden;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+    #splash-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background-color: #FFFFFF;
+      z-index: 999999;
+      transition: opacity 0.4s ease-out, visibility 0.4s ease-out;
+    }
+    #splash-container.fade-out {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+    .logo-box {
+      position: relative;
+      width: 110px;
+      height: 110px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 24px;
+    }
+    .logo-img {
+      width: 90px;
+      height: 90px;
+      object-fit: contain;
+      border-radius: 24px;
+      box-shadow: 0 10px 25px rgba(254, 27, 3, 0.25);
+      animation: pulseLogo 2s infinite ease-in-out;
+    }
+    .app-title {
+      font-size: 28px;
+      font-weight: 800;
+      color: #FE1B03;
+      letter-spacing: -0.5px;
+      margin-bottom: 8px;
+    }
+    .app-tagline {
+      font-size: 14px;
+      font-weight: 500;
+      color: #8E8E93;
+      margin-bottom: 32px;
+    }
+    .progress-bar {
+      width: 160px;
+      height: 4px;
+      background-color: #F2F2F7;
+      border-radius: 99px;
+      overflow: hidden;
+      position: relative;
+    }
+    .progress-bar-fill {
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 100%;
+      width: 40%;
+      background: linear-gradient(90deg, #FE1B03, #FF6B4A);
+      border-radius: 99px;
+      animation: indeterminate 1.5s infinite ease-in-out;
+    }
+    @keyframes pulseLogo {
+      0%, 100% {
+        transform: scale(1);
+      }
+      50% {
+        transform: scale(1.04);
+      }
+    }
+    @keyframes indeterminate {
+      0% {
+        left: -40%;
+        width: 40%;
+      }
+      50% {
+        left: 30%;
+        width: 60%;
+      }
+      100% {
+        left: 100%;
+        width: 30%;
+      }
     }
   </style>
 </head>
 <body>
+  <div id="splash-container">
+    <div class="logo-box">
+      <img src="icons/Icon-192.png" alt="Orange" class="logo-img" />
+    </div>
+    <div class="app-title">Orange</div>
+    <div class="app-tagline">Connecting hearts...</div>
+    <div class="progress-bar">
+      <div class="progress-bar-fill"></div>
+    </div>
+  </div>
+
+  <script>
+    // Clean up any stale service workers from older builds that cached localhost
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistrations().then(function(registrations) {
+        for (var i = 0; i < registrations.length; i++) {
+          registrations[i].unregister();
+        }
+      }).catch(function() {});
+    }
+
+    function removeSplash() {
+      var splash = document.getElementById('splash-container');
+      if (splash && !splash.classList.contains('fade-out')) {
+        splash.classList.add('fade-out');
+        setTimeout(function() {
+          if (splash && splash.parentNode) {
+            splash.parentNode.removeChild(splash);
+          }
+        }, 500);
+      }
+    }
+
+    // Dismiss splash on first rendered frame
+    window.addEventListener('flutter-first-frame', removeSplash);
+
+    // Mutation observer fallback for web canvas attachment
+    var observer = new MutationObserver(function() {
+      if (document.querySelector('flt-glass-pane') || document.querySelector('flutter-view')) {
+        removeSplash();
+        observer.disconnect();
+      }
+    });
+    observer.observe(document.body, { childList: true, subtree: true });
+
+    // Hard timeout fallback so splash NEVER hangs permanently
+    setTimeout(removeSplash, 4000);
+  </script>
+
   <script src="flutter_bootstrap.js" async></script>
 </body>
 </html>

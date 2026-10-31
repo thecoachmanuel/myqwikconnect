@@ -20,28 +20,27 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions web = FirebaseOptions(
     apiKey: 'AIzaSyCbGuyjzXcnntY33RIzfPLfoHkuv8fXy3c',
-    appId: '1:670241921181:web:79b518c2d71565f1f85c74',
-    messagingSenderId: '670241921181',
-    projectId: 'orange-16f8b',
-    authDomain: 'orange-16f8b.firebaseapp.com',
-    storageBucket: 'orange-16f8b.appspot.com',
+    appId: '1:260849839740:web:79b518c2d71565f1f85c74',
+    messagingSenderId: '260849839740',
+    projectId: 'orange-16f8b-72bea',
+    authDomain: 'orange-16f8b-72bea.firebaseapp.com',
+    storageBucket: 'orange-16f8b-72bea.appspot.com',
   );
 
   static const FirebaseOptions android = FirebaseOptions(
     apiKey: 'AIzaSyDluEyxM0C-wZitShXNG-SbRqqXl9Ct_4U',
-    appId: '1:670241921181:android:79b518c2d71565f1f85c74',
-    messagingSenderId: '670241921181',
-    projectId: 'orange-16f8b',
-    storageBucket: 'orange-16f8b.appspot.com',
+    appId: '1:260849839740:android:79b518c2d71565f1f85c74',
+    messagingSenderId: '260849839740',
+    projectId: 'orange-16f8b-72bea',
+    storageBucket: 'orange-16f8b-72bea.appspot.com',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
     apiKey: 'AIzaSyCbGuyjzXcnntY33RIzfPLfoHkuv8fXy3c',
-    appId: '1:670241921181:ios:575c08272e545455f85c74',
-    messagingSenderId: '670241921181',
-    projectId: 'orange-16f8b',
-    storageBucket: 'orange-16f8b.appspot.com',
+    appId: '1:260849839740:ios:575c08272e545455f85c74',
+    messagingSenderId: '260849839740',
+    projectId: 'orange-16f8b-72bea',
+    storageBucket: 'orange-16f8b-72bea.appspot.com',
     iosBundleId: 'com.retrytech.orangeFlutter',
   );
 }
-

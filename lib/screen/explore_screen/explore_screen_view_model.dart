@@ -101,7 +101,11 @@ class ExploreScreenViewModel extends BaseViewModel {
     }
     ApiProvider().getExplorePageProfileList().then((value) async {
       var newData = value.data ?? [];
-      combinedList.addAll(newData);
+      for (var user in newData) {
+        if (!combinedList.any((existing) => existing.id == user.id)) {
+          combinedList.add(user);
+        }
+      }
       if (isPurchaseConfig) {
         for (int i = 0; i < combinedList.length; i++) {
           if (isPurchaseConfig &&

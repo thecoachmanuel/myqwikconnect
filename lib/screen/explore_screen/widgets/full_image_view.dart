@@ -61,7 +61,9 @@ class FullImageView extends StatelessWidget {
                           const SizedBox(height: 14),
                           TopStoryLine(
                             pageController: pageController,
-                            imageLength: userData.images?.length ?? 0,
+                            imageLength: (userData.images ?? [])
+                                .where((img) => img.image != null && img.image!.trim().isNotEmpty)
+                                .length,
                           ),
                           const Spacer(),
                           Padding(
@@ -158,7 +160,11 @@ class ImagePageView extends StatefulWidget {
 class _ImagePageViewState extends State<ImagePageView> {
   @override
   Widget build(BuildContext context) {
-    return (widget.userData.images ?? []).isEmpty
+    final validImages = (widget.userData.images ?? [])
+        .where((img) => img.image != null && img.image!.trim().isNotEmpty)
+        .toList();
+
+    return validImages.isEmpty
         ? CommonUI.profileImagePlaceHolder(
             name: widget.userData.fullname,
             heightWidth: MediaQuery.of(context).size.height,
@@ -168,10 +174,10 @@ class _ImagePageViewState extends State<ImagePageView> {
             radius: SmoothBorderRadius(cornerRadius: 20, cornerSmoothing: 1),
             child: PageView.builder(
               controller: widget.pageController,
-              itemCount: (widget.userData.images ?? []).length,
+              itemCount: validImages.length,
               physics: const NeverScrollableScrollPhysics(),
               itemBuilder: (context, currentImageIndex) {
-                Images image = (widget.userData.images ?? [])[currentImageIndex];
+                Images image = validImages[currentImageIndex];
                 return Stack(
                   children: [
                     CustomImage(
@@ -191,7 +197,7 @@ class _ImagePageViewState extends State<ImagePageView> {
                         Expanded(
                           child: InkWell(
                             onTap: () => widget.model.onImageRightTap(
-                                widget.pageController, currentImageIndex, (widget.userData.images ?? []).length),
+                                widget.pageController, currentImageIndex, validImages.length),
                             child: Container(height: Get.height - 256, color: ColorRes.transparent),
                           ),
                         ),

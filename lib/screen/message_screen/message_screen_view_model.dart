@@ -63,15 +63,18 @@ class MessageScreenViewModel extends BaseViewModel {
               toFirestore: (Conversation value, options) => value.toFirestore())
           .snapshots()
           .listen((element) {
-        userList = [];
+        List<Conversation> list = [];
         for (int i = 0; i < element.docs.length; i++) {
-          if (element.docs[i].data().isDeleted == false) {
-            userList.add(element.docs[i].data());
+          final conv = element.docs[i].data();
+          if (conv.isDeleted != true) {
+            list.add(conv);
           }
         }
+        userList = list;
         isLoading = false;
         notifyListeners();
       }, onError: (err) {
+        Get.log('MessageScreen getChatUsers stream error: $err');
         isLoading = false;
         notifyListeners();
       });

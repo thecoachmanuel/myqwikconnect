@@ -157,10 +157,12 @@ class ChatScreenViewModel extends BaseViewModel {
     ApiProvider()
         .minusCoinFromWallet(settingAppData?.messagePrice)
         .then((minusCoinFromWallet) {
-      if (minusCoinFromWallet.status == true) {
-        int wallet = (minusCoinFromWallet.wallet ?? 0).toInt();
+      if (minusCoinFromWallet.status == true && minusCoinFromWallet.wallet != null) {
+        int wallet = minusCoinFromWallet.wallet!.toInt();
         registrationUserData?.wallet = wallet;
+        walletCoin = wallet;
         updateDataLocalUser(registrationUserData);
+        notifyListeners();
       }
     });
   }
@@ -374,7 +376,8 @@ class ChatScreenViewModel extends BaseViewModel {
     }
 
     // Check wallet balance
-    if ((registrationUserData?.wallet ?? 0) >= messagePrice) {
+    final currentWallet = registrationUserData?.wallet ?? walletCoin;
+    if (currentWallet >= messagePrice) {
       if (isAutoPayEnable) {
         minusCoinApi(() {
           firebaseMsgUpdate(
@@ -430,9 +433,8 @@ class ChatScreenViewModel extends BaseViewModel {
       return;
     }
 
-    if (messagePrice == 0) {
-      openMediaPicker(type);
-    } else if (walletCoin >= messagePrice) {
+    final currentWallet = registrationUserData?.wallet ?? walletCoin;
+    if (messagePrice == 0 || currentWallet >= messagePrice) {
       openMediaPicker(type);
     } else {
       emptyDialog();
@@ -826,7 +828,7 @@ class ChatScreenViewModel extends BaseViewModel {
             Get.back();
             Get.bottomSheet(const BottomDiamondShop());
           },
-          walletCoin: walletCoin),
+          walletCoin: registrationUserData?.wallet ?? walletCoin),
     );
   }
 

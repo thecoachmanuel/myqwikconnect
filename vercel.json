@@ -2,7 +2,7 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "buildCommand": null,
   "outputDirectory": "build/web",
-  "cleanUrls": true,
+  "cleanUrls": false,
   "framework": null,
   "headers": [
     {
@@ -38,7 +38,7 @@
   ],
   "rewrites": [
     {
-      "source": "/((?!assets/|canvaskit/|icons/|.*\\..*).*)",
+      "source": "/:path*",
       "destination": "/index.html"
     }
   ]

@@ -179,12 +179,12 @@ class ExploreScreenViewModel extends BaseViewModel {
         final isUserLocationMissing =
             userData?.latitude == null || userData?.longitude == null;
 
-        if (!hasOpenedLocationSheet || isUserLocationMissing) {
+        if (!hasOpenedLocationSheet && isUserLocationMissing) {
           locationSheet();
           SessionManager.instance
               .setBool(key: SessionKeys.hasOpenedLocationSheet, value: true);
-        } else {
-          await CommonFun.getUserCurrentLocation();
+        } else if (!isUserLocationMissing) {
+          await CommonFun.getUserCurrentLocation(onlyIfGranted: true);
         }
       }
     });

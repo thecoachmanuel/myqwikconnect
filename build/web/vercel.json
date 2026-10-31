@@ -1,7 +1,7 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "buildCommand": null,
-  "cleanUrls": true,
+  "cleanUrls": false,
   "framework": null,
   "headers": [
     {
@@ -37,7 +37,7 @@
   ],
   "rewrites": [
     {
-      "source": "/((?!assets/|canvaskit/|icons/|.*\\..*).*)",
+      "source": "/:path*",
       "destination": "/index.html"
     }
   ]

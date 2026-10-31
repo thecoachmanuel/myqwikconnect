@@ -14,8 +14,8 @@ class MinusCoinFromWallet {
   MinusCoinFromWallet.fromJson(dynamic json) {
     _status = json['status'];
     _message = json['message'];
-    _wallet = json['wallet'];
-    _totalCollected = json['total_collected'];
+    _wallet = json['wallet'] ?? (json['data'] != null ? json['data']['wallet'] : null);
+    _totalCollected = json['total_collected'] ?? (json['data'] != null ? json['data']['total_collected'] : null);
   }
 
   bool? _status;

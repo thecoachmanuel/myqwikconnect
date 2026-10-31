@@ -100,9 +100,11 @@ class UserCard extends StatelessWidget {
                             ),
                           ),
                           Text(
-                            CommonFun.readTimestamp(
-                              double.parse(time ?? ''),
-                            ),
+                            (time != null && time!.isNotEmpty && time != 'null')
+                                ? CommonFun.readTimestamp(
+                                    double.tryParse(time!) ?? 0.0,
+                                  )
+                                : '',
                             style: const TextStyle(
                                 fontSize: 12, color: ColorRes.grey),
                           ),

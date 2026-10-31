@@ -49,10 +49,8 @@ class MessageScreen extends StatelessWidget {
                               child: UserCard(
                                 name: chatUser?.username ?? '',
                                 age: chatUser?.age ?? '',
-                                msg: conversation.lastMsg!.isEmpty
-                                    ? ''
-                                    : conversation.lastMsg,
-                                time: conversation.time.toString(),
+                                msg: conversation.lastMsg ?? '',
+                                time: conversation.time?.toString() ?? '',
                                 image: chatUser?.image ?? '',
                                 newMsg: chatUser?.isNewMsg ?? false,
                                 tickMark: chatUser?.isHost,

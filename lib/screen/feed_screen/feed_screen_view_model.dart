@@ -42,15 +42,24 @@ class FeedScreenViewModel extends BaseViewModel {
     fetchScrollData();
   }
 
-  void fetchFeedData() {
-    isLoading = true;
+  void fetchFeedData({bool isRefresh = false}) {
+    if (isRefresh || postList.isEmpty) {
+      isLoading = true;
+    }
     ApiProvider().callPost(
         completion: (response) {
           Feed feed = Feed.fromJson(response);
-          if (postList.isEmpty) {
-            postList = feed.data?.posts ?? [];
+          final incomingPosts = feed.data?.posts ?? [];
+          if (isRefresh || postList.isEmpty) {
+            postList = incomingPosts;
           } else {
-            postList.addAll(feed.data?.posts ?? []);
+            final existingIds = postList.map((p) => p.id).toSet();
+            for (var p in incomingPosts) {
+              if (!existingIds.contains(p.id)) {
+                postList.add(p);
+                existingIds.add(p.id);
+              }
+            }
           }
           final rawStories = feed.data?.usersStories ?? [];
           headerStories = rawStories.where((u) => (u.story?.length ?? 0) > 0).toList();
@@ -138,6 +147,7 @@ class FeedScreenViewModel extends BaseViewModel {
       enableDrag: false,
     ).then((value) {
       if (value != null) {
+        postList.removeWhere((p) => p.id == value.id);
         postList.insert(0, value);
         notifyListeners();
       }

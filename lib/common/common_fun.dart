@@ -199,8 +199,17 @@ class CommonFun {
 
   static Future<Position?> getUserCurrentLocation({
     bool shouldUpdateInProfileData = true,
+    bool onlyIfGranted = false,
   }) async {
-    final permission = await Geolocator.requestPermission();
+    LocationPermission permission = await Geolocator.checkPermission();
+    if (onlyIfGranted &&
+        permission != LocationPermission.always &&
+        permission != LocationPermission.whileInUse) {
+      return null;
+    }
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+    }
 
     if (permission == LocationPermission.denied ||
         permission == LocationPermission.deniedForever) {
@@ -215,14 +224,16 @@ class CommonFun {
     }
 
     // Safe to get location
-    final position = await Geolocator.getCurrentPosition();
-
-    if (shouldUpdateInProfileData) {
-      await ApiProvider().updateProfile(
-          latitude: '${position.latitude}', longitude: '${position.longitude}');
+    try {
+      final position = await Geolocator.getCurrentPosition();
+      if (shouldUpdateInProfileData) {
+        await ApiProvider().updateProfile(
+            latitude: '${position.latitude}', longitude: '${position.longitude}');
+      }
+      return position;
+    } catch (_) {
+      return null;
     }
-
-    return position;
   }
 
   double calculateDistance({lat1, lon1, lat2, lon2}) {

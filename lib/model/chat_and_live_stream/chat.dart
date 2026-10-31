@@ -45,17 +45,19 @@ class Conversation {
     SnapshotOptions? options,
   ) {
     final data = snapshot.data();
+    if (data == null) return Conversation();
     return Conversation(
-      conversationId: data?['conversationId'],
-      blockFromOther: data?['blockFromOther'],
-      block: data?['block'],
-      deletedId: data?['deletedId'],
-      isDeleted: data?['isDeleted'],
-      isMute: data?['isMute'],
-      lastMsg: data?['lastMsg'],
-      newMsg: data?['newMsg'],
-      time: data?['time'],
-      user: data?['user'] != null ? ChatUser.fromJson(data?['user']) : null,
+      conversationId: data['conversationId']?.toString(),
+      blockFromOther: data['blockFromOther'] == true,
+      block: data['block'] == true,
+      deletedId: data['deletedId']?.toString(),
+      isDeleted: data['isDeleted'] == true,
+      isMute: data['isMute'] == true,
+      lastMsg: data['lastMsg']?.toString() ?? '',
+      newMsg: data['newMsg']?.toString(),
+      time: (data['time'] as num?)?.toDouble() ??
+          (data['time'] is String ? double.tryParse(data['time']) : null),
+      user: data['user'] != null ? ChatUser.fromJson(data['user']) : null,
     );
   }
 
@@ -74,17 +76,20 @@ class Conversation {
     };
   }
 
-  Conversation.fromJson(Map<String, dynamic> json) {
-    _conversationId = json["conversationId"];
-    _blockFromOther = json["blockFromOther"];
-    _block = json["block"];
-    _deletedId = json["deletedId"];
-    _isDeleted = json["isDeleted"];
-    _isMute = json["isMute"];
-    _lastMsg = json["lastMsg"];
-    _newMsg = json["newMsg"];
-    _time = json["time"];
-    _user = ChatUser.fromJson(json["user"]);
+  Conversation.fromJson(dynamic json) {
+    if (json == null) return;
+    final map = json is Map ? json : {};
+    _conversationId = map["conversationId"]?.toString();
+    _blockFromOther = map["blockFromOther"] == true;
+    _block = map["block"] == true;
+    _deletedId = map["deletedId"]?.toString();
+    _isDeleted = map["isDeleted"] == true;
+    _isMute = map["isMute"] == true;
+    _lastMsg = map["lastMsg"]?.toString() ?? '';
+    _newMsg = map["newMsg"]?.toString();
+    _time = (map["time"] as num?)?.toDouble() ??
+        (map["time"] is String ? double.tryParse(map["time"]) : null);
+    _user = map["user"] != null ? ChatUser.fromJson(map["user"]) : null;
   }
 
   Map<String, Object?> toJson() {
@@ -174,16 +179,20 @@ class ChatUser {
     };
   }
 
-  ChatUser.fromJson(Map<String, dynamic> json) {
-    _age = json["age"];
-    _city = json["city"];
-    _image = json["image"];
-    _userIdentity = json["userIdentity"];
-    _username = json["username"];
-    _isHost = json["isHost"];
-    _isNewMsg = json["isNewMsg"];
-    _date = json["date"];
-    _userid = json["userid"];
+  ChatUser.fromJson(dynamic json) {
+    if (json == null) return;
+    final map = json is Map ? json : {};
+    _age = map["age"]?.toString();
+    _city = map["city"]?.toString();
+    _image = map["image"]?.toString();
+    _userIdentity = map["userIdentity"]?.toString();
+    _username = map["username"]?.toString();
+    _isHost = map["isHost"] == true;
+    _isNewMsg = map["isNewMsg"] == true;
+    _date = (map["date"] as num?)?.toDouble() ??
+        (map["date"] is String ? double.tryParse(map["date"]) : null);
+    _userid = (map["userid"] as num?)?.toInt() ??
+        (map["userid"] is String ? int.tryParse(map["userid"]) : null);
   }
 
   int? get userid => _userid;
@@ -283,19 +292,22 @@ class ChatMessage {
     };
   }
 
-  ChatMessage.fromJson(Map<String, dynamic>? json) {
-    _id = json?["id"];
-    _image = json?["image"];
-    _video = json?["video"];
-    _msg = json?["msg"];
-    _msgType = json?["msgType"];
-    _time = json?["time"];
-    _senderUser = ChatUser.fromJson(json?["senderUser"]);
-    if (json?['not_deleted_identities'] != null) {
+  ChatMessage.fromJson(dynamic json) {
+    if (json == null) return;
+    final map = json is Map ? json : {};
+    _id = map["id"]?.toString();
+    _image = map["image"]?.toString();
+    _video = map["video"]?.toString();
+    _msg = map["msg"]?.toString();
+    _msgType = map["msgType"]?.toString();
+    _time = (map["time"] as num?)?.toDouble() ??
+        (map["time"] is String ? double.tryParse(map["time"]) : null);
+    _senderUser = map["senderUser"] != null ? ChatUser.fromJson(map["senderUser"]) : null;
+    if (map['not_deleted_identities'] != null && map['not_deleted_identities'] is Iterable) {
       _notDeletedIdentities = [];
-      json?['not_deleted_identities'].forEach((v) {
-        _notDeletedIdentities?.add(v);
-      });
+      for (var v in map['not_deleted_identities']) {
+        _notDeletedIdentities?.add(v.toString());
+      }
     }
   }
 
@@ -305,18 +317,21 @@ class ChatMessage {
   ) {
     final data = snapshot.data();
     List<String> notDeletedIdentities = [];
-    data?['not_deleted_identities'].forEach((v) {
-      notDeletedIdentities.add(v);
-    });
+    if (data?['not_deleted_identities'] != null && data!['not_deleted_identities'] is Iterable) {
+      for (var v in data['not_deleted_identities']) {
+        notDeletedIdentities.add(v.toString());
+      }
+    }
     return ChatMessage(
-      image: data?['image'],
-      video: data?['video'],
-      id: data?['id'],
-      msg: data?['msg'],
-      time: data?['time'],
-      msgType: data?['msgType'],
+      image: data?['image']?.toString(),
+      video: data?['video']?.toString(),
+      id: data?['id']?.toString(),
+      msg: data?['msg']?.toString(),
+      time: (data?['time'] as num?)?.toDouble() ??
+          (data?['time'] is String ? double.tryParse(data?['time']) : null),
+      msgType: data?['msgType']?.toString(),
       notDeletedIdentities: notDeletedIdentities,
-      senderUser: ChatUser.fromJson(data?["senderUser"]),
+      senderUser: data?["senderUser"] != null ? ChatUser.fromJson(data!["senderUser"]) : null,
     );
   }
 

@@ -97,7 +97,13 @@ class ReportSheetViewModel extends BaseViewModel {
             CommonUI.snackBarWidget(S.current.reportedSubmitted);
           },
           url: Urls.aReportPost,
-          param: {Urls.aPostId: reportID, Urls.aReason: reason, Urls.aDescription: explainController.text.trim()});
+          param: {
+            Urls.aPostId: reportID,
+            Urls.aReason: reason,
+            Urls.aDescription: explainController.text.trim(),
+            'reported_by': SessionManager.instance.getUserID().toString(),
+            'my_user_id': SessionManager.instance.getUserID().toString(),
+          });
     }
   }
 

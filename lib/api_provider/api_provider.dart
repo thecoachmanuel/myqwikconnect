@@ -381,7 +381,9 @@ class ApiProvider {
         body: {
           Urls.aReason: reason,
           Urls.aDescription: description,
-          Urls.userId: id.toString()
+          Urls.userId: id.toString(),
+          'reported_by': SessionManager.instance.getUserID().toString(),
+          'my_user_id': SessionManager.instance.getUserID().toString(),
         });
     return Report.fromJson(jsonDecode(response.body));
   }

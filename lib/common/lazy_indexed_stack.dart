@@ -47,3 +47,4 @@ class _LazyIndexedStackState extends State<LazyIndexedStack> {
     );
   }
 }
+

@@ -137,11 +137,17 @@ class UserDetailScreenViewModel extends BaseViewModel {
       FirebaseRes.watchingCount: FieldValue.increment(1),
     }).then((value) {
       // Navigate to PersonStreamingScreen on success
-      Get.to(() => const PersonStreamingScreen(), arguments: {
-        Urls.aChannelId: otherUserData?.identity,
-        Urls.aIsBroadcasting: false,
-        Urls.aUserInfo: liveStreamUser,
-      });
+      Get.to(
+        () => PersonStreamingScreen(
+          liveStreamUser: liveStreamUser,
+          settingAppData: SessionManager.instance.getSettings()?.appdata,
+        ),
+        arguments: {
+          Urls.aChannelId: otherUserData?.identity,
+          Urls.aIsBroadcasting: false,
+          Urls.aUserInfo: liveStreamUser,
+        },
+      );
     }).catchError((e) {
       // Show error snackBar if the user is not live
       CommonUI.snackBarWidget(S.current.userNotLive);

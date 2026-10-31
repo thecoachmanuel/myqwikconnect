@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:orange_ui/common/custom_border.dart';
 import 'package:orange_ui/common/dashboard_top_bar.dart';
+import 'package:orange_ui/common/lazy_indexed_stack.dart';
 import 'package:orange_ui/generated/l10n.dart';
 import 'package:orange_ui/screen/dashboard/dashboard_screen_view_model.dart';
 import 'package:orange_ui/screen/dashboard/widget/custom_banner_ads.dart';
@@ -26,6 +27,9 @@ class DashboardScreen extends StatelessWidget {
       builder: (context, model, child) {
         bool isDating = model.settingAppData?.isDating == 1;
         bool isSocialMedia = model.settingAppData?.isSocialMedia == 1;
+        final pages = _getPagesList(isSocialMedia: isSocialMedia, isDating: isDating);
+        final safeIndex = model.pageIndex.clamp(0, pages.isNotEmpty ? pages.length - 1 : 0);
+
         return Scaffold(
           backgroundColor: ColorRes.white,
           bottomNavigationBar: BottomNavigationView(model: model),
@@ -40,10 +44,9 @@ class DashboardScreen extends StatelessWidget {
                   isDating: model.settingAppData?.isDating,
                 ),
                 Expanded(
-                  child: _getCurrentPage(
-                    isSocialMedia: isSocialMedia,
-                    isDating: isDating,
-                    index: model.pageIndex,
+                  child: LazyIndexedStack(
+                    index: safeIndex,
+                    children: pages,
                   ),
                 ),
                 (SessionManager.instance.isDating && model.pageIndex == 1)
@@ -57,52 +60,36 @@ class DashboardScreen extends StatelessWidget {
     );
   }
 
-  Widget _getCurrentPage(
-      {required bool isSocialMedia,
-      required bool isDating,
-      required int index}) {
+  List<Widget> _getPagesList(
+      {required bool isSocialMedia, required bool isDating}) {
     if (!isDating && !isSocialMedia) {
-      switch (index) {
-        case 0:
-          return const MessageScreen();
-        default:
-          return const ProfileScreen();
-      }
+      return const [
+        MessageScreen(),
+        ProfileScreen(),
+      ];
     } else if (isDating && isSocialMedia) {
-      switch (index) {
-        case 0:
-          return const ExploreScreen();
-        case 1:
-          return const FindMatchProfile();
-        case 2:
-          return const FeedScreen();
-        case 3:
-          return const MessageScreen();
-        default:
-          return const ProfileScreen();
-      }
+      return const [
+        ExploreScreen(),
+        FindMatchProfile(),
+        FeedScreen(),
+        MessageScreen(),
+        ProfileScreen(),
+      ];
     } else if (!isDating && isSocialMedia) {
       // Social media only
-      switch (index) {
-        case 0:
-          return const FeedScreen();
-        case 1:
-          return const MessageScreen();
-        default:
-          return const ProfileScreen();
-      }
+      return const [
+        FeedScreen(),
+        MessageScreen(),
+        ProfileScreen(),
+      ];
     } else {
       // Dating only
-      switch (index) {
-        case 0:
-          return const ExploreScreen();
-        case 1:
-          return const FindMatchProfile();
-        case 2:
-          return const MessageScreen();
-        default:
-          return const ProfileScreen();
-      }
+      return const [
+        ExploreScreen(),
+        FindMatchProfile(),
+        MessageScreen(),
+        ProfileScreen(),
+      ];
     }
   }
 }

@@ -114,7 +114,7 @@ class _MyAppState extends State<MyApp> {
         GlobalCupertinoLocalizations.delegate,
       ],
       onInit: () {
-        Get.put(SelectCountryController());
+        Get.lazyPut(() => SelectCountryController(), fenix: true);
       },
       builder: (context, child) => ScrollConfiguration(behavior: MyBehavior(), child: child!),
       supportedLocales: S.delegate.supportedLocales,

@@ -20,7 +20,17 @@
 
   <title>Orange</title>
   <link rel="manifest" href="manifest.json">
-  <script src="https://maps.googleapis.com/maps/api/js?loading=async"></script>
+
+  <!-- Performance Preconnect & Preloads -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://www.gstatic.com" crossorigin>
+  <link rel="preload" href="flutter_bootstrap.js" as="script">
+  <link rel="preload" href="main.dart.js" as="script">
+
+  <script src="https://maps.googleapis.com/maps/api/js?loading=async" async defer></script>
+  <!-- Agora Web RTC SDK for video calling/streaming on Web -->
+  <script src="https://download.agora.io/sdk/release/iris-web-rtc_n450_w4220_0.8.6.js" async></script>
 
   <style>
     * {

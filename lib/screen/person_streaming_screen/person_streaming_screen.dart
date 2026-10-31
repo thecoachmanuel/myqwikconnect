@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:orange_ui/common/common_ui.dart';
 import 'package:orange_ui/model/chat_and_live_stream/live_stream.dart';
 import 'package:orange_ui/model/setting_model.dart';
@@ -6,6 +7,8 @@ import 'package:orange_ui/screen/person_streaming_screen/person_streaming_screen
 import 'package:orange_ui/screen/person_streaming_screen/widgets/bottom_text_field.dart';
 import 'package:orange_ui/screen/person_streaming_screen/widgets/comment_list_area.dart';
 import 'package:orange_ui/screen/person_streaming_screen/widgets/person_top_bar_area.dart';
+import 'package:orange_ui/service/session_manager.dart';
+import 'package:orange_ui/utils/urls.dart';
 import 'package:stacked/stacked.dart';
 
 class PersonStreamingScreen extends StatelessWidget {
@@ -17,12 +20,17 @@ class PersonStreamingScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final effectiveUser = liveStreamUser ??
+        (Get.arguments is Map ? (Get.arguments[Urls.aUserInfo] as LiveStreamUser?) : null);
+    final effectiveSettings =
+        settingAppData ?? SessionManager.instance.getSettings()?.appdata;
+
     return ViewModelBuilder<PersonStreamingScreenViewModel>.reactive(
       onViewModelReady: (model) {
         model.init();
       },
       viewModelBuilder: () =>
-          PersonStreamingScreenViewModel(liveStreamUser: liveStreamUser, settingAppData: settingAppData),
+          PersonStreamingScreenViewModel(liveStreamUser: effectiveUser, settingAppData: effectiveSettings),
       builder: (context, model, child) {
         return PopScope(
           canPop: false,

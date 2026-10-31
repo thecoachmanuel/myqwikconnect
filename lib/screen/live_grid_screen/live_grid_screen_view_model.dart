@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:developer';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
@@ -106,12 +107,16 @@ class LiveGridScreenViewModel extends BaseViewModel {
                 age: userData?.age,
                 watchingCount: 0);
 
-            // You can request multiple permissions at once.
-            Map<Permission, PermissionStatus> statuses =
-                await [Permission.camera, Permission.microphone].request();
+            // Request permissions on native platforms (browser manages permissions on Web)
+            bool isAllowed = true;
+            if (!kIsWeb) {
+              Map<Permission, PermissionStatus> statuses =
+                  await [Permission.camera, Permission.microphone].request();
+              isAllowed = (statuses[Permission.camera]?.isGranted ?? false) &&
+                  (statuses[Permission.microphone]?.isGranted ?? false);
+            }
 
-            if (statuses[Permission.camera]!.isGranted &&
-                statuses[Permission.microphone]!.isGranted) {
+            if (isAllowed) {
               Get.to(() => RandomStreamingScreen(
                     userData: userData,
                     liveStreamUser: liveStreamUser,

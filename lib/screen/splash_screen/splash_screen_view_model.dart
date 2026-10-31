@@ -13,13 +13,48 @@ class SplashScreenViewModel extends BaseViewModel {
   bool _hasNavigated = false;
 
   void init() {
-    // Safety fallback: ensure screen transitions within 4 seconds even if network hangs
-    Timer(const Duration(seconds: 4), () {
+    bool isLogin = SessionManager.instance.getBool(key: SessionKeys.isLogin);
+    final cachedUser = SessionManager.instance.getUser();
+
+    // 🚀 Instant Launch: If user is logged in, navigate immediately using cached session
+    if (isLogin && cachedUser != null && cachedUser.id != null) {
+      Future.delayed(const Duration(milliseconds: 150), () {
+        if (!_hasNavigated) {
+          _hasNavigated = true;
+          AuthScreenViewModel().navigateScreen(userData: cachedUser);
+          _syncInBackground();
+        }
+      });
+      return;
+    }
+
+    // Safety fallback: ensure screen transitions within 3 seconds even if network hangs
+    Timer(const Duration(seconds: 3), () {
       if (!_hasNavigated) {
         _navigateFallback();
       }
     });
     _settingApiCall();
+  }
+
+  void _syncInBackground() async {
+    try {
+      final value = await ApiProvider()
+          .getSettingData()
+          .timeout(const Duration(seconds: 4));
+      if (value.status == true && value.data != null) {
+        SessionManager.instance.setSettings(value.data);
+      }
+    } catch (_) {}
+
+    try {
+      final response = await ApiProvider()
+          .fetchMyUserProfile()
+          .timeout(const Duration(seconds: 4));
+      if (response.status == true && response.data != null) {
+        SessionManager.instance.setUser(response.data);
+      }
+    } catch (_) {}
   }
 
   void _settingApiCall() async {
@@ -85,7 +120,7 @@ class SplashScreenViewModel extends BaseViewModel {
 
       if (response.status == true && response.data?.id != null) {
         _hasNavigated = true;
-        AuthScreenViewModel().navigateScreen(userData: userData);
+        AuthScreenViewModel().navigateScreen(userData: response.data ?? userData);
       } else {
         _navigate(() => const AuthScreen());
       }

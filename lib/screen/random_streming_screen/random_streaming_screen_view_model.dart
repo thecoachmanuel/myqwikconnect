@@ -73,52 +73,67 @@ class RandomStreamingScreenViewModel extends BaseViewModel {
   Future<void> initializeAgora() async {
     isLoading = true;
     notifyListeners();
-    // Create RtcEngine instance
-    engine = createAgoraRtcEngine();
+    try {
+      // Create RtcEngine instance
+      engine = createAgoraRtcEngine();
 
-    // Initialize RtcEngine and set the channel profile to live broadcasting
-    await engine.initialize(const RtcEngineContext(
-        appId: ConstRes.agoraAppId,
-        channelProfile: ChannelProfileType.channelProfileLiveBroadcasting));
-    // Enable the video module
-    await engine.enableVideo();
-    // Enable local video preview
-    await engine.startPreview();
+      // Initialize RtcEngine and set the channel profile to live broadcasting
+      await engine.initialize(const RtcEngineContext(
+          appId: ConstRes.agoraAppId,
+          channelProfile: ChannelProfileType.channelProfileLiveBroadcasting));
+      // Enable the video module
+      await engine.enableVideo();
+      // Enable local video preview
+      await engine.startPreview();
+      localUserJoined = true;
+      notifyListeners();
 
-    startWatch();
+      startWatch();
 
-    await engine.joinChannel(
-        token: token,
-        channelId: channelId,
-        options: const ChannelMediaOptions(
-            clientRoleType: ClientRoleType.clientRoleBroadcaster,
-            audienceLatencyLevel:
-                AudienceLatencyLevelType.audienceLatencyLevelUltraLowLatency),
-        uid: 0);
+      // Add event handler BEFORE joining channel
+      engine.registerEventHandler(
+        RtcEngineEventHandler(
+          // Occurs when the local user joins the channel successfully
+          onJoinChannelSuccess: (RtcConnection connection, int elapsed) {
+            _updateLiveStreamUser();
+            localUserJoined = true;
+            notifyListeners();
+          },
+          // Occurs when a remote user joins the channel
+          onUserJoined: (RtcConnection connection, int remoteUid, int elapsed) {
+            notifyListeners();
+          },
+          // Occurs when a remote user leaves the channel
+          onUserOffline: (RtcConnection connection, int remoteUid,
+              UserOfflineReasonType reason) {
+            notifyListeners();
+          },
+          onError: (ErrorCodeType err, String msg) {
+            debugPrint('Agora broadcaster error: $err, $msg');
+          },
+        ),
+      );
 
-    isLoading = false;
-    notifyListeners();
+      // Sanitize token (App ID mode uses empty string)
+      String rtcToken = token;
+      if (rtcToken.startsWith('AGORA_TOKEN_')) {
+        rtcToken = '';
+      }
 
-    // Add an event handler
-    engine.registerEventHandler(
-      RtcEngineEventHandler(
-        // Occurs when the local user joins the channel successfully
-        onJoinChannelSuccess: (RtcConnection connection, int elapsed) {
-          _updateLiveStreamUser();
-          localUserJoined = true;
-          notifyListeners();
-        },
-        // Occurs when a remote user join the channel
-        onUserJoined: (RtcConnection connection, int remoteUid, int elapsed) {
-          notifyListeners();
-        },
-        // Occurs when a remote user leaves the channel
-        onUserOffline: (RtcConnection connection, int remoteUid,
-            UserOfflineReasonType reason) {
-          notifyListeners();
-        },
-      ),
-    );
+      await engine.joinChannel(
+          token: rtcToken,
+          channelId: channelId,
+          options: const ChannelMediaOptions(
+              clientRoleType: ClientRoleType.clientRoleBroadcaster,
+              audienceLatencyLevel:
+                  AudienceLatencyLevelType.audienceLatencyLevelUltraLowLatency),
+          uid: 0);
+    } catch (e) {
+      debugPrint('Agora initialize error: $e');
+    } finally {
+      isLoading = false;
+      notifyListeners();
+    }
   }
 
   Future<void> _updateLiveStreamUser() async {

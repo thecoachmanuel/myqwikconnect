@@ -226,59 +226,74 @@ class PersonStreamingScreenViewModel extends BaseViewModel {
   Future<void> initializeAgora() async {
     isLoading = true;
     notifyListeners();
+    try {
+      // Create RtcEngine instance
+      _engine = createAgoraRtcEngine();
 
-    // Create RtcEngine instance
-    _engine = createAgoraRtcEngine();
+      // Initialize RtcEngine and set the channel profile to live broadcasting
+      await _engine.initialize(const RtcEngineContext(
+        appId: ConstRes.agoraAppId,
+        channelProfile: ChannelProfileType.channelProfileLiveBroadcasting,
+      ));
+      // Enable the video module
+      await _engine.enableVideo();
 
-    // Initialize RtcEngine and set the channel profile to live broadcasting
-    await _engine.initialize(const RtcEngineContext(
-      appId: ConstRes.agoraAppId,
-      channelProfile: ChannelProfileType.channelProfileLiveBroadcasting,
-    ));
-    // Enable the video module
-    await _engine.enableVideo();
-    // Enable local video preview
-    await _engine.startPreview();
-    await _engine.joinChannel(
-      token: token,
-      channelId: channelId,
-      options: const ChannelMediaOptions(
-        clientRoleType: ClientRoleType.clientRoleAudience,
-        audienceLatencyLevel:
-            AudienceLatencyLevelType.audienceLatencyLevelUltraLowLatency,
-      ),
-      uid: 0,
-    );
-    isLoading = false;
-    notifyListeners();
-    // Add an event handler
-    _engine.registerEventHandler(
-      RtcEngineEventHandler(
-        // Occurs when the local user joins the channel successfully
-        onJoinChannelSuccess: (RtcConnection connection, int elapsed) {
-          notifyListeners();
-        },
-        // Occurs when a remote user join the channel
-        onUserJoined: (RtcConnection connection, int remoteUid, int elapsed) {
-          _remoteUid = remoteUid;
-          notifyListeners();
-        },
-        // Occurs when a remote user leaves the channel
-        onUserOffline: (RtcConnection connection, int remoteUid,
-            UserOfflineReasonType reason) {
-          _remoteUid = null;
-          notifyListeners();
+      // Add event handler BEFORE joining channel
+      _engine.registerEventHandler(
+        RtcEngineEventHandler(
+          // Occurs when the local user joins the channel successfully
+          onJoinChannelSuccess: (RtcConnection connection, int elapsed) {
+            debugPrint('Agora audience joined channel: ${connection.channelId}');
+            notifyListeners();
+          },
+          // Occurs when a remote user join the channel
+          onUserJoined: (RtcConnection connection, int remoteUid, int elapsed) {
+            debugPrint('Agora remote host joined: $remoteUid');
+            _remoteUid = remoteUid;
+            notifyListeners();
+          },
+          // Occurs when a remote user leaves the channel
+          onUserOffline: (RtcConnection connection, int remoteUid,
+              UserOfflineReasonType reason) {
+            _remoteUid = null;
+            notifyListeners();
 
-          if (Get.isDialogOpen == true) {
+            if (Get.isDialogOpen == true) {
+              Get.back();
+            }
+            if (Get.isBottomSheetOpen == true) {
+              Get.back();
+            }
             Get.back();
-          }
-          if (Get.isBottomSheetOpen == true) {
-            Get.back();
-          }
-          Get.back();
-        },
-      ),
-    );
+          },
+          onError: (ErrorCodeType err, String msg) {
+            debugPrint('Agora audience error: $err, $msg');
+          },
+        ),
+      );
+
+      // Sanitize token (App ID mode uses empty string)
+      String rtcToken = token;
+      if (rtcToken.startsWith('AGORA_TOKEN_')) {
+        rtcToken = '';
+      }
+
+      await _engine.joinChannel(
+        token: rtcToken,
+        channelId: channelId,
+        options: const ChannelMediaOptions(
+          clientRoleType: ClientRoleType.clientRoleAudience,
+          audienceLatencyLevel:
+              AudienceLatencyLevelType.audienceLatencyLevelUltraLowLatency,
+        ),
+        uid: 0,
+      );
+    } catch (e) {
+      debugPrint('Agora audience initialize error: $e');
+    } finally {
+      isLoading = false;
+      notifyListeners();
+    }
     initFirebase();
   }
 

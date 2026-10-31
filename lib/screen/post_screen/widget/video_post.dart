@@ -1,14 +1,12 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
-import 'package:orange_ui/common/common_ui.dart';
+import 'package:orange_ui/common/custom_image.dart';
 import 'package:orange_ui/model/social/post/add_comment.dart';
 import 'package:orange_ui/screen/video_preview_screen/video_preview_screen.dart';
 import 'package:orange_ui/screen/video_preview_screen/video_preview_screen_view_model.dart';
 import 'package:orange_ui/utils/asset_res.dart';
 import 'package:orange_ui/utils/color_res.dart';
-import 'package:orange_ui/utils/const_res.dart';
 import 'package:orange_ui/utils/font_res.dart';
 
 class VideoPost extends StatelessWidget {
@@ -21,6 +19,8 @@ class VideoPost extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final thumbnail = (post?.content ?? []).isNotEmpty ? (post?.content ?? []).first.thumbnail : null;
+
     return InkWell(
       onTap: () {
         Get.to(() => VideoPreviewScreen(
@@ -36,12 +36,12 @@ class VideoPost extends StatelessWidget {
           children: [
             Container(
               constraints: BoxConstraints(maxHeight: Get.height / 1.7),
-              child: CachedNetworkImage(
-                  imageUrl: '${ConstRes.aImageBaseUrl}${(post?.content ?? []).first.thumbnail}',
-                  cacheKey: '${ConstRes.aImageBaseUrl}${(post?.content ?? []).first.thumbnail}',
-                  errorWidget: (context, url, error) => CommonUI.postPlaceHolder(),
-                  width: double.infinity,
-                  fit: BoxFit.cover),
+              width: double.infinity,
+              child: CustomImage(
+                image: thumbnail,
+                width: double.infinity,
+                fit: BoxFit.cover,
+              ),
             ),
             Container(
                 height: 53,

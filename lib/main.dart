@@ -7,11 +7,14 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter_web_plugins/url_strategy.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:orange_ui/firebase_options.dart';
 import 'package:orange_ui/generated/l10n.dart';
+import 'package:orange_ui/screen/auth_screen/auth_screen.dart';
 import 'package:orange_ui/screen/countries/select_country_controller.dart';
+import 'package:orange_ui/screen/dashboard/dashboard_screen.dart';
 import 'package:orange_ui/screen/languages_screen/languages_screen_view_model.dart';
 import 'package:orange_ui/screen/restart_app/restart_app.dart';
 import 'package:orange_ui/screen/splash_screen/splash_screen.dart';
@@ -47,6 +50,9 @@ Future<void> main() async {
   ));
 
   WidgetsFlutterBinding.ensureInitialized();
+  if (kIsWeb) {
+    usePathUrlStrategy();
+  }
   try {
     if (kIsWeb) {
       await Firebase.initializeApp(
@@ -125,6 +131,13 @@ class _MyAppState extends State<MyApp> {
           highlightColor: ColorRes.transparent,
           textSelectionTheme: const TextSelectionThemeData(cursorColor: ColorRes.davyGrey),
           useMaterial3: false),
+      initialRoute: '/',
+      unknownRoute: GetPage(name: '/notfound', page: () => const SplashScreen()),
+      getPages: [
+        GetPage(name: '/', page: () => const SplashScreen()),
+        GetPage(name: '/dashboard', page: () => const DashboardScreen()),
+        GetPage(name: '/auth', page: () => const AuthScreen()),
+      ],
       home: const SplashScreen(),
     );
   }

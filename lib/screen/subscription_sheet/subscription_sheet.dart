@@ -248,11 +248,11 @@ class SubscribeIconWithText extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Row(
-      spacing: 5,
+      spacing: 8,
       children: [
         Icon(
-          CupertinoIcons.checkmark_alt_circle_fill,
-          color: color ?? ColorRes.dimGrey3,
+          Icons.check_circle_rounded,
+          color: color ?? ColorRes.themeColor,
           size: 20,
         ),
         Text(

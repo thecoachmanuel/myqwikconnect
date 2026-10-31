@@ -1,7 +1,7 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import 'package:orange_ui/common/custom_image.dart';
 import 'package:orange_ui/model/chat_and_live_stream/chat.dart';
 import 'package:orange_ui/screen/chat_screen/chat_screen_view_model.dart';
 import 'package:orange_ui/service/session_manager.dart';
@@ -217,12 +217,13 @@ class ChatArea extends StatelessWidget {
           child: Stack(
             alignment: Alignment.center,
             children: [
-              CachedNetworkImage(
-                  imageUrl: '${ConstRes.aImageBaseUrl}${data?.image}',
-                  cacheKey: '${data?.image}',
-                  height: Get.width / 1.7,
-                  width: Get.width / 1.7,
-                  fit: BoxFit.cover),
+              CustomImage(
+                image: data?.image,
+                height: Get.width / 1.7,
+                width: Get.width / 1.7,
+                fit: BoxFit.cover,
+                radius: 5,
+              ),
               if (data?.msgType == FirebaseRes.video)
                 Container(
                   height: 31,

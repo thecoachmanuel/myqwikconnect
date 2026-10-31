@@ -153,16 +153,14 @@ class ChatScreenViewModel extends BaseViewModel {
   }
 
   Future<void> minusCoinApi(Function onCompletion) async {
-    CommonUI.lottieLoader();
-    MinusCoinFromWallet minusCoinFromWallet =
-        await ApiProvider().minusCoinFromWallet(settingAppData?.messagePrice);
-    Get.back();
-    if (minusCoinFromWallet.status == true) {
-      onCompletion.call();
-      int wallet = (minusCoinFromWallet.wallet ?? 0).toInt();
-      registrationUserData?.wallet = wallet;
-      updateDataLocalUser(registrationUserData);
-    }
+    onCompletion.call();
+    ApiProvider().minusCoinFromWallet(settingAppData?.messagePrice).then((minusCoinFromWallet) {
+      if (minusCoinFromWallet.status == true) {
+        int wallet = (minusCoinFromWallet.wallet ?? 0).toInt();
+        registrationUserData?.wallet = wallet;
+        updateDataLocalUser(registrationUserData);
+      }
+    });
   }
 
   void scrollToGetChat() {
@@ -314,6 +312,17 @@ class ChatScreenViewModel extends BaseViewModel {
     Get.to(() => ImageViewPage(userData: imageData, onBack: Get.back));
   }
 
+  void _addOptimisticMessage(ChatMessage msg) {
+    if (!chatData.any((m) => m.time == msg.time)) {
+      chatData.insert(0, msg);
+      final groupKey = S.current.today;
+      grouped ??= {};
+      grouped!.putIfAbsent(groupKey, () => []);
+      grouped![groupKey]!.insert(0, msg);
+      notifyListeners();
+    }
+  }
+
   // send a text message
   void onSendBtnTap() async {
     if (textMsgController.text.trim().isEmpty) {
@@ -329,19 +338,41 @@ class ChatScreenViewModel extends BaseViewModel {
 
     if (textMessage.isEmpty) return;
 
+    final int time = DateTime.now().millisecondsSinceEpoch;
+    final optimisticMsg = ChatMessage(
+      notDeletedIdentities: [
+        '${registrationUserData?.id}',
+        '${conversation.user?.userid}'
+      ],
+      senderUser: ChatUser(
+        username: registrationUserData?.fullname,
+        date: time.toDouble(),
+        isHost: registrationUserData?.isVerified == 2,
+        isNewMsg: true,
+        userid: registrationUserData?.id,
+        userIdentity: registrationUserData?.identity,
+        image: registrationUserData?.profileImage,
+        city: registrationUserData?.address,
+        age: registrationUserData?.age.toString(),
+      ),
+      msgType: FirebaseRes.msg,
+      msg: textMessage,
+      id: conversation.user?.userid?.toString(),
+      time: time.toDouble(),
+    );
+    _addOptimisticMessage(optimisticMsg);
+
     // Always send free for fake users or subscribed users or free message
     if (registrationUserData?.isFake == 1 || isSubscribe.value || messagePrice <= 0) {
-      await firebaseMsgUpdate(msgType: FirebaseRes.msg, textMessage: textMessage);
-      // Clear text field early to avoid duplication
+      firebaseMsgUpdate(msgType: FirebaseRes.msg, textMessage: textMessage, customTime: time);
       return;
     }
 
     // Check wallet balance
     if ((registrationUserData?.wallet ?? 0) >= messagePrice) {
       if (isAutoPayEnable) {
-        minusCoinApi(() async {
-          await firebaseMsgUpdate(msgType: FirebaseRes.msg, textMessage: textMessage);
-          // Clear text field early to avoid duplication
+        minusCoinApi(() {
+          firebaseMsgUpdate(msgType: FirebaseRes.msg, textMessage: textMessage, customTime: time);
         });
       } else {
         getChatMsgDialog(
@@ -350,13 +381,17 @@ class ChatScreenViewModel extends BaseViewModel {
               SessionManager.instance.setBool(key: SessionKeys.isMessageDialog, value: isSelected);
               minusCoinApi(() {
                 Get.back();
-                firebaseMsgUpdate(msgType: FirebaseRes.msg, textMessage: textMessage);
-                // Clear text field early to avoid duplication
+                firebaseMsgUpdate(msgType: FirebaseRes.msg, textMessage: textMessage, customTime: time);
               });
             },
-            onCancelTap: () {});
+            onCancelTap: () {
+              chatData.removeWhere((m) => m.time == time.toDouble());
+              notifyListeners();
+            });
       }
     } else {
+      chatData.removeWhere((m) => m.time == time.toDouble());
+      notifyListeners();
       emptyDialog();
     }
   }
@@ -676,19 +711,21 @@ class ChatScreenViewModel extends BaseViewModel {
     String? textMessage,
     String? image,
     String? video,
+    int? customTime,
   }) async {
-    final int time = DateTime.now().millisecondsSinceEpoch;
+    final int time = customTime ?? DateTime.now().millisecondsSinceEpoch;
     notDeletedIdentity = [
       '${registrationUserData?.id}',
       '${conversation.user?.userid}'
     ];
 
+    final isHost = registrationUserData?.isVerified == 2;
     final messageData = ChatMessage(
       notDeletedIdentities: notDeletedIdentity,
       senderUser: ChatUser(
         username: registrationUserData?.fullname,
         date: time.toDouble(),
-        isHost: false,
+        isHost: isHost,
         isNewMsg: true,
         userid: registrationUserData?.id,
         userIdentity: registrationUserData?.identity,
@@ -704,84 +741,51 @@ class ChatScreenViewModel extends BaseViewModel {
       time: time.toDouble(),
     ).toJson();
 
-    // Store message in Firestore
-    await drChatMessages.doc(time.toString()).set(messageData);
-
     final String lastMessage =
         CommonFun.getLastMsg(msgType: msgType, msg: textMessage ?? '');
 
-    bool isSenderExist = (await documentSender.get()).exists;
-    bool isReceiverExist = (await documentReceiver.get()).exists;
+    // 1. Store message in Firestore (non-blocking)
+    final msgSetFuture = drChatMessages.doc(time.toString()).set(messageData);
 
-    if (isSenderExist) {
-      documentSender.update({
-        FirebaseRes.isDeleted: false,
-        FirebaseRes.time: time.toDouble(),
-        FirebaseRes.lastMsg: lastMessage,
-      });
-    } else {
-      final con = conversation.toJson();
-      con[FirebaseRes.lastMsg] = lastMessage;
+    // 2. Sender conversation update (upsert with merge)
+    final senderCon = conversation.toJson();
+    senderCon[FirebaseRes.lastMsg] = lastMessage;
+    senderCon[FirebaseRes.time] = time.toDouble();
+    senderCon[FirebaseRes.isDeleted] = false;
+    final senderFuture = documentSender.set(senderCon, SetOptions(merge: true));
 
-      documentSender.set(con);
-    }
+    // 3. Receiver conversation update (upsert with merge)
+    final receiverUser = ChatUser(
+      username: registrationUserData?.fullname,
+      date: time.toDouble(),
+      isHost: isHost,
+      isNewMsg: true,
+      userid: registrationUserData?.id,
+      userIdentity: registrationUserData?.identity,
+      image: registrationUserData?.profileImage,
+      city: registrationUserData?.address,
+      age: registrationUserData?.age.toString(),
+    );
 
-    if (isReceiverExist) {
-      try {
-        final docSnapshot = await documentReceiver
-            .withConverter(
-              fromFirestore: Conversation.fromFirestore,
-              toFirestore: (Conversation value, options) => value.toFirestore(),
-            )
-            .get();
+    final receiverCon = Conversation(
+      block: false,
+      blockFromOther: false,
+      conversationId: conversation.conversationId,
+      deletedId: '',
+      isDeleted: false,
+      isMute: false,
+      lastMsg: lastMessage,
+      newMsg: lastMessage,
+      time: time.toDouble(),
+      user: receiverUser,
+    ).toJson();
+    final receiverFuture = documentReceiver.set(receiverCon, SetOptions(merge: true));
 
-        final receiverUser = docSnapshot.data()?.user;
-        receiverUser?.isNewMsg = true;
-
-        await Future.wait([
-          documentReceiver.update({
-            FirebaseRes.isDeleted: false,
-            FirebaseRes.time: time.toDouble(),
-            FirebaseRes.lastMsg: lastMessage,
-            FirebaseRes.user: receiverUser?.toJson(),
-          }),
-          documentSender.update({
-            FirebaseRes.isDeleted: false,
-            FirebaseRes.time: time.toDouble(),
-            FirebaseRes.lastMsg: lastMessage,
-          }),
-        ]);
-      } catch (e) {
-        debugPrint("Error updating conversation: $e");
-      }
-    } else {
-      await Future.wait([
-        documentReceiver.set(
-          Conversation(
-            block: false,
-            blockFromOther: false,
-            conversationId: conversation.conversationId,
-            deletedId: '',
-            isDeleted: false,
-            isMute: false,
-            lastMsg: lastMessage,
-            newMsg: lastMessage,
-            time: time.toDouble(),
-            user: ChatUser(
-              username: registrationUserData?.fullname,
-              date: time.toDouble(),
-              isHost: registrationUserData?.isVerified == 2 ? true : false,
-              isNewMsg: true,
-              userid: registrationUserData?.id,
-              userIdentity: registrationUserData?.identity,
-              image: registrationUserData?.profileImage,
-              city: registrationUserData?.address,
-              age: registrationUserData?.age.toString(),
-            ),
-          ).toJson(),
-        ),
-      ]);
-    }
+    // Run all Firestore updates concurrently
+    await Future.wait([msgSetFuture, senderFuture, receiverFuture]).catchError((err) {
+      Get.log('Error writing chat to firestore: $err');
+      return <void>[];
+    });
 
     if (receiverUserData?.isNotification == 1) {
       _sendPushNotification(lastMessage);

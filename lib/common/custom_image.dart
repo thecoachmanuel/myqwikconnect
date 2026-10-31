@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:orange_ui/common/common_ui.dart';
 import 'package:orange_ui/screen/shimmer_screen/shimmer_screen.dart';
+import 'package:orange_ui/service/extention/string_extention.dart';
 
 class CustomImage extends StatelessWidget {
   final String? image;
@@ -28,7 +29,8 @@ class CustomImage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final validUrl = image?.trim() ?? '';
+    final rawUrl = image?.trim() ?? '';
+    final validUrl = rawUrl.addBaseURL();
     final effectiveFit = fit ?? BoxFit.cover;
 
     return LayoutBuilder(
@@ -54,6 +56,7 @@ class CustomImage extends StatelessWidget {
                 height: height,
                 width: width,
                 fit: effectiveFit,
+                gaplessPlayback: true,
                 errorBuilder: (context, error, stackTrace) {
                   return CommonUI.profileImagePlaceHolder(
                       name: CommonUI.fullName(fullname),
@@ -74,6 +77,7 @@ class CustomImage extends StatelessWidget {
               height: height,
               width: width,
               fit: effectiveFit,
+              gaplessPlayback: true,
               loadingBuilder: (context, child, loadingProgress) {
                 if (loadingProgress == null) return child;
                 if (!showShimmer) return const SizedBox();

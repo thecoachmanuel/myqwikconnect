@@ -295,7 +295,7 @@ class AuthScreenViewModel extends BaseViewModel {
       }
     }
 
-    Get.off(() => const DashboardScreen());
+    Get.off(() => const DashboardScreen(), routeName: '/dashboard');
   }
 
 // Helper functions for clarity

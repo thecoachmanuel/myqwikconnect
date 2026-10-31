@@ -446,7 +446,7 @@ class ApiProvider {
     return likeResponse;
   }
 
-  Future<UserModel> updateSaveProfile(int? profileId) async {
+  Future<UserModel> updateSaveProfile(int? profileId, {bool? setSaved}) async {
     var userData = SessionManager.instance.getUser();
     List<String> list = (userData?.savedProfile ?? '')
         .split(',')
@@ -456,13 +456,25 @@ class ApiProvider {
 
     if (profileId != null) {
       String idStr = profileId.toString();
-      if (list.contains(idStr)) {
-        list.remove(idStr);
+      if (setSaved != null) {
+        if (setSaved) {
+          if (!list.contains(idStr)) list.add(idStr);
+        } else {
+          list.remove(idStr);
+        }
       } else {
-        list.add(idStr);
+        if (list.contains(idStr)) {
+          list.remove(idStr);
+        } else {
+          list.add(idStr);
+        }
       }
     }
     String updatedSavedProfiles = list.join(',');
+    if (userData != null) {
+      userData.savedProfile = updatedSavedProfiles;
+      SessionManager.instance.setUser(userData);
+    }
 
     // Send the updated saved profiles to the server
     http.Response response = await http.post(

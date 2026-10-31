@@ -23,17 +23,14 @@ class SavedProfilesScreenViewModel extends BaseViewModel {
   }
 
   onSavedClick(UserData user) async {
-    CommonUI.lottieLoader();
     final bool previousState = user.isSaved;
-    if (previousState) {
-      user.isSaved = false;
+    final bool newState = !previousState;
+    user.isSaved = newState;
+    if (!newState) {
       userData.removeWhere((element) => element.id == user.id);
-    } else {
-      user.isSaved = true;
     }
     notifyListeners();
-    await ApiProvider().updateSaveProfile(user.id);
-    Get.back();
+    await ApiProvider().updateSaveProfile(user.id, setSaved: newState);
   }
 
   void onSavedCardBack() {

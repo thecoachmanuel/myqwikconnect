@@ -227,13 +227,10 @@ class UserDetailScreenViewModel extends BaseViewModel {
     if (isSavedProgress) return;
     isSavedProgress = true;
     final bool previousState = otherUserData?.isSaved ?? false;
-    if (previousState) {
-      otherUserData!.isSaved = false;
-    } else {
-      otherUserData!.isSaved = true;
-    }
+    final bool newState = !previousState;
+    otherUserData!.isSaved = newState;
     notifyListeners();
-    await ApiProvider().updateSaveProfile(otherUserData!.id);
+    await ApiProvider().updateSaveProfile(otherUserData!.id, setSaved: newState);
     isSavedProgress = false;
   }
 

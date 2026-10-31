@@ -65,10 +65,10 @@ class SplashScreenViewModel extends BaseViewModel {
     }
   }
 
-  void _navigate(Widget Function() page) {
+  void _navigate(Widget Function() page, {String? routeName}) {
     if (_hasNavigated) return;
     _hasNavigated = true;
-    Get.off(page);
+    Get.off(page, routeName: routeName ?? '/auth');
   }
 
   void fetchProfile() async {

@@ -51,6 +51,17 @@ class ExploreScreenViewModel extends BaseViewModel {
     notifyListeners();
   }
 
+  void refreshProfiles() {
+    isCardsFinished = false;
+    currentCombinedIndex = 0;
+    combinedList.clear();
+    disposePageControllers();
+    cardController = CardSwiperController();
+    isLoading = true;
+    notifyListeners();
+    exploreScreenApiCall();
+  }
+
   void init() {
     initialCalling();
   }

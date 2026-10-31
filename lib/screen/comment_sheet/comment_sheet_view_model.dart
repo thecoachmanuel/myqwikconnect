@@ -68,6 +68,10 @@ class CommentSheetViewModel extends BaseViewModel {
   }
 
   void onCommentSend() {
+    final commentText = detectableTextFieldController.text.trim();
+    if (commentText.isEmpty) {
+      return;
+    }
     UserData? myUserData = SessionManager.instance.getUser();
     ApiProvider().callPost(
         completion: (response) {

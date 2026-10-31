@@ -1,8 +1,8 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:orange_ui/common/button/round_icon_button.dart';
 import 'package:orange_ui/common/common_ui.dart';
+import 'package:orange_ui/common/custom_image.dart';
 import 'package:orange_ui/model/chat_and_live_stream/chat.dart';
 import 'package:orange_ui/utils/app_res.dart';
 import 'package:orange_ui/utils/asset_res.dart';
@@ -34,19 +34,13 @@ class ChatTopBarArea extends StatelessWidget {
               children: [
                 const RoundIconButton(bgColor: ColorRes.transparent),
                 const SizedBox(width: 15),
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(30),
-                  child: CachedNetworkImage(
-                    imageUrl: '${conversation?.user?.image}',
-                    cacheKey: '${conversation?.user?.image}',
-                    height: 37,
-                    width: 37,
-                    fit: BoxFit.cover,
-                    errorWidget: (context, url, error) {
-                      return CommonUI.profileImagePlaceHolder(
-                          name: conversation?.user?.username, heightWidth: 37);
-                    },
-                  ),
+                CustomImage(
+                  image: conversation?.user?.image,
+                  fullname: conversation?.user?.username,
+                  height: 37,
+                  width: 37,
+                  radius: 30,
+                  fit: BoxFit.cover,
                 ),
                 const SizedBox(width: 10),
                 Expanded(

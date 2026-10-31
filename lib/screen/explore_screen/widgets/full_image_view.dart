@@ -10,6 +10,7 @@ import 'package:orange_ui/common/social_icon.dart';
 import 'package:orange_ui/common/top_story_line.dart';
 import 'package:orange_ui/model/user/registration_user.dart';
 import 'package:orange_ui/screen/explore_screen/explore_screen_view_model.dart';
+import 'package:orange_ui/screen/explore_screen/widgets/end_of_explore_view.dart';
 import 'package:orange_ui/screen/explore_screen/widgets/suggest_photo_tap_view.dart';
 import 'package:orange_ui/screen/explore_screen/widgets/swipe_right_view.dart';
 import 'package:orange_ui/screen/subscription_sheet/widget/subscribe_card.dart';
@@ -29,7 +30,7 @@ class FullImageView extends StatelessWidget {
     } else {
       return Expanded(
         child: model.combinedList.isEmpty || model.isCardsFinished
-            ? CommonUI.noData()
+            ? EndOfExploreView(model: model)
             : CardSwiper(
                 controller: model.cardController,
                 cardsCount: model.combinedList.length,

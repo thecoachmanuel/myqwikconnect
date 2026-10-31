@@ -1,9 +1,9 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:orange_ui/common/common_fun.dart';
 import 'package:orange_ui/common/common_ui.dart';
+import 'package:orange_ui/common/custom_image.dart';
 import 'package:orange_ui/service/extention/string_extention.dart';
 import 'package:orange_ui/utils/asset_res.dart';
 import 'package:orange_ui/utils/color_res.dart';
@@ -46,19 +46,13 @@ class UserCard extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
-              ClipRRect(
-                borderRadius: BorderRadius.circular(30),
-                child: CachedNetworkImage(
-                  imageUrl: (image ?? '').addBaseURL(),
-                  height: 53,
-                  width: 53,
-                  fit: BoxFit.cover,
-                  cacheKey: '$image',
-                  errorWidget: (context, url, error) {
-                    return CommonUI.profileImagePlaceHolder(
-                        name: name, heightWidth: 53);
-                  },
-                ),
+              CustomImage(
+                image: image,
+                fullname: name,
+                height: 53,
+                width: 53,
+                radius: 30,
+                fit: BoxFit.cover,
               ),
               const SizedBox(width: 12),
               Expanded(

@@ -22,6 +22,7 @@ import 'package:orange_ui/utils/urls.dart';
 import 'package:stacked/stacked.dart';
 
 class DashboardScreenViewModel extends BaseViewModel {
+  static const String keyActiveTabIndex = 'dashboard_active_tab_index';
   int pageIndex = 0;
   UserData? userData;
 
@@ -29,6 +30,10 @@ class DashboardScreenViewModel extends BaseViewModel {
   BannerAd? bannerAd;
 
   void init() {
+    final savedIndex = SessionManager.instance.getInt(key: keyActiveTabIndex);
+    if (savedIndex != null && savedIndex >= 0 && savedIndex <= 4) {
+      pageIndex = savedIndex;
+    }
     if (!AppPlatform.isWeb) {
       try {
         AppBadgePlus.updateBadge(0);
@@ -61,11 +66,13 @@ class DashboardScreenViewModel extends BaseViewModel {
   void onBottomBarTap(int index) {
     if (userData?.isBlock == 1 && index == 4) {
       pageIndex = index;
+      SessionManager.instance.setInt(key: keyActiveTabIndex, value: pageIndex);
     } else {
       CommonFun.isBloc(
         userData,
         onCompletion: () {
           pageIndex = index;
+          SessionManager.instance.setInt(key: keyActiveTabIndex, value: pageIndex);
         },
       );
     }

@@ -5,14 +5,13 @@
 
   <meta charset="UTF-8">
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content">
   <meta name="description" content="Orange - Connect, Chat & Dating App">
   <meta name="theme-color" content="#FE1B03">
 
   <!-- iOS meta tags & icons -->
   <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="Orange">
   <link rel="apple-touch-icon" href="icons/Icon-192.png">
 
@@ -32,149 +31,61 @@
       padding: 0;
       width: 100%;
       height: 100%;
-      background-color: #FFFFFF;
+      position: fixed;
       overflow: hidden;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: #FAFAFA;
+      overscroll-behavior: none;
+      overscroll-behavior-y: none;
+      overscroll-behavior-x: none;
+      touch-action: pan-x pan-y;
+      -webkit-touch-callout: none;
+      -webkit-user-select: none;
+      user-select: none;
     }
-    #splash-container {
+    #loading-indicator {
       position: fixed;
       top: 0;
       left: 0;
-      width: 100%;
-      height: 100%;
+      width: 100vw;
+      height: 100vh;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       background-color: #FFFFFF;
-      z-index: 999999;
-      transition: opacity 0.4s ease-out, visibility 0.4s ease-out;
+      z-index: 99999;
+      transition: opacity 0.3s ease-out;
     }
-    #splash-container.fade-out {
-      opacity: 0;
-      visibility: hidden;
-      pointer-events: none;
+    .spinner {
+      width: 44px;
+      height: 44px;
+      border: 3.5px solid rgba(254, 27, 3, 0.15);
+      border-top-color: #FE1B03;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
     }
-    .logo-box {
-      position: relative;
-      width: 110px;
-      height: 110px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin-bottom: 24px;
-    }
-    .logo-img {
-      width: 90px;
-      height: 90px;
-      object-fit: contain;
-      border-radius: 24px;
-      box-shadow: 0 10px 25px rgba(254, 27, 3, 0.25);
-      animation: pulseLogo 2s infinite ease-in-out;
-    }
-    .app-title {
-      font-size: 28px;
-      font-weight: 800;
-      color: #FE1B03;
-      letter-spacing: -0.5px;
-      margin-bottom: 8px;
-    }
-    .app-tagline {
-      font-size: 14px;
-      font-weight: 500;
-      color: #8E8E93;
-      margin-bottom: 32px;
-    }
-    .progress-bar {
-      width: 160px;
-      height: 4px;
-      background-color: #F2F2F7;
-      border-radius: 99px;
-      overflow: hidden;
-      position: relative;
-    }
-    .progress-bar-fill {
-      position: absolute;
-      top: 0;
-      left: 0;
-      height: 100%;
-      width: 40%;
-      background: linear-gradient(90deg, #FE1B03, #FF6B4A);
-      border-radius: 99px;
-      animation: indeterminate 1.5s infinite ease-in-out;
-    }
-    @keyframes pulseLogo {
-      0%, 100% {
-        transform: scale(1);
-      }
-      50% {
-        transform: scale(1.04);
-      }
-    }
-    @keyframes indeterminate {
-      0% {
-        left: -40%;
-        width: 40%;
-      }
-      50% {
-        left: 30%;
-        width: 60%;
-      }
-      100% {
-        left: 100%;
-        width: 30%;
-      }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
     }
   </style>
 </head>
 <body>
-  <div id="splash-container">
-    <div class="logo-box">
-      <img src="icons/Icon-192.png" alt="Orange" class="logo-img" />
-    </div>
-    <div class="app-title">Orange</div>
-    <div class="app-tagline">Connecting hearts...</div>
-    <div class="progress-bar">
-      <div class="progress-bar-fill"></div>
-    </div>
+  <div id="loading-indicator">
+    <div class="spinner"></div>
   </div>
 
   <script>
-    // Clean up any stale service workers from older builds that cached localhost
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.getRegistrations().then(function(registrations) {
-        for (var i = 0; i < registrations.length; i++) {
-          registrations[i].unregister();
-        }
-      }).catch(function() {});
-    }
-
-    function removeSplash() {
-      var splash = document.getElementById('splash-container');
-      if (splash && !splash.classList.contains('fade-out')) {
-        splash.classList.add('fade-out');
+    window.addEventListener('flutter-first-frame', function() {
+      var loader = document.getElementById('loading-indicator');
+      if (loader) {
+        loader.style.opacity = '0';
         setTimeout(function() {
-          if (splash && splash.parentNode) {
-            splash.parentNode.removeChild(splash);
+          if (loader && loader.parentNode) {
+            loader.parentNode.removeChild(loader);
           }
-        }, 500);
-      }
-    }
-
-    // Dismiss splash on first rendered frame
-    window.addEventListener('flutter-first-frame', removeSplash);
-
-    // Mutation observer fallback for web canvas attachment
-    var observer = new MutationObserver(function() {
-      if (document.querySelector('flt-glass-pane') || document.querySelector('flutter-view')) {
-        removeSplash();
-        observer.disconnect();
+        }, 300);
       }
     });
-    observer.observe(document.body, { childList: true, subtree: true });
-
-    // Hard timeout fallback so splash NEVER hangs permanently
-    setTimeout(removeSplash, 4000);
   </script>
 
   <script src="flutter_bootstrap.js" async></script>

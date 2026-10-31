@@ -12,7 +12,6 @@ import 'package:orange_ui/story_view/widgets/story_view.dart';
 import 'package:orange_ui/utils/app_res.dart';
 import 'package:orange_ui/utils/asset_res.dart';
 import 'package:orange_ui/utils/color_res.dart';
-import 'package:orange_ui/utils/const_res.dart';
 
 class UserModel {
   UserModel({
@@ -125,80 +124,100 @@ class UserData {
   });
 
   UserData.fromJson(dynamic json) {
-    id = json['id'];
-    isBlock = json['is_block'];
+    if (json is! Map) return;
+    id = json['id'] is int ? json['id'] : int.tryParse(json['id']?.toString() ?? '');
+    isBlock = json['is_block'] is int ? json['is_block'] : int.tryParse(json['is_block']?.toString() ?? '');
     gender = json['gender'] == null || json['gender'] == 'null'
         ? GenderType.male
         : GenderType.fromString(json['gender']);
-    dob = json['dob'];
-    savedProfile = json['savedprofile'];
-    likedProfile = json['likedprofile'];
-    interests = json['interests'];
-    identity = json['identity'];
-    username = json['username'];
-    fullname = json['fullname'];
-    instagram = json['instagram'];
-    youtube = json['youtube'];
-    facebook = json['facebook'];
-    bio = json['bio'];
-    about = json['about'];
-    latitude = json['lattitude'];
-    longitude = json['longitude'];
-    loginType = json['login_type'];
-    deviceToken = json['device_token'];
-    blockedUsers = json['blocked_users'];
-    wallet = json['wallet'];
-    totalCollected = json['total_collected'];
-    totalStreams = json['total_streams'];
-    deviceType = json['device_type'];
-    isNotification = json['is_notification'];
-    isVerified = json['is_verified'];
-    showOnMap = json['show_on_map'];
-    anonymous = json['anonymous'];
-    isVideoCall = json['is_video_call'];
-    canGoLive = json['can_go_live'];
-    isLiveNow = json['is_live_now'];
-    isFake = json['is_fake'];
-    password = json['password'];
-    following = json['following'];
-    followers = json['followers'];
-    genderPreferred =
-        json['gender_preferred'] == null || json['gender_preferred'] == 'null'
-            ? GenderType.male
-            : GenderType.fromString(json['gender_preferred']);
-    agePreferredMin = json['age_preferred_min'];
-    agePreferredMax = json['age_preferred_max'];
-    distancePreference = json['distance_preference'];
-    relationshipGoalId = json['relationship_goal_id'];
-    religionKey = json['religion_key'];
-    languageKeys = json['language_keys'];
-    createdAt = json['created_at'];
-    updatedAt = json['updated_at'];
-    isLiked = json['is_like'];
-    followingStatus = json['followingStatus'];
-    matchedInterests = json['matched_interests'];
-    matchedLanguages = json['matched_languages'];
-    matchedRelationshipGoalId = json['matched_relationship_goal_id'];
-    matchedReligion = json['matched_religion'];
-    matchScore = json['match_score'];
-    hiddenUserIds = json['hidden_user_ids'];
-    country = json['country'];
-    state = json['state'];
-    city = json['city'];
-    appLanguage = json['app_language'];
-    if (json['images'] != null) {
-      images = [];
-      json['images'].forEach((v) {
-        images?.add(Images.fromJson(v));
-      });
+    dob = json['dob']?.toString();
+    savedProfile = json['savedprofile']?.toString();
+    likedProfile = json['likedprofile']?.toString();
+    interests = json['interests']?.toString();
+    identity = json['identity']?.toString();
+    username = json['username']?.toString();
+    fullname = json['fullname']?.toString();
+    instagram = json['instagram']?.toString();
+    youtube = json['youtube']?.toString();
+    facebook = json['facebook']?.toString();
+    bio = json['bio']?.toString();
+    about = json['about']?.toString();
+    latitude = json['lattitude']?.toString() ?? json['latitude']?.toString();
+    longitude = json['longitude']?.toString();
+    loginType = json['login_type'] is int ? json['login_type'] : int.tryParse(json['login_type']?.toString() ?? '');
+    deviceToken = json['device_token']?.toString();
+    blockedUsers = json['blocked_users']?.toString();
+    wallet = json['wallet'] is int
+        ? json['wallet']
+        : (json['wallet'] is num ? (json['wallet'] as num).toInt() : int.tryParse(json['wallet']?.toString() ?? ''));
+    totalCollected = json['total_collected'] is int
+        ? json['total_collected']
+        : (json['total_collected'] is num
+            ? (json['total_collected'] as num).toInt()
+            : int.tryParse(json['total_collected']?.toString() ?? ''));
+    totalStreams = json['total_streams'] is int
+        ? json['total_streams']
+        : (json['total_streams'] is num
+            ? (json['total_streams'] as num).toInt()
+            : int.tryParse(json['total_streams']?.toString() ?? ''));
+    deviceType = json['device_type'] is int ? json['device_type'] : int.tryParse(json['device_type']?.toString() ?? '');
+    isNotification = json['is_notification'] is int ? json['is_notification'] : int.tryParse(json['is_notification']?.toString() ?? '');
+    isVerified = json['is_verified'] is int ? json['is_verified'] : int.tryParse(json['is_verified']?.toString() ?? '');
+    showOnMap = json['show_on_map'] is int ? json['show_on_map'] : int.tryParse(json['show_on_map']?.toString() ?? '');
+    anonymous = json['anonymous'] is int ? json['anonymous'] : int.tryParse(json['anonymous']?.toString() ?? '');
+    isVideoCall = json['is_video_call'] is int ? json['is_video_call'] : int.tryParse(json['is_video_call']?.toString() ?? '');
+    canGoLive = json['can_go_live'] is int ? json['can_go_live'] : int.tryParse(json['can_go_live']?.toString() ?? '');
+    isLiveNow = json['is_live_now'] is int ? json['is_live_now'] : int.tryParse(json['is_live_now']?.toString() ?? '');
+    isFake = json['is_fake'] is int ? json['is_fake'] : int.tryParse(json['is_fake']?.toString() ?? '');
+    password = json['password']?.toString();
+    following = json['following'] is int ? json['following'] : int.tryParse(json['following']?.toString() ?? '');
+    followers = json['followers'] is int ? json['followers'] : int.tryParse(json['followers']?.toString() ?? '');
+    genderPreferred = json['gender_preferred'] == null || json['gender_preferred'] == 'null'
+        ? GenderType.male
+        : GenderType.fromString(json['gender_preferred']);
+    agePreferredMin = json['age_preferred_min'] is int ? json['age_preferred_min'] : int.tryParse(json['age_preferred_min']?.toString() ?? '');
+    agePreferredMax = json['age_preferred_max'] is int ? json['age_preferred_max'] : int.tryParse(json['age_preferred_max']?.toString() ?? '');
+    distancePreference = json['distance_preference'] is int ? json['distance_preference'] : int.tryParse(json['distance_preference']?.toString() ?? '');
+    relationshipGoalId = json['relationship_goal_id'] is int ? json['relationship_goal_id'] : int.tryParse(json['relationship_goal_id']?.toString() ?? '');
+    religionKey = json['religion_key']?.toString();
+    languageKeys = json['language_keys']?.toString();
+    createdAt = json['created_at']?.toString();
+    updatedAt = json['updated_at']?.toString();
+    if (json['is_like'] is bool) {
+      isLiked = json['is_like'];
+    } else if (json['is_like'] != null) {
+      isLiked = json['is_like'] == 1 || json['is_like'] == '1' || json['is_like'] == 'true';
+    } else {
+      isLiked = false;
     }
-    if (json['stories'] != null) {
+    followingStatus = json['followingStatus'] is int ? json['followingStatus'] : int.tryParse(json['followingStatus']?.toString() ?? '');
+    matchedInterests = json['matched_interests'] is int ? json['matched_interests'] : int.tryParse(json['matched_interests']?.toString() ?? '');
+    matchedLanguages = json['matched_languages'] is int ? json['matched_languages'] : int.tryParse(json['matched_languages']?.toString() ?? '');
+    matchedRelationshipGoalId = json['matched_relationship_goal_id'] is int ? json['matched_relationship_goal_id'] : int.tryParse(json['matched_relationship_goal_id']?.toString() ?? '');
+    matchedReligion = json['matched_religion'] is int ? json['matched_religion'] : int.tryParse(json['matched_religion']?.toString() ?? '');
+    matchScore = json['match_score'] is num ? (json['match_score'] as num).toInt() : int.tryParse(json['match_score']?.toString() ?? '');
+    hiddenUserIds = json['hidden_user_ids']?.toString();
+    country = json['country']?.toString();
+    state = json['state']?.toString();
+    city = json['city']?.toString();
+    appLanguage = json['app_language']?.toString();
+    if (json['images'] != null && json['images'] is List) {
+      images = [];
+      for (var v in json['images']) {
+        if (v != null) {
+          images?.add(Images.fromJson(v));
+        }
+      }
+    }
+    if (json['stories'] != null && json['stories'] is List) {
       story = [];
-      json['stories'].forEach((v) {
-        var s = Story.fromJson(v);
-        s.user = this;
-        story?.add(s);
-      });
+      for (var v in json['stories']) {
+        if (v != null) {
+          var s = Story.fromJson(v);
+          s.user = this;
+          story?.add(s);
+        }
+      }
     }
   }
 
@@ -513,9 +532,17 @@ class Images {
   }
 
   Images.fromJson(dynamic json) {
-    _id = json['id'];
-    _userId = json['user_id'];
-    _image = json['image'];
+    if (json is String) {
+      _image = json;
+      _id = 0;
+      _userId = 0;
+      return;
+    }
+    if (json is Map) {
+      _id = json['id'] is int ? json['id'] : int.tryParse(json['id']?.toString() ?? '');
+      _userId = json['user_id'] is int ? json['user_id'] : int.tryParse(json['user_id']?.toString() ?? '');
+      _image = json['image']?.toString();
+    }
   }
 
   int? _id;

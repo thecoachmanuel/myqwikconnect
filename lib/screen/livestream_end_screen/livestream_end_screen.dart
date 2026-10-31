@@ -91,7 +91,7 @@ class _LivestreamEndScreenState extends State<LivestreamEndScreen>
                               SizeTransition(
                                 sizeFactor: _animation,
                                 axis: Axis.horizontal,
-                                axisAlignment: -1,
+                                alignment: Alignment.centerLeft,
                                 child: Text(widget.duration,
                                     style: const TextStyle(
                                         fontFamily: FontRes.semiBold,
@@ -111,7 +111,7 @@ class _LivestreamEndScreenState extends State<LivestreamEndScreen>
                               SizeTransition(
                                 sizeFactor: _animation,
                                 axis: Axis.horizontal,
-                                axisAlignment: -1,
+                                alignment: Alignment.centerLeft,
                                 child: Text(
                                     '${widget.liveStreamUser.joinedUser?.length ?? 0}',
                                     style: const TextStyle(
@@ -132,7 +132,7 @@ class _LivestreamEndScreenState extends State<LivestreamEndScreen>
                               SizeTransition(
                                 sizeFactor: _animation,
                                 axis: Axis.horizontal,
-                                axisAlignment: -1,
+                                alignment: Alignment.centerLeft,
                                 child: Text(
                                     (widget.liveStreamUser.collectedDiamond ??
                                             0)

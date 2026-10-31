@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:orange_ui/api_provider/api_provider.dart';
@@ -15,7 +14,7 @@ class SplashScreenViewModel extends BaseViewModel {
 
   void init() {
     // Safety fallback: ensure screen transitions within 4 seconds even if network hangs
-    Timer(const Duration(milliseconds: 2500), () {
+    Timer(const Duration(seconds: 4), () {
       if (!_hasNavigated) {
         _navigateFallback();
       }
@@ -69,7 +68,7 @@ class SplashScreenViewModel extends BaseViewModel {
   void _navigate(Widget Function() page) {
     if (_hasNavigated) return;
     _hasNavigated = true;
-    Get.offAll(page);
+    Get.off(page);
   }
 
   void fetchProfile() async {

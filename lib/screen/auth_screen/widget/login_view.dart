@@ -50,9 +50,9 @@ class LoginView extends StatelessWidget {
                 color: ColorRes.darkOrange20,
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: Row(
+              child: const Row(
                 mainAxisAlignment: MainAxisAlignment.center,
-                children: const [
+                children: [
                   Icon(Icons.bolt, color: ColorRes.themeColor, size: 20),
                   SizedBox(width: 8),
                   Text(

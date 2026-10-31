@@ -38,25 +38,15 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
 }
 
 Future<void> main() async {
-  // 1. MUST BE FIRST: Initialize Flutter binding before any platform calls
+  SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
+    // Status bar color
+    statusBarColor: ColorRes.transparent,
+    // Status bar brightness (optional)
+    statusBarIconBrightness: Brightness.dark, // For Android (dark icons)
+    statusBarBrightness: Brightness.light, // For iOS (dark icons)
+  ));
+
   WidgetsFlutterBinding.ensureInitialized();
-
-  // 2. Safe mobile platform styling
-  if (!kIsWeb) {
-    try {
-      SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
-        statusBarColor: ColorRes.transparent,
-        statusBarIconBrightness: Brightness.dark,
-        statusBarBrightness: Brightness.light,
-      ));
-      SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp, DeviceOrientation.portraitDown]);
-      HttpOverrides.global = MyHttpOverrides();
-    } catch (e) {
-      debugPrint('Mobile platform styling error: $e');
-    }
-  }
-
-  // 3. Safe Firebase initialization
   try {
     if (kIsWeb) {
       await Firebase.initializeApp(
@@ -69,47 +59,28 @@ Future<void> main() async {
     debugPrint('Firebase initialization error: $e');
   }
 
-  // 4. Safe persistent storage initialization
-  try {
-    await GetStorage.init('Orange');
-  } catch (e) {
-    debugPrint('GetStorage initialization error: $e');
-  }
+  await GetStorage.init('Orange');
+  LanguagesScreenViewModel.selectedLanguage =
+      SessionManager.instance.getString(key: SessionKeys.languageCode) ??
+          AppPlatform.languageCode;
 
-  // 5. Safe language setup
-  try {
-    LanguagesScreenViewModel.selectedLanguage =
-        SessionManager.instance.getString(key: SessionKeys.languageCode) ??
-            AppPlatform.languageCode;
-  } catch (e) {
-    LanguagesScreenViewModel.selectedLanguage = 'en';
-  }
-
-  // 6. Background messaging handler (mobile only)
+  // FirebaseNotificationManager.shared;
+  // Set the background messaging handler early on, as a named top-level function
   if (!kIsWeb) {
-    try {
-      FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
-    } catch (e) {
-      debugPrint('Firebase messaging error: $e');
-    }
+    FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
   }
+  SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp, DeviceOrientation.portraitDown]);
 
-  // 7. Error handling
+  if (!kIsWeb) {
+    HttpOverrides.global = MyHttpOverrides();
+  }
   FlutterError.onError = (FlutterErrorDetails details) {
     if (details.library == 'image resource service' && details.exception.toString().contains('404')) {
       return;
     }
     FlutterError.presentError(details);
   };
-
-  // 8. Safe subscription manager init
-  try {
-    SubscriptionManager.shared.initPlatformState();
-  } catch (e) {
-    debugPrint('SubscriptionManager init error: $e');
-  }
-
-  // 9. Always launch the application
+  SubscriptionManager.shared.initPlatformState();
   runApp(const RestartWidget(child: MyApp()));
 }
 

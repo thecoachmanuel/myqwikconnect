@@ -406,8 +406,9 @@ enum GenderType {
     }
   }
 
-  static GenderType fromString(int? value) {
-    return GenderType.values.firstWhereOrNull((e) => e.value == value) ??
+  static GenderType fromString(dynamic value) {
+    int? intVal = value is int ? value : int.tryParse(value?.toString() ?? '');
+    return GenderType.values.firstWhereOrNull((e) => e.value == intVal) ??
         GenderType.male;
   }
 }

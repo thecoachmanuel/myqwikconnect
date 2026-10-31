@@ -14,7 +14,6 @@ import 'package:orange_ui/generated/l10n.dart';
 import 'package:orange_ui/model/social/post/add_comment.dart';
 import 'package:orange_ui/model/user/registration_user.dart';
 import 'package:orange_ui/utils/color_res.dart';
-import 'package:orange_ui/utils/const_res.dart';
 import 'package:orange_ui/utils/firebase_res.dart';
 import 'package:orange_ui/service/extention/string_extention.dart';
 import 'package:video_compress/video_compress.dart';

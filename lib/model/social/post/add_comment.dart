@@ -140,9 +140,15 @@ class Post {
     _userId = json['user_id'];
     _description = json['description'];
     _interestIds = json['interest_ids'];
-    _commentsCount = json['comments_count'];
-    _likesCount = json['likes_count'];
-    _isLike = json['is_like'];
+    _commentsCount = json['comments_count'] is int ? json['comments_count'] : int.tryParse(json['comments_count']?.toString() ?? '');
+    _likesCount = json['likes_count'] is int ? json['likes_count'] : int.tryParse(json['likes_count']?.toString() ?? '');
+    if (json['is_like'] is int) {
+      _isLike = json['is_like'];
+    } else if (json['is_like'] != null) {
+      _isLike = (json['is_like'] == true || json['is_like'] == '1' || json['is_like'] == 'true') ? 1 : 0;
+    } else {
+      _isLike = 0;
+    }
     _hashtags = json['hashtags'];
     _createdAt = json['created_at'];
     _updatedAt = json['updated_at'];

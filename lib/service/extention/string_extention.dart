@@ -18,7 +18,7 @@ extension StringExtention on String {
       return '${ConstRes.base}$this';
     }
     if (startsWith('/storage/')) {
-      return '${ConstRes.base}public${this}';
+      return '${ConstRes.base}public$this';
     }
     if (startsWith('storage/')) {
       return '${ConstRes.base}public/$this';

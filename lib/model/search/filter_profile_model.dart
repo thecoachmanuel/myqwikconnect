@@ -26,11 +26,18 @@ class FilterProfileModel {
   });
 
   factory FilterProfileModel.fromJson(dynamic json) {
+    if (json is! Map) {
+      return FilterProfileModel(status: false, message: '', total: 0, data: []);
+    }
     return FilterProfileModel(
-      status: json["status"],
-      message: json["message"],
-      total: json["total"],
-      data: List<UserData>.from(json["data"].map((x) => UserData.fromJson(x))),
+      status: json["status"] == true || json["status"] == 1 || json["status"] == 'true',
+      message: json["message"]?.toString() ?? '',
+      total: json["total"] is int ? json["total"] : int.tryParse(json["total"]?.toString() ?? ''),
+      data: json["data"] != null && json["data"] is List
+          ? List<UserData>.from((json["data"] as List)
+              .where((x) => x != null)
+              .map((x) => UserData.fromJson(x)))
+          : [],
     );
   }
 

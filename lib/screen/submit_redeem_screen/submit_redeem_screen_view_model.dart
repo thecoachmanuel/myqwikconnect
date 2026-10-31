@@ -67,8 +67,9 @@ class SubmitRedeemScreenViewModel extends BaseViewModel {
         url: Urls.aPlaceRedeemRequest,
         param: {
           Urls.userId: SessionManager.instance.getUserID().toString(),
-          Urls.aAccountDetails: paymentGateway,
-          Urls.aPaymentGateway: accountDetailController.text.trim(),
+          Urls.aPaymentGateway: paymentGateway,
+          Urls.aAccountDetails: accountDetailController.text.trim(),
+          'coin_amount': coinValue.toString(),
         });
   }
 

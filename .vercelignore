@@ -1,0 +1,14 @@
+.dart_tool
+.idea
+android
+ios
+packages
+test
+.git
+.github
+*.iml
+orange.jks
+inspect_schema.js
+schema.json
+web_server.js
+

@@ -1,0 +1,12 @@
+{
+  "name": "orange-flutter-web",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Orange Dating & Livestream Flutter Web App",
+  "scripts": {
+    "build": "bash vercel-build.sh",
+    "build:local": "flutter build web --release",
+    "deploy:prebuilt": "vercel deploy build/web --prod"
+  }
+}
+

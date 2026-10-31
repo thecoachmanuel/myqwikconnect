@@ -63,10 +63,11 @@ class DetailPage extends StatelessWidget {
                             model: model, userData: userData),
 
                         // Relationship Goals
-                        if (isDating && (userData?.relationshipGoalId ?? 0) > 0)
+                        if (isDating &&
+                            (userData?.relationShipGoalsTitles.isNotEmpty ?? false))
                           labeledTagList(
                             title: S.current.relationshipGoals,
-                            items: [userData?.relationShipGoal ?? ''],
+                            items: userData!.relationShipGoalsTitles,
                           ),
 
                         // Interests

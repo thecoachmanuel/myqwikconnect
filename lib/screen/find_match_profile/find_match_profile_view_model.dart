@@ -33,7 +33,9 @@ class FindMatchProfileViewModel extends BaseViewModel {
   List<Interests> selectedInterests = [];
 
   List<RelationshipGoals> relationshipGoals = [];
-  RelationshipGoals? selectedRelationShipGoal;
+  List<RelationshipGoals> selectedRelationshipGoals = [];
+  RelationshipGoals? get selectedRelationShipGoal =>
+      selectedRelationshipGoals.isNotEmpty ? selectedRelationshipGoals.first : null;
   Religions? selectedReligion;
   List<Religions> religions = [];
   List<Language> languages = [];
@@ -82,8 +84,10 @@ class FindMatchProfileViewModel extends BaseViewModel {
         selectedInterests.add(interest);
       }
     });
-    selectedRelationShipGoal = relationshipGoals.firstWhereOrNull((element) =>
-        element.isDeleted == 0 && element.id == data.relationshipGoalId);
+    final goalIds = data.relationshipGoalIdsList;
+    selectedRelationshipGoals = relationshipGoals
+        .where((element) => element.isDeleted == 0 && goalIds.contains(element.id))
+        .toList();
     selectedReligion = religions.firstWhereOrNull((element) {
       return element.isDeleted == 0 &&
           element.title?.removeEmojis.trim() == data.religionKey;
@@ -152,10 +156,10 @@ class FindMatchProfileViewModel extends BaseViewModel {
   }
 
   onRelationshipGoalTap(RelationshipGoals goal) {
-    if (selectedRelationShipGoal?.id == goal.id) {
-      selectedRelationShipGoal = null;
+    if (selectedRelationshipGoals.any((g) => g.id == goal.id)) {
+      selectedRelationshipGoals.removeWhere((g) => g.id == goal.id);
     } else {
-      selectedRelationShipGoal = goal;
+      selectedRelationshipGoals.add(goal);
     }
     notifyListeners();
   }
@@ -217,8 +221,9 @@ class FindMatchProfileViewModel extends BaseViewModel {
         Urls.agePreferredMin: selectedAgeRange.start.toInt(),
         Urls.agePreferredMax: selectedAgeRange.end.toInt(),
         Urls.distancePreference: selectedDistance.toInt(),
-        if (selectedRelationShipGoal != null)
-          Urls.relationshipGoalId: selectedRelationShipGoal?.id,
+        if (selectedRelationshipGoals.isNotEmpty)
+          Urls.relationshipGoalId:
+              selectedRelationshipGoals.map((e) => e.id).join(','),
         if (selectedReligion != null)
           Urls.religionKey: selectedReligion!.title?.removeEmojis,
         if (selectedInterests.isNotEmpty)

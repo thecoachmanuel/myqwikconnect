@@ -53,7 +53,9 @@ class EditProfileScreenViewModel extends BaseViewModel {
   List<Religions> religions = [];
   List<Language> languages = [];
   List<Interests> selectedInterests = [];
-  RelationshipGoals? selectedRelationShipGoal;
+  List<RelationshipGoals> selectedRelationshipGoals = [];
+  RelationshipGoals? get selectedRelationShipGoal =>
+      selectedRelationshipGoals.isNotEmpty ? selectedRelationshipGoals.first : null;
   Religions? selectedReligion;
   List<Language> selectedLanguages = [];
 
@@ -109,8 +111,10 @@ class EditProfileScreenViewModel extends BaseViewModel {
         .toList();
 
     // Relationship Goal
-    selectedRelationShipGoal = relationshipGoals.firstWhereOrNull(
-        (e) => e.isDeleted == 0 && e.id == userData?.relationshipGoalId);
+    final goalIds = userData?.relationshipGoalIdsList ?? [];
+    selectedRelationshipGoals = relationshipGoals
+        .where((e) => e.isDeleted == 0 && goalIds.contains(e.id))
+        .toList();
 
     // Religion
     selectedReligion = religions.firstWhereOrNull((e) =>
@@ -166,7 +170,7 @@ class EditProfileScreenViewModel extends BaseViewModel {
     if (selectedInterests.isEmpty) {
       return CommonUI.snackBarWidget(S.current.selectInterestsToContinue);
     }
-    if (selectedRelationShipGoal == null) {
+    if (selectedRelationshipGoals.isEmpty) {
       return CommonUI.snackBarWidget(S.current.selectYourRelationshipGoal);
     }
     if (selectedReligion == null) {
@@ -204,7 +208,7 @@ class EditProfileScreenViewModel extends BaseViewModel {
       youtube: youtubeController.text.trim(),
       genderPreferred: selectedGenderPref.value,
       interest: selectedInterests.map((e) => '${e.id}').toList(),
-      relationshipGoalId: selectedRelationShipGoal?.id,
+      relationshipGoalId: selectedRelationshipGoals.map((e) => e.id).join(','),
       religionKey: selectedReligion?.title?.removeEmojis.trim(),
       languageKeys:
           selectedLanguages.map((e) => e.title?.removeEmojis.trim()).join(','),
@@ -263,7 +267,11 @@ class EditProfileScreenViewModel extends BaseViewModel {
   }
 
   onRelationshipGoalTap(RelationshipGoals goal) {
-    selectedRelationShipGoal = goal;
+    if (selectedRelationshipGoals.any((e) => e.id == goal.id)) {
+      selectedRelationshipGoals.removeWhere((e) => e.id == goal.id);
+    } else {
+      selectedRelationshipGoals.add(goal);
+    }
     notifyListeners();
   }
 

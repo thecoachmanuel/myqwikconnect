@@ -55,10 +55,11 @@ class YourMatchingSheet extends StatelessWidget {
     }).toList();
 
     // Match relationship goal
-    RelationshipGoals? matchedRelationShopGoal = model.relationshipGoals
-        .firstWhereOrNull((element) =>
+    final List<RelationshipGoals> matchedRelationshipGoals = model.relationshipGoals
+        .where((element) =>
             element.isDeleted == 0 &&
-            element.id == matchedUser.relationshipGoalId);
+            matchedUser.relationshipGoalIdsList.contains(element.id))
+        .toList();
 
     return Container(
       margin: EdgeInsets.only(top: AppBar().preferredSize.height * 3),
@@ -128,19 +129,23 @@ class YourMatchingSheet extends StatelessWidget {
                       )
                     ],
                   ),
-                if (matchedRelationShopGoal != null)
+                if (matchedRelationshipGoals.isNotEmpty)
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     spacing: 10,
                     children: [
                       _textTitle(S.current.relationshipGoals.removeEmojis),
-                      FittedBox(
-                        child: BorderTextCard(
-                          text: matchedRelationShopGoal.title ?? '',
-                          onTap: () {},
-                          isSelected: true,
-                          padding: const EdgeInsets.symmetric(horizontal: 20),
-                        ),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: matchedRelationshipGoals
+                            .map((goal) => BorderTextCard(
+                                  text: goal.title ?? '',
+                                  onTap: () {},
+                                  isSelected: true,
+                                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                                ))
+                            .toList(),
                       )
                     ],
                   ),

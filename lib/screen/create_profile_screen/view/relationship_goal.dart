@@ -39,7 +39,7 @@ class RelationshipGoal extends StatelessWidget {
                         RelationshipGoals goal =
                             viewModel.relationshipGoals[index];
                         bool isSelected =
-                            viewModel.selectedRelationShipGoal?.id == goal.id;
+                            viewModel.selectedRelationshipGoals.any((g) => g.id == goal.id);
                         return RelationshipCard(
                             onTap: () =>
                                 viewModel.onChangedRelationshipGoal(goal),

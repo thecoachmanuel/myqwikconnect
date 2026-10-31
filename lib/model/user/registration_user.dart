@@ -1,6 +1,5 @@
 // ignore_for_file: unnecessary_getters_setters
 
-import 'package:collection/collection.dart';
 import 'package:orange_ui/common/common_fun.dart';
 import 'package:orange_ui/generated/l10n.dart';
 import 'package:orange_ui/model/setting_model.dart';
@@ -103,7 +102,7 @@ class UserData {
     this.agePreferredMin,
     this.agePreferredMax,
     this.distancePreference,
-    this.relationshipGoalId,
+    dynamic relationshipGoalId,
     this.religionKey,
     this.languageKeys,
     this.createdAt,
@@ -121,7 +120,11 @@ class UserData {
     this.state,
     this.city,
     this.appLanguage,
-  });
+  }) {
+    if (relationshipGoalId != null) {
+      relationshipGoalIds = relationshipGoalId.toString();
+    }
+  }
 
   UserData.fromJson(dynamic json) {
     if (json is! Map) return;
@@ -178,7 +181,7 @@ class UserData {
     agePreferredMin = json['age_preferred_min'] is int ? json['age_preferred_min'] : int.tryParse(json['age_preferred_min']?.toString() ?? '');
     agePreferredMax = json['age_preferred_max'] is int ? json['age_preferred_max'] : int.tryParse(json['age_preferred_max']?.toString() ?? '');
     distancePreference = json['distance_preference'] is int ? json['distance_preference'] : int.tryParse(json['distance_preference']?.toString() ?? '');
-    relationshipGoalId = json['relationship_goal_id'] is int ? json['relationship_goal_id'] : int.tryParse(json['relationship_goal_id']?.toString() ?? '');
+    relationshipGoalIds = json['relationship_goal_id']?.toString();
     religionKey = json['religion_key']?.toString();
     languageKeys = json['language_keys']?.toString();
     createdAt = json['created_at']?.toString();
@@ -262,7 +265,29 @@ class UserData {
   int? agePreferredMin;
   int? agePreferredMax;
   int? distancePreference;
-  int? relationshipGoalId;
+  String? relationshipGoalIds;
+
+  int? get relationshipGoalId {
+    final list = relationshipGoalIdsList;
+    return list.isNotEmpty ? list.first : null;
+  }
+
+  set relationshipGoalId(dynamic value) {
+    if (value == null) {
+      relationshipGoalIds = null;
+    } else {
+      relationshipGoalIds = value.toString();
+    }
+  }
+
+  List<int> get relationshipGoalIdsList {
+    if (relationshipGoalIds == null || relationshipGoalIds!.trim().isEmpty) return [];
+    return relationshipGoalIds!
+        .split(',')
+        .map((e) => int.tryParse(e.trim()))
+        .whereType<int>()
+        .toList();
+  }
   String? religionKey;
   String? languageKeys;
   String? createdAt;
@@ -323,7 +348,7 @@ class UserData {
     map['age_preferred_min'] = agePreferredMin;
     map['age_preferred_max'] = agePreferredMax;
     map['distance_preference'] = distancePreference;
-    map['relationship_goal_id'] = relationshipGoalId;
+    map['relationship_goal_id'] = relationshipGoalIds;
     map['religion_key'] = religionKey;
     map['language_keys'] = languageKeys;
     map['created_at'] = createdAt;
@@ -394,15 +419,22 @@ class UserData {
         .toList();
   }
 
-  String? get relationShipGoal {
+  List<String> get relationShipGoalsTitles {
     final SettingData? settingData = SessionManager.instance.getSettings();
     final List<RelationshipGoals> items = settingData?.relationshipGoals ?? [];
+    final ids = relationshipGoalIdsList;
+    if (items.isEmpty || ids.isEmpty) return [];
+    return items
+        .where((goal) => goal.isDeleted == 0 && ids.contains(goal.id))
+        .map((goal) => goal.title ?? '')
+        .where((title) => title.isNotEmpty)
+        .toList();
+  }
 
-    if (items.isEmpty) return null;
-
-    RelationshipGoals? goal = items.firstWhereOrNull((element) =>
-        element.isDeleted == 0 && element.id == relationshipGoalId);
-    return goal?.title;
+  String? get relationShipGoal {
+    final titles = relationShipGoalsTitles;
+    if (titles.isEmpty) return null;
+    return titles.join(', ');
   }
 
   List<String> get languageList {

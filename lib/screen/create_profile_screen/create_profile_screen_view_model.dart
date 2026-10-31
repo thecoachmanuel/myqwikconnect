@@ -45,7 +45,9 @@ class CreateProfileScreenViewModel extends BaseViewModel {
   List<Photo> images = [];
   List<Photo> deletedImages = [];
 
-  RelationshipGoals? selectedRelationShipGoal;
+  List<RelationshipGoals> selectedRelationshipGoals = [];
+  RelationshipGoals? get selectedRelationShipGoal =>
+      selectedRelationshipGoals.isNotEmpty ? selectedRelationshipGoals.first : null;
   Religions? selectedReligion;
 
   RangeValues selectedAgeRange = const RangeValues(AppRes.ageMin, 35);
@@ -97,7 +99,11 @@ class CreateProfileScreenViewModel extends BaseViewModel {
   }
 
   void onChangedRelationshipGoal(RelationshipGoals goal) {
-    selectedRelationShipGoal = goal;
+    if (selectedRelationshipGoals.any((e) => e.id == goal.id)) {
+      selectedRelationshipGoals.removeWhere((e) => e.id == goal.id);
+    } else {
+      selectedRelationshipGoals.add(goal);
+    }
     notifyListeners();
   }
 
@@ -252,7 +258,7 @@ class CreateProfileScreenViewModel extends BaseViewModel {
   }
 
   void chooseRelationshipGoal() {
-    if (selectedRelationShipGoal == null) {
+    if (selectedRelationshipGoals.isEmpty) {
       return CommonUI.snackBar(message: S.current.selectYourRelationshipGoal);
     }
     Get.to(() => ChooseReligion(model: this));
@@ -332,7 +338,7 @@ class CreateProfileScreenViewModel extends BaseViewModel {
       return CommonUI.snackBar(message: S.current.selectInterestsToContinue);
     }
     if (isDating) {
-      if (selectedRelationShipGoal == null) {
+      if (selectedRelationshipGoals.isEmpty) {
         return CommonUI.snackBar(message: S.current.selectYourRelationshipGoal);
       }
       if (selectedReligion == null) {
@@ -369,7 +375,7 @@ class CreateProfileScreenViewModel extends BaseViewModel {
             ageMax: selectedAgeRange.end,
             distancePreference: selectedDistance,
             interest: selectedInterest.map((e) => '${e.id}').toList(),
-            relationshipGoalId: selectedRelationShipGoal?.id,
+            relationshipGoalId: selectedRelationshipGoals.map((e) => e.id).join(','),
             religionKey: selectedReligion?.title,
             languageKeys:
                 selectedLanguages.map((e) => e.title?.removeEmojis).join(','),

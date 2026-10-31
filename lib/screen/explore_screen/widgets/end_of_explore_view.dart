@@ -36,11 +36,15 @@ class EndOfExploreView extends StatelessWidget {
             ),
           ],
         ),
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+        child: Center(
+          child: SingleChildScrollView(
+            physics: const BouncingScrollPhysics(),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
               width: 88,
               height: 88,
               decoration: BoxDecoration(
@@ -61,10 +65,10 @@ class EndOfExploreView extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 24),
-            Text(
+            const Text(
               "You're All Caught Up!",
               textAlign: TextAlign.center,
-              style: const TextStyle(
+              style: TextStyle(
                 fontFamily: FontRes.bold,
                 fontSize: 22,
                 color: ColorRes.davyGrey,
@@ -170,6 +174,8 @@ class EndOfExploreView extends StatelessWidget {
           ],
         ),
       ),
-    );
+    ),
+  ),
+);
   }
 }

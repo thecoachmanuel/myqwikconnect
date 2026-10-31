@@ -119,7 +119,7 @@ class FilterSheet extends StatelessWidget {
                               const SizedBox(height: 10),
                               WrapListTiles<RelationshipGoals>(
                                 items: model.relationshipGoals,
-                                selectedItems: [model.selectedRelationShipGoal],
+                                selectedItems: model.selectedRelationshipGoals,
                                 getText: (p0) => p0.title ?? '',
                                 onTap: model.onRelationshipGoalTap,
                               )

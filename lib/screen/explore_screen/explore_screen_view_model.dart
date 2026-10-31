@@ -47,13 +47,19 @@ class ExploreScreenViewModel extends BaseViewModel {
   bool hasMoreToFetch = true;
 
   void onCardsEnd() {
-    isCardsFinished = true;
-    notifyListeners();
+    if (!isCardsFinished) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        isCardsFinished = true;
+        notifyListeners();
+      });
+    }
   }
 
   void refreshProfiles() {
     isCardsFinished = false;
     currentCombinedIndex = 0;
+    hasMoreToFetch = true;
+    _isFetchingMore = false;
     combinedList.clear();
     disposePageControllers();
     cardController = CardSwiperController();
@@ -145,10 +151,16 @@ class ExploreScreenViewModel extends BaseViewModel {
       }
       isLoading = false;
       _isFetchingMore = false;
+      if (combinedList.isEmpty) {
+        isCardsFinished = true;
+      }
       notifyListeners();
     }).catchError((_) {
       isLoading = false;
       _isFetchingMore = false;
+      if (combinedList.isEmpty) {
+        isCardsFinished = true;
+      }
       notifyListeners();
     });
   }
@@ -347,8 +359,13 @@ class ExploreScreenViewModel extends BaseViewModel {
       return false;
     }
 
+    if (currentIndex == null || currentIndex >= combinedList.length) {
+      onCardsEnd();
+      return true;
+    }
+
     // Update the profile index and count, but avoid unnecessary UI refresh
-    int newProfileIndex = currentIndex ?? 0;
+    int newProfileIndex = currentIndex;
 
     if (currentCombinedIndex != newProfileIndex) {
       currentCombinedIndex = newProfileIndex;

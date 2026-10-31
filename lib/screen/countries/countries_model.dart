@@ -37,16 +37,18 @@ class CountryState {
 
 class City {
   String name;
+  String countryCode;
   String stateCode;
 
   City({
     required this.name,
+    this.countryCode = '',
     required this.stateCode,
   });
 
   @override
   String toString() {
-    return 'City(name: $name, stateCode: $stateCode)';
+    return 'City(name: $name, countryCode: $countryCode, stateCode: $stateCode)';
   }
 }
 
@@ -86,10 +88,21 @@ Future<List<CountryState>> parseStates({required String filePath}) {
 Future<List<City>> parseCities({required String filePath}) async {
   return await parseCsv(
     filePath,
-    (row) => City(
-      name: row[0],
-      stateCode: row[1] is int ? '${row[1]}' : row[1],
-    ),
+    (row) {
+      if (row.length >= 3) {
+        return City(
+          name: '${row[0]}',
+          countryCode: '${row[1]}',
+          stateCode: row[2] is int ? '${row[2]}' : '${row[2]}',
+        );
+      } else {
+        return City(
+          name: '${row[0]}',
+          countryCode: '',
+          stateCode: row[1] is int ? '${row[1]}' : '${row[1]}',
+        );
+      }
+    },
   );
 }
 
@@ -97,6 +110,19 @@ Future<List<City>> parseCities({required String filePath}) async {
 List<CountryState> getStatesByCountryCode(
     List<CountryState> states, String countryCode) {
   return states.where((state) => state.countryCode == countryCode).toList();
+}
+
+List<City> getCitiesByStateAndCountry(
+    List<City> cities, String stateCode, {String? countryCode}) {
+  return cities.where((city) {
+    if (city.stateCode != stateCode) return false;
+    if (countryCode != null &&
+        countryCode.isNotEmpty &&
+        city.countryCode.isNotEmpty) {
+      return city.countryCode.toUpperCase() == countryCode.toUpperCase();
+    }
+    return true;
+  }).toList();
 }
 
 List<City> getCitiesByStateCode(List<City> cities, String stateCode) {

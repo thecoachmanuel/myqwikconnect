@@ -48,7 +48,15 @@ class SelectCountryController extends GetxController {
     if (allCities.isEmpty) {
       allCities = await parseCities(filePath: AssetRes.cities);
     }
-    selectedCitiesFromState = getCitiesByStateCode(allCities, state.stateCode);
+    // Filter by both countryCode and stateCode so cities are accurate to the selected country & state
+    selectedCitiesFromState = getCitiesByStateAndCountry(
+      allCities,
+      state.stateCode,
+      countryCode: state.countryCode,
+    );
+    if (selectedCitiesFromState.isEmpty) {
+      selectedCitiesFromState = getCitiesByStateCode(allCities, state.stateCode);
+    }
     filteredCities.value = selectedCitiesFromState;
     selectedCity.value = null;
   }

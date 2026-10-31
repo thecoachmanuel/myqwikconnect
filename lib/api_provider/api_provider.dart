@@ -147,7 +147,7 @@ class ApiProvider {
     String? age,
     String? dob,
     double? distancePreference,
-    int? relationshipGoalId,
+    dynamic relationshipGoalId,
     String? religionKey,
     String? languageKeys,
     List<XFile>? images,
@@ -190,7 +190,11 @@ class ApiProvider {
       request.fields[Urls.distancePreference] = '${distancePreference.toInt()}';
     }
     if (relationshipGoalId != null) {
-      request.fields[Urls.relationshipGoalId] = '$relationshipGoalId';
+      if (relationshipGoalId is List) {
+        request.fields[Urls.relationshipGoalId] = relationshipGoalId.join(',');
+      } else {
+        request.fields[Urls.relationshipGoalId] = '$relationshipGoalId';
+      }
     }
     if (religionKey != null) {
       request.fields[Urls.religionKey] = religionKey;

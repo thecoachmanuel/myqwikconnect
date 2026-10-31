@@ -38,7 +38,7 @@ class FullImageView extends StatelessWidget {
                 onEnd: model.onCardsEnd,
                 onUndo: model.onUndo,
                 onSwipe: (prevIndex, currentIndex, direction) {
-                  if (currentIndex == null) {
+                  if (currentIndex == null || currentIndex >= model.combinedList.length) {
                     model.onCardsEnd();
                     return true;
                   }

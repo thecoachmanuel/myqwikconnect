@@ -10,7 +10,7 @@ class ConstRes {
   static const String apiKey = '123';
 
   ///------------------------ Agora app Id ------------------------///
-  static const String agoraAppId = ""; // Agora app id
+  static const String agoraAppId = "b07fffcaca5c4c67a4f00bd2924d7c52"; // Agora app id
   static const String customerId = ""; // Agora customer id
   static const String customerSecret = ""; // Agora customer secret
 

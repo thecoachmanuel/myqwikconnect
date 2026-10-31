@@ -147,7 +147,7 @@ class OptionalScreenViewModel extends BaseViewModel {
     } catch (_) {}
     SessionManager.instance.clearSomeKey();
     SessionManager.instance.setBool(key: SessionKeys.isLogin, value: false);
-    CommonUI.snackBarWidget(S.current.logout);
+    CommonUI.snackBarWidget(S.current.logOut);
     Get.offAll(() => const AuthScreen());
   }
 

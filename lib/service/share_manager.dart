@@ -1,8 +1,11 @@
 import 'dart:convert';
 
 import 'package:app_links/app_links.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:orange_ui/common/common_ui.dart';
 import 'package:orange_ui/service/logger.dart';
 import 'package:orange_ui/utils/const_res.dart';
 import 'package:share_plus/share_plus.dart';
@@ -48,16 +51,33 @@ class ShareManager {
     }
   }
 
-  void shareTheContent({required ShareKeys key, required int value}) {
+  void shareTheContent({required ShareKeys key, required int value}) async {
     final encoded = safeBase64Encode('${key.value}_$value');
     final url = '${ConstRes.base}s/$encoded';
-    final context = Get.context!;
 
-    final box = context.findRenderObject() as RenderBox?;
-    final origin = box!.localToGlobal(Offset.zero) & box.size;
+    if (kIsWeb) {
+      try {
+        await Clipboard.setData(ClipboardData(text: url));
+        CommonUI.snackBarWidget('Link copied to clipboard!');
+      } catch (_) {}
+    }
 
-    // Share.share("$url", sharePositionOrigin: box!.localToGlobal(Offset.zero) & box.size);
-    SharePlus.instance.share(ShareParams(uri: Uri.parse(url), sharePositionOrigin: origin));
+    try {
+      final context = Get.context;
+      final box = context?.findRenderObject() as RenderBox?;
+      final origin = box != null ? (box.localToGlobal(Offset.zero) & box.size) : Rect.zero;
+
+      await SharePlus.instance.share(ShareParams(
+        uri: Uri.parse(url),
+        subject: 'Orange',
+        sharePositionOrigin: origin,
+      ));
+    } catch (e) {
+      try {
+        await Clipboard.setData(ClipboardData(text: url));
+        CommonUI.snackBarWidget('Link copied to clipboard: $url');
+      } catch (_) {}
+    }
   }
 
   String getLink({required ShareKeys key, required int value}) {

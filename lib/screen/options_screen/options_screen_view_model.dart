@@ -131,17 +131,24 @@ class OptionalScreenViewModel extends BaseViewModel {
   }
 
   Future<void> onLogOutYesBtnClick() async {
-    if (userData?.loginType == 1) {
-      await googleSignOut();
+    Get.back();
+    try {
+      if (userData?.loginType == 1) {
+        await googleSignOut();
+      }
+      if (userData?.loginType == 4) {
+        await FirebaseAuth.instance.signOut();
+      }
+    } catch (e) {
+      log("Sign out error: $e");
     }
-    if (userData?.loginType == 4) {
-      await FirebaseAuth.instance.signOut();
-    }
-    ApiProvider().logoutUser().then((value) {
-      SessionManager.instance.setBool(key: SessionKeys.isLogin, value: false);
-      CommonUI.snackBarWidget('${value.message}');
-      Get.offAll(() => const AuthScreen());
-    });
+    try {
+      await ApiProvider().logoutUser();
+    } catch (_) {}
+    SessionManager.instance.clearSomeKey();
+    SessionManager.instance.setBool(key: SessionKeys.isLogin, value: false);
+    CommonUI.snackBarWidget(S.current.logout);
+    Get.offAll(() => const AuthScreen());
   }
 
   void onLogoutTap() async {
@@ -155,23 +162,39 @@ class OptionalScreenViewModel extends BaseViewModel {
   }
 
   Future googleSignOut() async {
-    await GoogleSignIn.instance.signOut();
-    await FirebaseAuth.instance.signOut();
+    try {
+      await GoogleSignIn.instance.signOut();
+    } catch (_) {}
+    try {
+      await FirebaseAuth.instance.signOut();
+    } catch (_) {}
   }
 
   void onDeleteYesBtnClick() async {
     Get.back();
     CommonUI.lottieLoader();
-    ApiProvider().deleteAccount(userData?.id).then((value) async {
-      if (value.status == true) {
-        await deleteFirebaseUser();
-        CommonUI.snackBarWidget(value.message ?? '');
-        SessionManager.instance.setBool(key: SessionKeys.isLogin, value: false);
-        deleteCurrentUser();
-        Get.offAll(() => const AuthScreen());
-      }
-      notifyListeners();
-    });
+    try {
+      await ApiProvider().deleteAccount(userData?.id);
+    } catch (e) {
+      log("Backend deleteAccount error: $e");
+    }
+    try {
+      await deleteFirebaseUser();
+    } catch (e) {
+      log("Firebase user delete error: $e");
+    }
+    try {
+      await deleteCurrentUser();
+    } catch (e) {
+      log("deleteCurrentUser error: $e");
+    }
+    SessionManager.instance.clearSomeKey();
+    SessionManager.instance.setBool(key: SessionKeys.isLogin, value: false);
+    if (Get.isDialogOpen == true) {
+      Get.back();
+    }
+    CommonUI.snackBarWidget(S.current.deleteAccount);
+    Get.offAll(() => const AuthScreen());
   }
 
   Future<void> deleteCurrentUser() async {

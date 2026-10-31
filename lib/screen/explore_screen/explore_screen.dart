@@ -20,7 +20,8 @@ class ExploreScreen extends StatelessWidget {
           spacing: 20,
           children: [
             FullImageView(model: model),
-            if (model.combinedList.isNotEmpty && !model.isCardsFinished) BottomButtons(model: model),
+            if (model.combinedList.isNotEmpty && !model.isCardsFinished)
+              BottomButtons(model: model),
           ],
         );
       },

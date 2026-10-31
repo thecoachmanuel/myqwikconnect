@@ -68,7 +68,7 @@ class SearchScreenViewModel extends BaseViewModel {
       );
       if (response.data != null) {
         for (var element in response.data!) {
-          if (!searchUsers.any((user) => user.id == element.id)) {
+          if (element.id != myUserData?.id && !searchUsers.any((user) => user.id == element.id)) {
             searchUsers.add(element);
           }
         }
@@ -93,7 +93,7 @@ class SearchScreenViewModel extends BaseViewModel {
         List<String> list =
             searchUsers.map((e) => e.id?.toString() ?? '').toList();
         value.data?.forEach((element) {
-          if (!list.contains(element.id?.toString())) {
+          if (element.id != myUserData?.id && !list.contains(element.id?.toString())) {
             searchUsers.add(element);
           }
         });

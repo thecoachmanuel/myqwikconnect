@@ -19,7 +19,9 @@ class VideoPost extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final thumbnail = (post?.content ?? []).isNotEmpty ? (post?.content ?? []).first.thumbnail : null;
+    final thumbnail = (post?.content ?? []).isNotEmpty
+        ? (post?.content ?? []).first.thumbnail
+        : null;
 
     return InkWell(
       onTap: () {
@@ -47,24 +49,33 @@ class VideoPost extends StatelessWidget {
                 height: 53,
                 width: 53,
                 decoration: BoxDecoration(
-                    color: ColorRes.black.withValues(alpha: 0.4), shape: BoxShape.circle),
+                    color: ColorRes.black.withValues(alpha: 0.4),
+                    shape: BoxShape.circle),
                 padding: const EdgeInsets.all(15),
-                child: Image.asset(AssetRes.icPlay, alignment: Alignment.centerRight)),
+                child: Image.asset(AssetRes.icPlay,
+                    alignment: Alignment.centerRight)),
             Positioned(
               bottom: 0,
               left: 0,
               child: FittedBox(
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                   margin: const EdgeInsets.all(15),
-                  decoration: BoxDecoration(borderRadius: BorderRadius.circular(30), color: ColorRes.white),
+                  decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(30),
+                      color: ColorRes.white),
                   child: Row(
                     children: [
                       Image.asset(AssetRes.icEye, width: 15, height: 15),
                       const SizedBox(width: 10),
                       Text(
-                        NumberFormat.compact().format((post?.content ?? []).first.viewCount ?? 0),
-                        style: const TextStyle(fontFamily: FontRes.medium, color: ColorRes.davyGrey, fontSize: 12),
+                        NumberFormat.compact()
+                            .format((post?.content ?? []).first.viewCount ?? 0),
+                        style: const TextStyle(
+                            fontFamily: FontRes.medium,
+                            color: ColorRes.davyGrey,
+                            fontSize: 12),
                       )
                     ],
                   ),

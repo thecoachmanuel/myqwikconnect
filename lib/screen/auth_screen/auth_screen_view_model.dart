@@ -50,7 +50,8 @@ class AuthScreenViewModel extends BaseViewModel {
       Future.delayed(
         const Duration(milliseconds: 250),
         () {
-          Get.bottomSheet(const EulaSheet(), isScrollControlled: true, enableDrag: false);
+          Get.bottomSheet(const EulaSheet(),
+              isScrollControlled: true, enableDrag: false);
         },
       );
     }
@@ -76,20 +77,24 @@ class AuthScreenViewModel extends BaseViewModel {
     registration(
       email: credential?.user?.email ?? '',
       loginType: LoginType.google.value,
-      fullName: credential?.user?.displayName ?? credential?.user?.email?.split('@')[0] ?? 'Unknown',
+      fullName: credential?.user?.displayName ??
+          credential?.user?.email?.split('@')[0] ??
+          'Unknown',
     );
   }
 
   Future<UserCredential> signInWithGoogle() async {
     signIn.initialize();
     // Trigger the authentication flow
-    final GoogleSignInAccount googleUser = await signIn.authenticate(scopeHint: ['email']);
+    final GoogleSignInAccount googleUser =
+        await signIn.authenticate(scopeHint: ['email']);
 
     // Obtain the auth details from the request
     final GoogleSignInAuthentication googleAuth = googleUser.authentication;
 
     // Create a new credential
-    final credential = GoogleAuthProvider.credential(idToken: googleAuth.idToken);
+    final credential =
+        GoogleAuthProvider.credential(idToken: googleAuth.idToken);
 
     // Once signed in, return the UserCredential
     return await FirebaseAuth.instance.signInWithCredential(credential);
@@ -104,22 +109,30 @@ class AuthScreenViewModel extends BaseViewModel {
     FirebaseNotificationManager.shared.getNotificationToken(
       (token) {
         ApiProvider()
-            .registration(email: email, fullName: fullName, deviceToken: token, loginType: loginType)
+            .registration(
+                email: email,
+                fullName: fullName,
+                deviceToken: token,
+                loginType: loginType)
             .then((value) {
           if (value.status == true) {
             Get.back();
             if (isRegistration) {
               onCompletion?.call(value.data);
             } else {
-              SessionManager.instance.setBool(key: SessionKeys.isLogin, value: true);
+              SessionManager.instance
+                  .setBool(key: SessionKeys.isLogin, value: true);
               navigateScreen(userData: value.data);
             }
             notifyListeners();
 
-            ApiProvider().updateProfile(appLanguage: value.data?.appLanguage).then((value) {
+            ApiProvider()
+                .updateProfile(appLanguage: value.data?.appLanguage)
+                .then((value) {
               RestartWidget.restartApp(Get.context!);
               SessionManager.instance.setString(
-                  key: SessionKeys.languageCode, value: value.data?.appLanguage ?? AppPlatform.languageCode);
+                  key: SessionKeys.languageCode,
+                  value: value.data?.appLanguage ?? AppPlatform.languageCode);
             });
           }
         });
@@ -164,7 +177,8 @@ class AuthScreenViewModel extends BaseViewModel {
       gender: GenderType.male,
       dob: '1998-05-15',
       bio: 'Orange test profile. Ready to connect and explore.',
-      about: 'Passionate about photography, travel, music and great conversations.',
+      about:
+          'Passionate about photography, travel, music and great conversations.',
       country: 'United States',
       state: 'California',
       city: 'San Francisco',
@@ -196,10 +210,13 @@ class AuthScreenViewModel extends BaseViewModel {
 
   void fakeLoginUser({required String email, required String password}) {
     FirebaseNotificationManager.shared.getNotificationToken((token) {
-      ApiProvider().fakeUserLogin(email: email, password: password, deviceToken: token).then((value) {
+      ApiProvider()
+          .fakeUserLogin(email: email, password: password, deviceToken: token)
+          .then((value) {
         Get.back();
         if (value.status == true) {
-          SessionManager.instance.setBool(key: SessionKeys.isLogin, value: true);
+          SessionManager.instance
+              .setBool(key: SessionKeys.isLogin, value: true);
           navigateScreen(userData: value.data);
         } else {
           CommonUI.snackBarWidget(value.message);
@@ -222,19 +239,25 @@ class AuthScreenViewModel extends BaseViewModel {
     registration(
       email: credential?.user?.email ?? '',
       loginType: LoginType.apple.value,
-      fullName: credential?.user?.displayName ?? credential?.user?.email?.split('@')[0] ?? 'Unknown',
+      fullName: credential?.user?.displayName ??
+          credential?.user?.email?.split('@')[0] ??
+          'Unknown',
     );
   }
 
   Future<UserCredential> signInWithApple() async {
     // Request credential for the currently signed in Apple account.
     final appleCredential = await SignInWithApple.getAppleIDCredential(
-      scopes: [AppleIDAuthorizationScopes.email, AppleIDAuthorizationScopes.fullName],
+      scopes: [
+        AppleIDAuthorizationScopes.email,
+        AppleIDAuthorizationScopes.fullName
+      ],
     );
 
     // Create an `OAuthCredential` from the credential returned by Apple.
-    final oauthCredential = OAuthProvider("apple.com")
-        .credential(idToken: appleCredential.identityToken, accessToken: appleCredential.authorizationCode);
+    final oauthCredential = OAuthProvider("apple.com").credential(
+        idToken: appleCredential.identityToken,
+        accessToken: appleCredential.authorizationCode);
 
     return await FirebaseAuth.instance.signInWithCredential(oauthCredential);
   }
@@ -300,11 +323,17 @@ class AuthScreenViewModel extends BaseViewModel {
 
 // Helper functions for clarity
   bool _isBasicProfileIncomplete(UserData user) {
-    return user.fullname == null || user.bio == null || user.country == null || user.state == null || user.city == null;
+    return user.fullname == null ||
+        user.bio == null ||
+        user.country == null ||
+        user.state == null ||
+        user.city == null;
   }
 
   bool _isMatchPreferenceIncomplete(UserData user) {
-    return user.agePreferredMin == null || user.agePreferredMax == null || user.distancePreference == null;
+    return user.agePreferredMin == null ||
+        user.agePreferredMax == null ||
+        user.distancePreference == null;
   }
 
   Future<void> onContinueTap() async {
@@ -323,7 +352,8 @@ class AuthScreenViewModel extends BaseViewModel {
       if (confirmPasswordController.text.trim().isEmpty) {
         return CommonUI.snackBar(message: S.current.enterConfirmPassword);
       }
-      if (passwordController.text.trim() != confirmPasswordController.text.trim()) {
+      if (passwordController.text.trim() !=
+          confirmPasswordController.text.trim()) {
         return CommonUI.snackBar(message: S.current.passwordMismatch);
       }
     }
@@ -344,7 +374,9 @@ class AuthScreenViewModel extends BaseViewModel {
         return;
       }
       if (!GetUtils.isEmail(emailController.text.trim())) {
-        fakeLoginUser(email: emailController.text.trim(), password: passwordController.text.trim());
+        fakeLoginUser(
+            email: emailController.text.trim(),
+            password: passwordController.text.trim());
         return;
       }
       userCredential = await signInWithEmailAndPassword();
@@ -352,11 +384,13 @@ class AuthScreenViewModel extends BaseViewModel {
       userCredential = await createUserWithEmailAndPassword();
     }
     if (userCredential == null) return;
-    SessionManager.instance.setString(key: SessionKeys.password, value: passwordController.text.trim());
+    SessionManager.instance.setString(
+        key: SessionKeys.password, value: passwordController.text.trim());
     if (pageIndex == 0) {
       if (userCredential.user?.emailVerified == false) {
         Get.back();
-        return CommonUI.snackBar(message: S.current.pleaseVerifyYourEmailFromYourInbox);
+        return CommonUI.snackBar(
+            message: S.current.pleaseVerifyYourEmailFromYourInbox);
       }
     }
     registration(
@@ -366,24 +400,31 @@ class AuthScreenViewModel extends BaseViewModel {
         isRegistration: pageIndex == 1 ? true : false,
         onCompletion: (userData) {
           pageIndex = 0;
-          pageController.animateToPage(pageIndex, duration: const Duration(milliseconds: 250), curve: Curves.linear);
-          userCredential?.user?.updateDisplayName(fullNameController.text.trim());
+          pageController.animateToPage(pageIndex,
+              duration: const Duration(milliseconds: 250),
+              curve: Curves.linear);
+          userCredential?.user
+              ?.updateDisplayName(fullNameController.text.trim());
           userCredential?.user?.sendEmailVerification();
-          CommonUI.snackBar(message: S.current.aVerificationLinkHasBeenSentToYourEmailPlease);
+          CommonUI.snackBar(
+              message: S.current.aVerificationLinkHasBeenSentToYourEmailPlease);
         });
   }
 
   Future<UserCredential?> signInWithEmailAndPassword() async {
     try {
-      final credential = await FirebaseAuth.instance
-          .signInWithEmailAndPassword(email: emailController.text.trim(), password: passwordController.text.trim());
+      final credential = await FirebaseAuth.instance.signInWithEmailAndPassword(
+          email: emailController.text.trim(),
+          password: passwordController.text.trim());
       return credential;
     } on FirebaseAuthException catch (e) {
       Get.back();
       if (e.code == 'user-not-found') {
-        CommonUI.snackBar(message: S.current.noUserFoundWithThatEmailPleaseRegisterWithThis);
+        CommonUI.snackBar(
+            message: S.current.noUserFoundWithThatEmailPleaseRegisterWithThis);
       } else if (e.code == 'wrong-password') {
-        CommonUI.snackBar(message: S.current.incorrectPasswordProvidedForThisUser);
+        CommonUI.snackBar(
+            message: S.current.incorrectPasswordProvidedForThisUser);
       }
       return null;
     } catch (e) {
@@ -394,7 +435,9 @@ class AuthScreenViewModel extends BaseViewModel {
   Future<UserCredential?> createUserWithEmailAndPassword() async {
     try {
       final credential = await FirebaseAuth.instance
-          .createUserWithEmailAndPassword(email: emailController.text.trim(), password: passwordController.text.trim());
+          .createUserWithEmailAndPassword(
+              email: emailController.text.trim(),
+              password: passwordController.text.trim());
       return credential;
     } on FirebaseAuthException catch (e) {
       Get.back();
@@ -402,7 +445,8 @@ class AuthScreenViewModel extends BaseViewModel {
       if (e.code == 'weak-password') {
         CommonUI.snackBar(message: S.current.thePasswordProvidedIsTooWeak);
       } else if (e.code == 'email-already-in-use') {
-        CommonUI.snackBar(message: S.current.theAccountAlreadyExistsForThatEmail);
+        CommonUI.snackBar(
+            message: S.current.theAccountAlreadyExistsForThatEmail);
       } else {
         CommonUI.snackBar(message: e.message.toString());
       }
@@ -420,13 +464,16 @@ class AuthScreenViewModel extends BaseViewModel {
     }
     CommonUI.lottieLoader();
     try {
-      await FirebaseAuth.instance.sendPasswordResetEmail(email: emailController.text.trim());
+      await FirebaseAuth.instance
+          .sendPasswordResetEmail(email: emailController.text.trim());
       Get.back();
       Get.back();
-      CommonUI.snackBar(message: S.current.aResetPasswordLinkHasBeenSentToYourEmail);
+      CommonUI.snackBar(
+          message: S.current.aResetPasswordLinkHasBeenSentToYourEmail);
     } on FirebaseAuthException catch (e) {
       Get.back();
-      CommonUI.snackBar(message: e.message ?? "An error occurred. Please try again.");
+      CommonUI.snackBar(
+          message: e.message ?? "An error occurred. Please try again.");
     }
   }
 }

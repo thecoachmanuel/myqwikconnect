@@ -154,7 +154,9 @@ class ChatScreenViewModel extends BaseViewModel {
 
   Future<void> minusCoinApi(Function onCompletion) async {
     onCompletion.call();
-    ApiProvider().minusCoinFromWallet(settingAppData?.messagePrice).then((minusCoinFromWallet) {
+    ApiProvider()
+        .minusCoinFromWallet(settingAppData?.messagePrice)
+        .then((minusCoinFromWallet) {
       if (minusCoinFromWallet.status == true) {
         int wallet = (minusCoinFromWallet.wallet ?? 0).toInt();
         registrationUserData?.wallet = wallet;
@@ -363,8 +365,11 @@ class ChatScreenViewModel extends BaseViewModel {
     _addOptimisticMessage(optimisticMsg);
 
     // Always send free for fake users or subscribed users or free message
-    if (registrationUserData?.isFake == 1 || isSubscribe.value || messagePrice <= 0) {
-      firebaseMsgUpdate(msgType: FirebaseRes.msg, textMessage: textMessage, customTime: time);
+    if (registrationUserData?.isFake == 1 ||
+        isSubscribe.value ||
+        messagePrice <= 0) {
+      firebaseMsgUpdate(
+          msgType: FirebaseRes.msg, textMessage: textMessage, customTime: time);
       return;
     }
 
@@ -372,22 +377,27 @@ class ChatScreenViewModel extends BaseViewModel {
     if ((registrationUserData?.wallet ?? 0) >= messagePrice) {
       if (isAutoPayEnable) {
         minusCoinApi(() {
-          firebaseMsgUpdate(msgType: FirebaseRes.msg, textMessage: textMessage, customTime: time);
+          firebaseMsgUpdate(
+              msgType: FirebaseRes.msg,
+              textMessage: textMessage,
+              customTime: time);
         });
       } else {
-        getChatMsgDialog(
-            onContinueTap: (isSelected) {
-              isAutoPayEnable = isSelected;
-              SessionManager.instance.setBool(key: SessionKeys.isMessageDialog, value: isSelected);
-              minusCoinApi(() {
-                Get.back();
-                firebaseMsgUpdate(msgType: FirebaseRes.msg, textMessage: textMessage, customTime: time);
-              });
-            },
-            onCancelTap: () {
-              chatData.removeWhere((m) => m.time == time.toDouble());
-              notifyListeners();
-            });
+        getChatMsgDialog(onContinueTap: (isSelected) {
+          isAutoPayEnable = isSelected;
+          SessionManager.instance
+              .setBool(key: SessionKeys.isMessageDialog, value: isSelected);
+          minusCoinApi(() {
+            Get.back();
+            firebaseMsgUpdate(
+                msgType: FirebaseRes.msg,
+                textMessage: textMessage,
+                customTime: time);
+          });
+        }, onCancelTap: () {
+          chatData.removeWhere((m) => m.time == time.toDouble());
+          notifyListeners();
+        });
       }
     } else {
       chatData.removeWhere((m) => m.time == time.toDouble());
@@ -491,7 +501,8 @@ class ChatScreenViewModel extends BaseViewModel {
           CommonUI.lottieLoader();
           isAutoPayEnable
               ? minusCoinApi(() async {
-                  final response = await ApiProvider().getStoreFileGivePath(image: imageFile);
+                  final response = await ApiProvider()
+                      .getStoreFileGivePath(image: imageFile);
                   Get.back(); // close loader
                   if (response.status == true) {
                     Get.back(); // close sheet
@@ -509,7 +520,8 @@ class ChatScreenViewModel extends BaseViewModel {
                     isSelected,
                     type,
                     () async {
-                      final response = await ApiProvider().getStoreFileGivePath(image: imageFile);
+                      final response = await ApiProvider()
+                          .getStoreFileGivePath(image: imageFile);
                       Get.back(); // close loader
                       if (response.status == true) {
                         Get.back(); // close sheet
@@ -779,10 +791,12 @@ class ChatScreenViewModel extends BaseViewModel {
       time: time.toDouble(),
       user: receiverUser,
     ).toJson();
-    final receiverFuture = documentReceiver.set(receiverCon, SetOptions(merge: true));
+    final receiverFuture =
+        documentReceiver.set(receiverCon, SetOptions(merge: true));
 
     // Run all Firestore updates concurrently
-    await Future.wait([msgSetFuture, senderFuture, receiverFuture]).catchError((err) {
+    await Future.wait([msgSetFuture, senderFuture, receiverFuture])
+        .catchError((err) {
       Get.log('Error writing chat to firestore: $err');
       return <void>[];
     });
@@ -817,7 +831,8 @@ class ChatScreenViewModel extends BaseViewModel {
   }
 
   void getChatMsgDialog(
-      {required Function(bool isSelected) onContinueTap, required Function onCancelTap}) {
+      {required Function(bool isSelected) onContinueTap,
+      required Function onCancelTap}) {
     Get.dialog(
       ReverseSwipeDialog(
           onContinueTap: onContinueTap,

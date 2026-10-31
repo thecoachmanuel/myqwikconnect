@@ -52,7 +52,8 @@ class FeedScreenViewModel extends BaseViewModel {
           } else {
             postList.addAll(feed.data?.posts ?? []);
           }
-          headerStories = feed.data?.usersStories ?? [];
+          final rawStories = feed.data?.usersStories ?? [];
+          headerStories = rawStories.where((u) => (u.story?.length ?? 0) > 0).toList();
           headerStories.sort((a, b) {
             if (a.isAllStoryShown()) {
               return 1;
@@ -72,7 +73,8 @@ class FeedScreenViewModel extends BaseViewModel {
     ApiProvider().callPost(
         completion: (response) {
           FetchStories fetchStories = FetchStories.fromJson(response);
-          headerStories = fetchStories.data ?? [];
+          final rawStories = fetchStories.data ?? [];
+          headerStories = rawStories.where((u) => (u.story?.length ?? 0) > 0).toList();
           headerStories.sort((a, b) {
             if (a.isAllStoryShown()) {
               return 1;

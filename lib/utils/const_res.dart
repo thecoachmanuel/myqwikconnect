@@ -3,7 +3,7 @@ class ConstRes {
 
   static const String base = String.fromEnvironment(
     'BACKEND_URL',
-    defaultValue: 'http://localhost:3000/',
+    defaultValue: 'https://myqwikconnectadmin.vercel.app/',
   ); // Base url (can be overridden at build time via --dart-define=BACKEND_URL=...)
   static const String aBaseUrl = '${base}api/';
   static const String aImageBaseUrl = '${base}public/storage/';

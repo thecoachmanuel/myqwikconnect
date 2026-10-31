@@ -4,9 +4,8 @@
   "private": true,
   "description": "Orange Dating & Livestream Flutter Web App",
   "scripts": {
-    "build": "bash vercel-build.sh",
+    "build": "node -e \"console.log('Using pre-built Flutter Web bundle in build/web')\"",
     "build:local": "flutter build web --release",
     "deploy:prebuilt": "vercel deploy build/web --prod"
   }
 }
-

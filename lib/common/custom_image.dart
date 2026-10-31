@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:figma_squircle/figma_squircle.dart';
 import 'package:flutter/foundation.dart';
@@ -38,6 +40,29 @@ class CustomImage extends StatelessWidget {
               name: CommonUI.fullName(fullname),
               heightWidth: effectiveHeight,
               borderRadius: radius);
+        }
+
+        if (validUrl.startsWith('data:image')) {
+          try {
+            final base64String = validUrl.split(',').last;
+            final bytes = base64Decode(base64String);
+            return ClipSmoothRect(
+              radius: SmoothBorderRadius(
+                  cornerRadius: radius ?? 0, cornerSmoothing: 1),
+              child: Image.memory(
+                bytes,
+                height: height,
+                width: width,
+                fit: effectiveFit,
+                errorBuilder: (context, error, stackTrace) {
+                  return CommonUI.profileImagePlaceHolder(
+                      name: CommonUI.fullName(fullname),
+                      heightWidth: effectiveHeight,
+                      borderRadius: radius);
+                },
+              ),
+            );
+          } catch (_) {}
         }
 
         if (kIsWeb) {

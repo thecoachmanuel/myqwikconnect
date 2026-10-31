@@ -1,19 +1,18 @@
 import 'dart:ui';
 
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:figma_squircle/figma_squircle.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:orange_ui/common/common_ui.dart';
+import 'package:orange_ui/common/custom_image.dart';
 import 'package:orange_ui/common/live_icon.dart';
 import 'package:orange_ui/generated/l10n.dart';
 import 'package:orange_ui/model/user/registration_user.dart';
 import 'package:orange_ui/screen/user_detail_screen/user_detail_screen_view_model.dart';
 import 'package:orange_ui/screen/user_detail_screen/widgets/hide_more_info_button.dart';
+import 'package:orange_ui/service/extention/string_extention.dart';
 import 'package:orange_ui/service/session_manager.dart';
 import 'package:orange_ui/utils/asset_res.dart';
 import 'package:orange_ui/utils/color_res.dart';
-import 'package:orange_ui/utils/const_res.dart';
 import 'package:orange_ui/utils/font_res.dart';
 import 'package:orange_ui/utils/style_res.dart';
 
@@ -247,19 +246,13 @@ class _ImageList extends StatelessWidget {
                                   .withValues(alpha: isSelected ? 0.80 : 0.2),
                               width: 2)),
                     ),
-                    child: ClipSmoothRect(
-                      radius: SmoothBorderRadius(
-                          cornerRadius: 8, cornerSmoothing: 1),
-                      child: CachedNetworkImage(
-                        height: 60,
-                        width: 60,
-                        imageUrl: '${ConstRes.aImageBaseUrl}${image.image}',
-                        cacheKey: '${ConstRes.aImageBaseUrl}${image.image}',
-                        fit: BoxFit.cover,
-                        errorWidget: (context, url, error) =>
-                            CommonUI.profileImagePlaceHolder(
-                                name: CommonUI.fullName(userData?.fullname)),
-                      ),
+                    child: CustomImage(
+                      image: image.image?.addBaseURL(),
+                      height: 60,
+                      width: 60,
+                      fit: BoxFit.cover,
+                      fullname: userData?.fullname,
+                      radius: 8,
                     ),
                   ),
                 );

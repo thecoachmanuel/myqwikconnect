@@ -16,9 +16,10 @@ class LikeProfilesScreenViewModel extends BaseViewModel {
 
   void fetchLikedProfiles() async {
     isLoading = true;
+    notifyListeners();
     ApiProvider().fetchLikedProfiles().then((value) {
       isLoading = false;
-      likeUsers.addAll(value.data ?? []);
+      likeUsers = value.data ?? [];
       notifyListeners();
     });
   }

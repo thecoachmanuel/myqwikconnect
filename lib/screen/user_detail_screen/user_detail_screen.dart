@@ -59,9 +59,15 @@ class _UserDetailScreenState extends State<UserDetailScreen>
           resizeToAvoidBottomInset: false,
           body: Stack(
             children: [
-              if (images.isNotEmpty)
+              if (images.isNotEmpty && model.selectedImgIndex < images.length)
                 CustomImage(
                   image: images[model.selectedImgIndex].image?.addBaseURL(),
+                  height: double.infinity,
+                  width: double.infinity,
+                )
+              else if (model.otherUserData?.profileImage.isNotEmpty == true)
+                CustomImage(
+                  image: model.otherUserData?.profileImage,
                   height: double.infinity,
                   width: double.infinity,
                 ),

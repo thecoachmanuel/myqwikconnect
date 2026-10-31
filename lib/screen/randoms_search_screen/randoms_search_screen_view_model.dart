@@ -27,7 +27,8 @@ class RandomsSearchScreenViewModel extends BaseViewModel {
 
   void getRandomApiCall() async {
     isLoading = true;
-    await Future.delayed(Duration(seconds: Random().nextInt(5)));
+    notifyListeners();
+    await Future.delayed(Duration(milliseconds: 600 + Random().nextInt(800)));
     ApiProvider()
         .getRandomProfile(
             gender: selectedGender == 1
@@ -39,6 +40,8 @@ class RandomsSearchScreenViewModel extends BaseViewModel {
       isLoading = false;
       if (value.status == true) {
         userData = value.data;
+      } else {
+        userData = null;
       }
       notifyListeners();
     });

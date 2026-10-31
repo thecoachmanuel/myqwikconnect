@@ -34,8 +34,11 @@ class TopBar extends StatelessWidget {
             children: [
               IconButton(
                 onPressed: model.onBackTap,
-                icon:
-                    const Icon(CupertinoIcons.back, color: ColorRes.themeColor),
+                icon: const Icon(
+                  Icons.arrow_back_ios_new_rounded,
+                  color: ColorRes.white,
+                  size: 20,
+                ),
               ),
               const SizedBox(width: 10),
               Flexible(

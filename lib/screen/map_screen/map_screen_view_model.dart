@@ -76,33 +76,44 @@ class MapScreenViewModel extends BaseViewModel {
   void onMapCreated(GoogleMapController controller) async {
     mapController = controller;
 
-    position = await getUserCurrentLocation();
-    double? lat = position?.latitude;
-    double? long = position?.longitude;
-    if (lat != null && long != null) {
-      getUserByCoordinatesApiCall(
-          latitude: lat, longitude: long, km: selectedDistance);
+    try {
+      position = await getUserCurrentLocation();
+    } catch (_) {}
 
-      center = LatLng(lat, long);
-      await controller.animateCamera(CameraUpdate.newCameraPosition(
-          CameraPosition(target: center, zoom: 15.09)));
-      mapController.animateCamera(CameraUpdate.newLatLng(center));
-    }
+    double lat = position?.latitude ??
+        (myUserData?.latitude != null ? double.tryParse(myUserData!.latitude!) : null) ??
+        center.latitude;
+    double long = position?.longitude ??
+        (myUserData?.longitude != null ? double.tryParse(myUserData!.longitude!) : null) ??
+        center.longitude;
+
+    center = LatLng(lat, long);
+    getUserByCoordinatesApiCall(
+        latitude: lat, longitude: long, km: selectedDistance);
+
+    await controller.animateCamera(CameraUpdate.newCameraPosition(
+        CameraPosition(target: center, zoom: 15.09)));
+    mapController.animateCamera(CameraUpdate.newLatLng(center));
   }
 
   void onDistanceChange(int value) async {
     CommonUI.lottieLoader();
-    position = await getUserCurrentLocation();
+    try {
+      position = await getUserCurrentLocation();
+    } catch (_) {}
     Get.back();
-    double? lat = position?.latitude;
-    double? long = position?.longitude;
-    if (lat != null && long != null) {
-      selectedDistance = value;
-      getUserByCoordinatesApiCall(
-          latitude: lat, longitude: long, km: selectedDistance);
-      mapController.animateCamera(CameraUpdate.newCameraPosition(CameraPosition(
-          target: LatLng(lat, long), zoom: getZoomLevel(value.toDouble()))));
-    }
+    double lat = position?.latitude ??
+        (myUserData?.latitude != null ? double.tryParse(myUserData!.latitude!) : null) ??
+        center.latitude;
+    double long = position?.longitude ??
+        (myUserData?.longitude != null ? double.tryParse(myUserData!.longitude!) : null) ??
+        center.longitude;
+
+    selectedDistance = value;
+    getUserByCoordinatesApiCall(
+        latitude: lat, longitude: long, km: selectedDistance);
+    mapController.animateCamera(CameraUpdate.newCameraPosition(CameraPosition(
+        target: LatLng(lat, long), zoom: getZoomLevel(value.toDouble()))));
   }
 
   Future<void> getUserByCoordinatesApiCall(
@@ -198,10 +209,17 @@ class MapScreenViewModel extends BaseViewModel {
     final img = await pictureRecorder.endRecording().toImage(size, size);
     final data = await img.toByteData(format: ImageByteFormat.png) as ByteData;
     if (size == 80) {
-      return await MarkerIcon.widgetToIcon(globalKey[
-          (places[0].userData?.images ?? []).isEmpty
-              ? places[0].userData?.fullname
-              : places[0].userData?.profileImage]!);
+      try {
+        final keyName = (places[0].userData?.images ?? []).isEmpty
+            ? places[0].userData?.fullname
+            : places[0].userData?.profileImage;
+        final key = globalKey[keyName];
+        if (key != null && key.currentContext != null) {
+          return await MarkerIcon.widgetToIcon(key);
+        }
+      } catch (e) {
+        debugPrint('widgetToIcon error: $e');
+      }
     }
     return BitmapDescriptor.bytes(data.buffer.asUint8List());
   }

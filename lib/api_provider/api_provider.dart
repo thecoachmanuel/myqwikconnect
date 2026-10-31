@@ -38,7 +38,7 @@ import 'package:orange_ui/utils/urls.dart';
 
 class ApiProvider {
   Map<String, String> headers = {Urls.apiKeyName: ConstRes.apiKey};
-  String myUserId = SessionManager.instance.getUserID().toString();
+  String get myUserId => SessionManager.instance.getUserID().toString();
 
   Future<UserModel> registration(
       {required String? email,
@@ -448,7 +448,21 @@ class ApiProvider {
 
   Future<UserModel> updateSaveProfile(int? profileId) async {
     var userData = SessionManager.instance.getUser();
-    String? savedProfile = userData?.savedProfile;
+    List<String> list = (userData?.savedProfile ?? '')
+        .split(',')
+        .map((e) => e.trim())
+        .where((e) => e.isNotEmpty)
+        .toList();
+
+    if (profileId != null) {
+      String idStr = profileId.toString();
+      if (list.contains(idStr)) {
+        list.remove(idStr);
+      } else {
+        list.add(idStr);
+      }
+    }
+    String updatedSavedProfiles = list.join(',');
 
     // Send the updated saved profiles to the server
     http.Response response = await http.post(
@@ -456,12 +470,18 @@ class ApiProvider {
       headers: {Urls.apiKeyName: ConstRes.apiKey},
       body: {
         Urls.userId: myUserId.toString(),
-        Urls.aProfiles: savedProfile,
+        Urls.aProfiles: updatedSavedProfiles,
       },
     );
 
     // Parse the response and return the result
     UserModel updateSavedProfile = UserModel.fromJson(jsonDecode(response.body));
+    if (updateSavedProfile.status == true && updateSavedProfile.data != null) {
+      SessionManager.instance.setUser(updateSavedProfile.data);
+    } else if (userData != null) {
+      userData.savedProfile = updatedSavedProfiles;
+      SessionManager.instance.setUser(userData);
+    }
 
     return updateSavedProfile;
   }

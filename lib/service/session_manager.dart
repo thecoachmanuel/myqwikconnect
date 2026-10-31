@@ -16,18 +16,19 @@ class SessionManager {
 
   void setUser(UserData? user) {
     if (user != null) {
-      UserData newUser = UserData.fromJson(user.toJson());
-      storage.write(SessionKeys.user, newUser.toJson());
+      storage.write(SessionKeys.user, user.toJson());
     }
   }
 
   UserData? getUser() {
     var user = storage.read(SessionKeys.user);
 
-    if (user == null || user is UserData?) {
+    if (user == null) {
+      return null;
+    } else if (user is UserData) {
       return user;
-    } else if (user is Map<String, dynamic>) {
-      return UserData.fromJson(user);
+    } else if (user is Map) {
+      return UserData.fromJson(Map<String, dynamic>.from(user));
     } else {
       return null;
     }
@@ -44,10 +45,12 @@ class SessionManager {
 
   SettingData? getSettings() {
     var data = storage.read(SessionKeys.setting);
-    if (data is Map<String, dynamic>) {
-      return SettingData.fromJson(data);
+    if (data == null) {
+      return null;
     } else if (data is SettingData) {
       return data;
+    } else if (data is Map) {
+      return SettingData.fromJson(Map<String, dynamic>.from(data));
     }
     return null;
   }
@@ -89,48 +92,50 @@ class SessionManager {
   }
 
   void updateFirebase() async {
-    FirebaseFirestore db = FirebaseFirestore.instance;
-    UserData? registrationUserData = getUser();
-    if (registrationUserData == null) return;
+    try {
+      FirebaseFirestore db = FirebaseFirestore.instance;
+      UserData? registrationUserData = getUser();
+      if (registrationUserData == null) return;
 
-    db
-        .collection(FirebaseRes.userChatList)
-        .doc('${registrationUserData.id}')
-        .collection(FirebaseRes.userList)
-        .withConverter(
-          fromFirestore: Conversation.fromFirestore,
-          toFirestore: (Conversation value, options) {
-            return value.toFirestore();
-          },
-        )
-        .get()
-        .then((value) {
-      for (var element in value.docs) {
-        db
-            .collection(FirebaseRes.userChatList)
-            .doc("${element.data().user?.userid}")
-            .collection(FirebaseRes.userList)
-            .doc('${registrationUserData.id}')
-            .withConverter(
-              fromFirestore: Conversation.fromFirestore,
-              toFirestore: (Conversation value, options) => value.toFirestore(),
-            )
-            .get()
-            .then((value) {
-          ChatUser? user = value.data()?.user;
-          user?.username = registrationUserData.fullname ?? '';
-          user?.age = registrationUserData.age.toString();
-          user?.image = registrationUserData.profileImage;
-          user?.city = registrationUserData.address;
+      db
+          .collection(FirebaseRes.userChatList)
+          .doc('${registrationUserData.id}')
+          .collection(FirebaseRes.userList)
+          .withConverter(
+            fromFirestore: Conversation.fromFirestore,
+            toFirestore: (Conversation value, options) {
+              return value.toFirestore();
+            },
+          )
+          .get()
+          .then((value) {
+        for (var element in value.docs) {
           db
               .collection(FirebaseRes.userChatList)
-              .doc('${element.data().user?.userid}')
+              .doc("${element.data().user?.userid}")
               .collection(FirebaseRes.userList)
               .doc('${registrationUserData.id}')
-              .update({FirebaseRes.user: user?.toJson()});
-        });
-      }
-    });
+              .withConverter(
+                fromFirestore: Conversation.fromFirestore,
+                toFirestore: (Conversation value, options) => value.toFirestore(),
+              )
+              .get()
+              .then((value) {
+            ChatUser? user = value.data()?.user;
+            user?.username = registrationUserData.fullname ?? '';
+            user?.age = registrationUserData.age.toString();
+            user?.image = registrationUserData.profileImage;
+            user?.city = registrationUserData.address;
+            db
+                .collection(FirebaseRes.userChatList)
+                .doc('${element.data().user?.userid}')
+                .collection(FirebaseRes.userList)
+                .doc('${registrationUserData.id}')
+                .update({FirebaseRes.user: user?.toJson()});
+          });
+        }
+      });
+    } catch (_) {}
   }
 
   void clear() {

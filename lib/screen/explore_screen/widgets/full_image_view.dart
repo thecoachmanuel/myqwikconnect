@@ -28,15 +28,21 @@ class FullImageView extends StatelessWidget {
       return const FullImageViewShimmer();
     } else {
       return Expanded(
-        child: model.combinedList.isEmpty
+        child: model.combinedList.isEmpty || model.isCardsFinished
             ? CommonUI.noData()
             : CardSwiper(
                 controller: model.cardController,
                 cardsCount: model.combinedList.length,
+                isLoop: false,
+                onEnd: model.onCardsEnd,
                 onUndo: model.onUndo,
                 onSwipe: (prevIndex, currentIndex, direction) {
+                  if (currentIndex == null) {
+                    model.onCardsEnd();
+                    return true;
+                  }
                   // reset page to 0 for new card
-                  model.resetPageAt(currentIndex ?? 0);
+                  model.resetPageAt(currentIndex);
                   return model.onSwipe(prevIndex, currentIndex, direction);
                 },
                 isDisabled: model.isSwipeDisable,

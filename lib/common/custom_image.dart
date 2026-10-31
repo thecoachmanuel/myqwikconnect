@@ -1,5 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:figma_squircle/figma_squircle.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:orange_ui/common/common_ui.dart';
 import 'package:orange_ui/screen/shimmer_screen/shimmer_screen.dart';
@@ -25,31 +26,69 @@ class CustomImage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final validUrl = image?.trim() ?? '';
+    final effectiveFit = fit ?? BoxFit.cover;
+
     return LayoutBuilder(
-      builder: (context, constraints) => ClipSmoothRect(
-        radius:
-            SmoothBorderRadius(cornerRadius: radius ?? 0, cornerSmoothing: 1),
-        child: CachedNetworkImage(
-          imageUrl: image ?? '',
-          height: height,
-          width: width,
-          fit: fit ?? BoxFit.cover,
-          fadeInDuration: const Duration(milliseconds: 100),
-          fadeOutDuration: const Duration(milliseconds: 100),
-          placeholder: (context, url) {
-            if (!showShimmer) {
-              return const SizedBox();
-            }
-            return CustomShimmer(width: width, height: height);
-          },
-          errorWidget: (context, url, error) {
-            return CommonUI.profileImagePlaceHolder(
-                name: CommonUI.fullName(fullname),
-                heightWidth: height ?? constraints.maxHeight,
-                borderRadius: radius);
-          },
-        ),
-      ),
+      builder: (context, constraints) {
+        final effectiveHeight = height ?? constraints.maxHeight;
+
+        if (validUrl.isEmpty) {
+          return CommonUI.profileImagePlaceHolder(
+              name: CommonUI.fullName(fullname),
+              heightWidth: effectiveHeight,
+              borderRadius: radius);
+        }
+
+        if (kIsWeb) {
+          return ClipSmoothRect(
+            radius:
+                SmoothBorderRadius(cornerRadius: radius ?? 0, cornerSmoothing: 1),
+            child: Image.network(
+              validUrl,
+              height: height,
+              width: width,
+              fit: effectiveFit,
+              loadingBuilder: (context, child, loadingProgress) {
+                if (loadingProgress == null) return child;
+                if (!showShimmer) return const SizedBox();
+                return CustomShimmer(width: width, height: height);
+              },
+              errorBuilder: (context, error, stackTrace) {
+                return CommonUI.profileImagePlaceHolder(
+                    name: CommonUI.fullName(fullname),
+                    heightWidth: effectiveHeight,
+                    borderRadius: radius);
+              },
+            ),
+          );
+        }
+
+        return ClipSmoothRect(
+          radius:
+              SmoothBorderRadius(cornerRadius: radius ?? 0, cornerSmoothing: 1),
+          child: CachedNetworkImage(
+            imageUrl: validUrl,
+            height: height,
+            width: width,
+            fit: effectiveFit,
+            fadeInDuration: const Duration(milliseconds: 100),
+            fadeOutDuration: const Duration(milliseconds: 100),
+            placeholder: (context, url) {
+              if (!showShimmer) {
+                return const SizedBox();
+              }
+              return CustomShimmer(width: width, height: height);
+            },
+            errorWidget: (context, url, error) {
+              return CommonUI.profileImagePlaceHolder(
+                  name: CommonUI.fullName(fullname),
+                  heightWidth: effectiveHeight,
+                  borderRadius: radius);
+            },
+          ),
+        );
+      },
     );
   }
 }

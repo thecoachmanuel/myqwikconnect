@@ -42,6 +42,14 @@ class ExploreScreenViewModel extends BaseViewModel {
   bool isLikeDisLikeStatus = false;
   final controller = Get.find<SubscriptionSheetController>();
   List<UserData> combinedList = [];
+  bool isCardsFinished = false;
+  bool _isFetchingMore = false;
+  bool hasMoreToFetch = true;
+
+  void onCardsEnd() {
+    isCardsFinished = true;
+    notifyListeners();
+  }
 
   void init() {
     initialCalling();
@@ -96,15 +104,22 @@ class ExploreScreenViewModel extends BaseViewModel {
   }
 
   Future<void> exploreScreenApiCall() async {
+    if (!hasMoreToFetch || _isFetchingMore) return;
+    _isFetchingMore = true;
     if (combinedList.isEmpty) {
       isLoading = true;
     }
     ApiProvider().getExplorePageProfileList().then((value) async {
       var newData = value.data ?? [];
+      int addedCount = 0;
       for (var user in newData) {
         if (!combinedList.any((existing) => existing.id == user.id)) {
           combinedList.add(user);
+          addedCount++;
         }
+      }
+      if (addedCount == 0 && combinedList.isNotEmpty) {
+        hasMoreToFetch = false;
       }
       if (isPurchaseConfig) {
         for (int i = 0; i < combinedList.length; i++) {
@@ -118,6 +133,11 @@ class ExploreScreenViewModel extends BaseViewModel {
         }
       }
       isLoading = false;
+      _isFetchingMore = false;
+      notifyListeners();
+    }).catchError((_) {
+      isLoading = false;
+      _isFetchingMore = false;
       notifyListeners();
     });
   }
@@ -303,6 +323,7 @@ class ExploreScreenViewModel extends BaseViewModel {
   bool onUndo(
       int? previousIndex, int currentIndex, CardSwiperDirection direction) {
     currentCombinedIndex = currentIndex;
+    isCardsFinished = false;
     notifyListeners();
     return true;
   }

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:orange_ui/common/custom_border.dart';
 import 'package:orange_ui/common/dashboard_top_bar.dart';
-import 'package:orange_ui/common/lazy_indexed_stack.dart';
 import 'package:orange_ui/generated/l10n.dart';
 import 'package:orange_ui/screen/dashboard/dashboard_screen_view_model.dart';
 import 'package:orange_ui/screen/dashboard/widget/custom_banner_ads.dart';
@@ -28,7 +27,6 @@ class DashboardScreen extends StatelessWidget {
         bool isDating = model.settingAppData?.isDating == 1;
         bool isSocialMedia = model.settingAppData?.isSocialMedia == 1;
         final pages = _getPagesList(isSocialMedia: isSocialMedia, isDating: isDating);
-        final safeIndex = model.pageIndex.clamp(0, pages.isNotEmpty ? pages.length - 1 : 0);
 
         return Scaffold(
           backgroundColor: ColorRes.white,

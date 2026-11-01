@@ -6,18 +6,13 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:orange_ui/api_provider/api_provider.dart';
 import 'package:orange_ui/common/common_fun.dart';
-import 'package:orange_ui/common/common_ui.dart';
-import 'package:orange_ui/generated/l10n.dart';
 import 'package:orange_ui/model/setting_model.dart';
-import 'package:orange_ui/model/social/post/add_post.dart';
 import 'package:orange_ui/service/post_upload_service.dart';
 import 'package:orange_ui/service/session_manager.dart';
 import 'package:orange_ui/utils/app_res.dart';
 import 'package:orange_ui/utils/color_res.dart';
 import 'package:orange_ui/utils/font_res.dart';
-import 'package:orange_ui/utils/urls.dart';
 import 'package:stacked/stacked.dart';
 import 'package:video_player/video_player.dart';
 

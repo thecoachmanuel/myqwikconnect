@@ -33,6 +33,15 @@ class DashboardScreenViewModel extends BaseViewModel {
   BannerAd? bannerAd;
 
   void init() {
+    final bool isLogin = SessionManager.instance.getBool(key: SessionKeys.isLogin);
+    final cachedUser = SessionManager.instance.getUser();
+    if (!isLogin || cachedUser == null || (cachedUser.id ?? 0) <= 0) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        Get.offAllNamed('/auth');
+      });
+      return;
+    }
+
     final savedIndex = SessionManager.instance.getInt(key: keyActiveTabIndex);
     if (savedIndex >= 0 && savedIndex <= 4) {
       pageIndex = savedIndex;
@@ -58,10 +67,12 @@ class DashboardScreenViewModel extends BaseViewModel {
   void getProfileApiCall() {
     userData = SessionManager.instance.getUser();
     notifyListeners();
+    final uid = SessionManager.instance.getUserID();
+    if (uid <= 0) return;
     ApiProvider()
-        .getProfile(userID: SessionManager.instance.getUserID())
+        .getProfile(userID: uid)
         .then((value) {
-      if (value.data != null) {
+      if (value.status == true && value.data != null) {
         userData = value.data;
         SessionManager.instance.setUser(value.data);
         notifyListeners();

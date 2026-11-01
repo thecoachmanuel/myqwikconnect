@@ -5,8 +5,6 @@ import 'package:orange_ui/common/common_ui.dart';
 import 'package:orange_ui/common/confirmation_dialog.dart';
 import 'package:orange_ui/model/get_diamond_pack.dart';
 import 'package:orange_ui/service/session_manager.dart';
-import 'package:orange_ui/service/subscription/subscription_manager.dart';
-import 'package:orange_ui/utils/app_res.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
 import 'package:stacked/stacked.dart';
 import 'package:url_launcher/url_launcher.dart';

@@ -140,7 +140,6 @@ class _MyAppState extends State<MyApp> {
         GetPage(name: '/dashboard', page: () => const DashboardScreen()),
         GetPage(name: '/auth', page: () => const AuthScreen()),
       ],
-      home: const SplashScreen(),
     );
   }
 

@@ -39,6 +39,14 @@ class AuthScreenViewModel extends BaseViewModel {
   PageController pageController = PageController();
 
   void init(int index) {
+    bool isLogin = SessionManager.instance.getBool(key: SessionKeys.isLogin);
+    final user = SessionManager.instance.getUser();
+    if (isLogin && user != null && (user.id ?? 0) > 0) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        Get.offAllNamed('/dashboard');
+      });
+      return;
+    }
     FirebaseNotificationManager.shared;
     pageController = PageController(initialPage: index);
     openEULASheet();
@@ -276,74 +284,69 @@ class AuthScreenViewModel extends BaseViewModel {
     return await FirebaseAuth.instance.signInWithCredential(oauthCredential);
   }
 
-  Future<void> navigateScreen({UserData? userData}) async {
-    if (userData == null) return;
-    Appdata? appData = SessionManager.instance.getSettings()?.appdata;
-
-    bool isLogin = SessionManager.instance.getBool(key: SessionKeys.isLogin);
-    bool hasBasicProfile = !_isBasicProfileIncomplete(userData);
-    bool hasImages = (userData.images ?? []).isNotEmpty;
-
-    // If an existing logged-in user already has their basic profile and photos set up,
-    // take them directly to Dashboard without forcing onboarding
-    if (isLogin && hasBasicProfile && hasImages) {
-      Get.off(() => const DashboardScreen(), routeName: '/dashboard');
+  Future<void> navigateScreen({UserData? userData, bool isRegistration = false}) async {
+    if (userData == null) {
+      Get.offAllNamed('/auth');
       return;
     }
 
-    final controller = Get.put(CreateProfileScreenViewModel());
-    controller.init(userData);
-    if (appData?.isDating == 1) {
-      if (_isBasicProfileIncomplete(userData)) {
-        Get.off(() => const CreateProfileScreen());
-        return;
-      }
+    // Only force onboarding step wizards for brand new account registrations
+    if (isRegistration) {
+      Appdata? appData = SessionManager.instance.getSettings()?.appdata;
+      final controller = Get.put(CreateProfileScreenViewModel());
+      controller.init(userData);
+      if (appData?.isDating == 1) {
+        if (_isBasicProfileIncomplete(userData)) {
+          Get.off(() => const CreateProfileScreen());
+          return;
+        }
 
-      if (_isMatchPreferenceIncomplete(userData)) {
-        Get.off(() => FindMatches(userData: userData, model: controller));
-        return;
-      }
+        if (_isMatchPreferenceIncomplete(userData)) {
+          Get.off(() => FindMatches(userData: userData, model: controller));
+          return;
+        }
 
-      if (userData.interests == null || userData.interests!.isEmpty) {
-        Get.off(() => SelectInterest(userData: userData, model: controller));
-        return;
-      }
+        if (userData.interests == null || userData.interests!.isEmpty) {
+          Get.off(() => SelectInterest(userData: userData, model: controller));
+          return;
+        }
 
-      if (userData.relationshipGoalIdsList.isEmpty) {
-        Get.off(() => RelationshipGoal(userData: userData, model: controller));
-        return;
-      }
+        if (userData.relationshipGoalIdsList.isEmpty) {
+          Get.off(() => RelationshipGoal(userData: userData, model: controller));
+          return;
+        }
 
-      if (userData.religionKey == null || userData.religionKey!.isEmpty) {
-        Get.off(() => ChooseReligion(userData: userData, model: controller));
-        return;
-      }
+        if (userData.religionKey == null || userData.religionKey!.isEmpty) {
+          Get.off(() => ChooseReligion(userData: userData, model: controller));
+          return;
+        }
 
-      if (userData.languageKeys == null || userData.languageKeys!.isEmpty) {
-        Get.off(() => SelectLanguages(userData: userData, model: controller));
-        return;
-      }
+        if (userData.languageKeys == null || userData.languageKeys!.isEmpty) {
+          Get.off(() => SelectLanguages(userData: userData, model: controller));
+          return;
+        }
 
-      if ((userData.images ?? []).isEmpty) {
-        Get.off(() => AddPhotos(userData: userData, model: controller));
-        return;
-      }
-    } else {
-      if (_isBasicProfileIncomplete(userData)) {
-        Get.off(() => const CreateProfileScreen());
-        return;
-      }
-      if (userData.interests == null || userData.interests!.isEmpty) {
-        Get.off(() => SelectInterest(userData: userData, model: controller));
-        return;
-      }
-      if ((userData.images ?? []).isEmpty) {
-        Get.off(() => AddPhotos(userData: userData, model: controller));
-        return;
+        if ((userData.images ?? []).isEmpty) {
+          Get.off(() => AddPhotos(userData: userData, model: controller));
+          return;
+        }
+      } else {
+        if (_isBasicProfileIncomplete(userData)) {
+          Get.off(() => const CreateProfileScreen());
+          return;
+        }
+        if (userData.interests == null || userData.interests!.isEmpty) {
+          Get.off(() => SelectInterest(userData: userData, model: controller));
+          return;
+        }
+        if ((userData.images ?? []).isEmpty) {
+          Get.off(() => AddPhotos(userData: userData, model: controller));
+          return;
+        }
       }
     }
 
-    Get.off(() => const DashboardScreen(), routeName: '/dashboard');
+    Get.offAllNamed('/dashboard');
   }
 
 // Helper functions for clarity
@@ -413,11 +416,11 @@ class AuthScreenViewModel extends BaseViewModel {
         key: SessionKeys.password, value: passwordController.text.trim());
     if (pageIndex == 1) {
       try {
-        userCredential?.user
+        userCredential.user
             ?.updateDisplayName(fullNameController.text.trim());
       } catch (_) {}
       try {
-        userCredential?.user?.sendEmailVerification();
+        userCredential.user?.sendEmailVerification();
       } catch (_) {}
       registration(
         email: emailController.text.trim(),

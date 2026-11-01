@@ -12,7 +12,6 @@ import 'package:orange_ui/common/confirmation_dialog.dart';
 import 'package:orange_ui/generated/l10n.dart';
 import 'package:orange_ui/model/setting_model.dart';
 import 'package:orange_ui/model/user/registration_user.dart';
-import 'package:orange_ui/screen/auth_screen/auth_screen.dart';
 import 'package:orange_ui/screen/languages_screen/languages_screen.dart';
 import 'package:orange_ui/screen/livestream_dashboard_screen/livestream_dashboard_screen.dart';
 import 'package:orange_ui/screen/verification_screen/verification_screen.dart';
@@ -147,7 +146,7 @@ class OptionalScreenViewModel extends BaseViewModel {
     } catch (_) {}
     SessionManager.instance.cleanSession();
     CommonUI.snackBarWidget(S.current.logOut);
-    Get.offAll(() => const AuthScreen(), routeName: '/auth');
+    Get.offAllNamed('/auth');
   }
 
   void onLogoutTap() async {
@@ -193,7 +192,7 @@ class OptionalScreenViewModel extends BaseViewModel {
       Get.back();
     }
     CommonUI.snackBarWidget(S.current.deleteAccount);
-    Get.offAll(() => const AuthScreen());
+    Get.offAllNamed('/auth');
   }
 
   Future<void> deleteCurrentUser() async {

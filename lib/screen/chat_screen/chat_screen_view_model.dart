@@ -788,8 +788,7 @@ class ChatScreenViewModel extends BaseViewModel {
               if (myIdNum > 0 &&
                   msg.notDeletedIdentities != null &&
                   msg.notDeletedIdentities!.isNotEmpty &&
-                  !msg.notDeletedIdentities!.contains(myIdStr) &&
-                  !msg.notDeletedIdentities!.contains(myIdNum)) {
+                  !msg.notDeletedIdentities!.contains(myIdStr)) {
                 return false;
               }
               return true;

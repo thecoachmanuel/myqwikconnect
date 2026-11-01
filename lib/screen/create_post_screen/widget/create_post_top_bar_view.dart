@@ -52,12 +52,14 @@ class CreatePostTopBarView extends StatelessWidget {
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(30)),
                     color: model.imagesFile.isNotEmpty ||
-                            model.detectableTextFieldController.text.isNotEmpty ||
+                            model.detectableTextFieldController.text
+                                .isNotEmpty ||
                             model.pageType == 1
                         ? null
                         : ColorRes.aquaHaze,
                     gradient: model.imagesFile.isNotEmpty ||
-                            model.detectableTextFieldController.text.isNotEmpty ||
+                            model.detectableTextFieldController.text
+                                .isNotEmpty ||
                             model.pageType == 1
                         ? StyleRes.linearGradient
                         : null,
@@ -67,7 +69,8 @@ class CreatePostTopBarView extends StatelessWidget {
                         .toUpperCase(),
                     style: TextStyle(
                       color: model.imagesFile.isNotEmpty ||
-                              model.detectableTextFieldController.text.isNotEmpty ||
+                              model.detectableTextFieldController.text
+                                  .isNotEmpty ||
                               model.pageType == 1
                           ? ColorRes.white
                           : ColorRes.dimGrey5,

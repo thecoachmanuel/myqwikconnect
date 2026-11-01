@@ -10,7 +10,8 @@ class LivestreamEndScreenViewModel extends BaseViewModel {
     }
     ApiProvider().addLiveStreamHistory(
         amountCollected: '${(liveStreamUser.collectedDiamond ?? 0).toInt()}',
-        startedAt: DateFormat('h:mm a').format(DateTime.parse(dateTime)),
+        startedAt: DateTime.tryParse(dateTime)?.toIso8601String() ??
+            DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.now()),
         streamFor: this.dateTime(duration));
   }
 

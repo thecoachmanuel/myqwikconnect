@@ -17,6 +17,7 @@ import 'package:orange_ui/model/fetch_redeem_request.dart';
 import 'package:orange_ui/model/get_diamond_pack.dart';
 import 'package:orange_ui/model/get_explore_screen.dart';
 import 'package:orange_ui/model/map/fetch_user_coordinate.dart';
+import 'package:orange_ui/model/get_package.dart';
 import 'package:orange_ui/model/notification/admin_notification.dart';
 import 'package:orange_ui/model/notification/user_notification_model.dart';
 import 'package:orange_ui/model/place_detail.dart';
@@ -1056,6 +1057,14 @@ class ApiProvider {
     );
   }
 
+  Future<GetPackage> getPackage() async {
+    http.Response response = await http.post(
+      Uri.parse(Urls.aGetPackage),
+      headers: {Urls.apiKeyName: ConstRes.apiKey},
+    );
+    return GetPackage.fromJson(jsonDecode(response.body));
+  }
+
   void multiPartCallApi(
       {required String url,
       Map<String, dynamic>? param,
@@ -1101,13 +1110,14 @@ class ApiProvider {
     log(param.toString());
     log(filesMap.toString());
     try {
-      var value = await request.send();
+      var value = await request.send().timeout(const Duration(seconds: 90));
       log('StatusCode :: ${value.statusCode}');
       var respStr = await value.stream.bytesToString();
       var response = jsonDecode(respStr);
       completion(response);
     } catch (e) {
       log('multiPartCallApi error: $e');
+      completion({'status': false, 'message': 'Upload request failed or timed out. Please try again.'});
     }
   }
 }

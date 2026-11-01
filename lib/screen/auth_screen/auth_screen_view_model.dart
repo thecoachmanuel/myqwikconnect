@@ -115,9 +115,8 @@ class AuthScreenViewModel extends BaseViewModel {
     } else {
       signIn.initialize();
       // Trigger the authentication flow
-      final GoogleSignInAccount? googleUser =
+      final GoogleSignInAccount googleUser =
           await signIn.authenticate(scopeHint: ['email']);
-      if (googleUser == null) return null;
 
       // Obtain the auth details from the request
       final GoogleSignInAuthentication googleAuth = googleUser.authentication;

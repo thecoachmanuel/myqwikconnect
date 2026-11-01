@@ -27,12 +27,13 @@ class LoginScreen extends StatelessWidget {
       viewModelBuilder: () => viewModel,
       disposeViewModel: false,
       builder: (context, viewModel, child) {
+        final bool isKeyboardOpen = MediaQuery.of(context).viewInsets.bottom > 0;
         return LoginSetupView(
           title: S.of(context).goAheadAndSetUpYourAccount,
           description: S.of(context).welcomeToYourNewJourneyOfConnections,
           child: Column(
             children: [
-              LoginTopTabBar(viewModel: viewModel),
+              LoginTopTabBar(viewModel: viewModel, isCompact: isKeyboardOpen),
               Expanded(
                 child: PageView(
                   controller: viewModel.pageController,
@@ -43,14 +44,17 @@ class LoginScreen extends StatelessWidget {
                   ],
                 ),
               ),
-              const SizedBox(height: 10),
+              SizedBox(height: isKeyboardOpen ? 4 : 10),
               CustomTextButton(
                 onTap: viewModel.onContinueTap,
+                height: isKeyboardOpen ? 48 : 55,
                 margin: const EdgeInsets.symmetric(horizontal: 15),
                 bottomSafeArea: false,
               ),
-              const SizedBox(height: 10),
-              const SafeArea(top: false, child: PrivacyPolicyText()),
+              if (!isKeyboardOpen) ...[
+                const SizedBox(height: 10),
+                const SafeArea(top: false, child: PrivacyPolicyText()),
+              ],
             ],
           ),
         );
@@ -61,19 +65,20 @@ class LoginScreen extends StatelessWidget {
 
 class LoginTopTabBar extends StatelessWidget {
   final AuthScreenViewModel viewModel;
+  final bool isCompact;
 
-  const LoginTopTabBar({super.key, required this.viewModel});
+  const LoginTopTabBar({super.key, required this.viewModel, this.isCompact = false});
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 55,
+      height: isCompact ? 44 : 55,
       decoration: ShapeDecoration(
           shape: SmoothRectangleBorder(
               borderRadius:
                   SmoothBorderRadius(cornerRadius: 30, cornerSmoothing: 1)),
           color: ColorRes.borderColor),
-      margin: const EdgeInsets.only(bottom: 20),
+      margin: EdgeInsets.only(bottom: isCompact ? 10 : 20),
       child: Stack(
         alignment: Alignment.center,
         children: [

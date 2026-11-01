@@ -54,7 +54,13 @@ class PostUploadService extends GetxService {
     Map<String, List<XFile?>>? filesMap = {};
     if (imagesFile.isNotEmpty) {
       if (contentType == 1 && thumbnailFile != null) {
-        filesMap[Urls.aThumbnail] = [thumbnailFile];
+        final thumbExt = thumbnailFile.name.toLowerCase();
+        if (thumbExt.endsWith('.jpg') ||
+            thumbExt.endsWith('.jpeg') ||
+            thumbExt.endsWith('.png') ||
+            thumbExt.endsWith('.webp')) {
+          filesMap[Urls.aThumbnail] = [thumbnailFile];
+        }
       }
       filesMap[Urls.aContents] = imagesFile;
     }

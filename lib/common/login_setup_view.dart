@@ -25,7 +25,10 @@ class LoginSetupView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final bool isKeyboardOpen = MediaQuery.of(context).viewInsets.bottom > 0;
+
     return Scaffold(
+      resizeToAvoidBottomInset: true,
       body: Stack(
         children: [
           const LoginBGView(),
@@ -38,7 +41,7 @@ class LoginSetupView extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(horizontal: 15.0),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
-                    spacing: 10,
+                    spacing: isKeyboardOpen ? 4 : 10,
                     children: [
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -47,37 +50,48 @@ class LoginSetupView extends StatelessWidget {
                           if (topRightWidget != null) topRightWidget!
                         ],
                       ),
-                      const SizedBox(height: 5),
-                      Text(
-                        title,
-                        style: const TextStyle(
-                            color: ColorRes.white,
-                            fontSize: 25,
-                            fontFamily: FontRes.bold),
-                      ),
-                      Text(
-                        description,
-                        style: const TextStyle(
-                            color: ColorRes.white,
-                            fontSize: 16,
-                            fontFamily: FontRes.regular),
-                      ),
-                      const SizedBox(height: 0),
+                      if (!isKeyboardOpen) ...[
+                        const SizedBox(height: 5),
+                        Text(
+                          title,
+                          style: const TextStyle(
+                              color: ColorRes.white,
+                              fontSize: 25,
+                              fontFamily: FontRes.bold),
+                        ),
+                        Text(
+                          description,
+                          style: const TextStyle(
+                              color: ColorRes.white,
+                              fontSize: 16,
+                              fontFamily: FontRes.regular),
+                        ),
+                      ] else ...[
+                        Text(
+                          title,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                              color: ColorRes.white,
+                              fontSize: 18,
+                              fontFamily: FontRes.bold),
+                        ),
+                      ],
                     ],
                   ),
                 ),
                 Expanded(
                   child: Container(
                     width: double.infinity,
-                    margin: const EdgeInsets.only(top: 15),
+                    margin: EdgeInsets.only(top: isKeyboardOpen ? 6 : 15),
                     decoration: ShapeDecoration(
                       color: ColorRes.white,
                       shape: SmoothRectangleBorder(
                         borderRadius: SmoothBorderRadius(
-                            cornerRadius: 50, cornerSmoothing: 1),
+                            cornerRadius: isKeyboardOpen ? 30 : 50, cornerSmoothing: 1),
                       ),
                     ),
-                    padding: padding ?? const EdgeInsets.only(left: 30, right: 30, top: 20),
+                    padding: padding ?? EdgeInsets.only(left: 30, right: 30, top: isKeyboardOpen ? 12 : 20),
                     child: child,
                   ),
                 )

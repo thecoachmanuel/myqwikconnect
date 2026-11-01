@@ -68,6 +68,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
                 expands: widget.isExpand,
                 maxLines: widget.isExpand ? null : 1,
                 minLines: null,
+                scrollPadding: const EdgeInsets.only(bottom: 80),
                 onChanged: widget.onChanged,
                 textCapitalization: widget.textCapitalization,
                 obscureText: isPasswordShow,

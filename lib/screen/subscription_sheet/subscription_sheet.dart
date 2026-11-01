@@ -1,6 +1,7 @@
 import 'dart:ui';
 
 import 'package:figma_squircle/figma_squircle.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:orange_ui/common/button/custom_text_button.dart';

@@ -38,35 +38,6 @@ class LoginView extends StatelessWidget {
               ),
             ),
           ),
-          InkWell(
-            onTap: () {
-              viewModel.emailController.text = 'test@orange.com';
-              viewModel.passwordController.text = '123456';
-              viewModel.notifyListeners();
-            },
-            child: Container(
-              padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 14),
-              decoration: BoxDecoration(
-                color: ColorRes.darkOrange20,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: const Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.bolt, color: ColorRes.themeColor, size: 20),
-                  SizedBox(width: 8),
-                  Text(
-                    'Use Demo Credentials (test@orange.com / 123456)',
-                    style: TextStyle(
-                      color: ColorRes.themeColor,
-                      fontFamily: FontRes.semiBold,
-                      fontSize: 13,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
         ],
       ),
     );

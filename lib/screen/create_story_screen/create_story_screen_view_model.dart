@@ -32,54 +32,15 @@ class CreateStoryScreenViewModel extends BaseViewModel {
     });
   }
 
-  void captureImage() async {
-    try {
-      final value = await RetrytechPlugin.shared.captureImage();
+  void captureImage() {
+    RetrytechPlugin.shared.captureImage().then((value) async {
       imageCache.clear();
       imageCache.clearLiveImages();
-      if (value != null && value.isNotEmpty) {
-        final bgColor = await value.getGradientFromImage;
-        Get.to(() => CameraPreviewScreen(
-            xFile: XFile(value), value: CameraType.image, bgColor: bgColor));
-        return;
-      }
-    } catch (_) {}
-
-    try {
-      final picked = await imagePicker.pickImage(
-        source: ImageSource.camera,
-        imageQuality: AppRes.quality,
-        maxHeight: AppRes.maxHeight,
-        maxWidth: AppRes.maxWidth,
-      );
-      if (picked != null) {
-        final bgColor = await picked.path.getGradientFromImage;
-        Get.to(() => CameraPreviewScreen(
-            xFile: picked, value: CameraType.image, bgColor: bgColor));
-      }
-    } catch (e) {
-      debugPrint('captureImage camera error: $e');
-    }
-  }
-
-  void recordVideoFallback() async {
-    recordInstantVideo();
-  }
-
-  void recordInstantVideo() async {
-    try {
-      final video = await imagePicker.pickVideo(
-        source: ImageSource.camera,
-        maxDuration: const Duration(seconds: 30),
-      );
-      if (video != null) {
-        Get.to(
-            () => CameraPreviewScreen(xFile: video, value: CameraType.video));
-      }
-    } catch (e) {
-      debugPrint('recordInstantVideo error: $e');
-      CommonUI.snackBar(message: 'Camera video error: $e');
-    }
+      if (value == null) return;
+      final bgColor = await value.getGradientFromImage;
+      Get.to(() => CameraPreviewScreen(
+          xFile: XFile(value), value: CameraType.image, bgColor: bgColor));
+    });
   }
 
   void onCameraFlip() {
@@ -88,28 +49,22 @@ class CreateStoryScreenViewModel extends BaseViewModel {
 
   void onCaptureVideoStart(LongPressStartDetails details) async {
     HapticFeedback.mediumImpact();
-    try {
-      RetrytechPlugin.shared.startRecording;
-      setCurrentTimerClock();
-    } catch (_) {
-      recordVideoFallback();
-    }
+    RetrytechPlugin.shared.startRecording;
+    setCurrentTimerClock();
   }
 
   void onCaptureVideoEnd(LongPressEndDetails details) {
     timer?.cancel();
-    try {
-      RetrytechPlugin.shared.stopRecording.then((value) {
-        if (value == null) return;
-        Get.to(() => CameraPreviewScreen(
-              xFile: XFile(value),
-              value: CameraType.video,
-            ))?.then((value) {
-          currentTime = ''.obs;
-          notifyListeners();
-        });
-      }).catchError((_) {});
-    } catch (_) {}
+    RetrytechPlugin.shared.stopRecording.then((value) {
+      if (value == null) return;
+      Get.to(() => CameraPreviewScreen(
+            xFile: XFile(value),
+            value: CameraType.video,
+          ))?.then((value) {
+        currentTime = ''.obs;
+        notifyListeners();
+      });
+    });
   }
 
   void setCurrentTimerClock() {

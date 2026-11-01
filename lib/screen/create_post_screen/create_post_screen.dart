@@ -18,12 +18,16 @@ class CreatePostScreen extends StatelessWidget {
       viewModelBuilder: () => CreatePostScreenViewModel(),
       builder: (context, model, child) => Scaffold(
         backgroundColor: ColorRes.white,
+        resizeToAvoidBottomInset: true,
         body: SafeArea(
           child: Column(
             children: [
               CreatePostTopBarView(type: model.pageType, model: model),
               Expanded(
                 child: SingleChildScrollView(
+                  physics: const BouncingScrollPhysics(),
+                  padding: EdgeInsets.only(
+                      bottom: MediaQuery.of(context).viewInsets.bottom + 40),
                   keyboardDismissBehavior:
                       ScrollViewKeyboardDismissBehavior.onDrag,
                   child: model.pageType == 0

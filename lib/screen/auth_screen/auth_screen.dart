@@ -61,13 +61,6 @@ class AuthScreen extends StatelessWidget {
                               image: AssetRes.icEmail,
                               text: S.of(context).continueWithEmail,
                               onTap: () => viewModel.onLoginTap(1)),
-                          SocialLoginCard(
-                              image: AssetRes.themeLabel,
-                              text: 'Demo Test Login',
-                              bgColor: ColorRes.darkOrange20,
-                              textColor: ColorRes.themeColor,
-                              iconColor: ColorRes.themeColor,
-                              onTap: viewModel.loginAsDemoUser),
                           if (AppPlatform.isIOS)
                             SocialLoginCard(
                               image: AssetRes.appleLogo,

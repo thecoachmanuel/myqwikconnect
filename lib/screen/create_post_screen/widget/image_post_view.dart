@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:orange_ui/common/app_image_file.dart';
 import 'package:orange_ui/screen/create_post_screen/create_post_screen_view_model.dart';
 import 'package:orange_ui/utils/app_res.dart';
@@ -23,19 +22,19 @@ class ImagePostView extends StatelessWidget {
               children: [
                 model.imagesFile.length <= 1
                     ? Container(
-                        constraints: BoxConstraints(maxHeight: Get.height / 1.7),
+                        constraints: const BoxConstraints(maxHeight: 260),
                         child: appImageFile(path: model.imagesFile.first.path,
-                            fit: BoxFit.cover, height: null, width: double.infinity),
+                            fit: BoxFit.cover, height: 260, width: double.infinity),
                       )
                     : SizedBox(
-                        height: 390,
+                        height: 260,
                         child: PageView.builder(
                           controller: model.pageController,
                           itemCount: model.imagesFile.length,
                           onPageChanged: model.onPageChanged,
                           itemBuilder: (context, index) {
                             return appImageFile(path: model.imagesFile[index].path,
-                                fit: BoxFit.cover, height: 390, width: double.infinity);
+                                fit: BoxFit.cover, height: 260, width: double.infinity);
                           },
                         ),
                       ),

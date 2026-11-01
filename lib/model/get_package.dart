@@ -80,13 +80,13 @@ class GetPackageData {
   }
 
   GetPackageData.fromJson(dynamic json) {
-    _id = json['id'];
-    _price = json['price'];
-    _title = json['title'];
-    _months = json['months'];
-    _playid = json['playid'];
-    _appid = json['appid'];
-    _description = json['description'];
+    _id = json['id'] is int ? json['id'] : int.tryParse(json['id']?.toString() ?? '0');
+    _price = json['price']?.toString();
+    _title = json['title']?.toString();
+    _months = json['months'] is int ? json['months'] : int.tryParse(json['months']?.toString() ?? '1');
+    _playid = json['playid']?.toString();
+    _appid = json['appid']?.toString();
+    _description = json['description']?.toString();
   }
 
   int? _id;

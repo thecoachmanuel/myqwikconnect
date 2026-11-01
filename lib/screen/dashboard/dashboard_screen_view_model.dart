@@ -27,7 +27,6 @@ class DashboardScreenViewModel extends BaseViewModel {
   int pageIndex = 0;
   int unreadNotificationCount = 0;
   UserData? userData;
-  late PageController pageController;
 
   Appdata? settingAppData = SessionManager.instance.getSettings()?.appdata;
   BannerAd? bannerAd;
@@ -46,7 +45,6 @@ class DashboardScreenViewModel extends BaseViewModel {
     if (savedIndex >= 0 && savedIndex <= 4) {
       pageIndex = savedIndex;
     }
-    pageController = PageController(initialPage: pageIndex);
     if (!AppPlatform.isWeb) {
       try {
         AppBadgePlus.updateBadge(0);
@@ -87,42 +85,20 @@ class DashboardScreenViewModel extends BaseViewModel {
     Get.put(SubscriptionSheetController());
   }
 
-  void onPageChanged(int index) {
-    pageIndex = index;
-    SessionManager.instance.setInt(key: keyActiveTabIndex, value: pageIndex);
-    notifyListeners();
-  }
-
   void onBottomBarTap(int index) {
     if (userData?.isBlock == 1 && index == 4) {
       pageIndex = index;
       SessionManager.instance.setInt(key: keyActiveTabIndex, value: pageIndex);
-      if (pageController.hasClients) {
-        pageController.animateToPage(index,
-            duration: const Duration(milliseconds: 250),
-            curve: Curves.easeInOut);
-      }
     } else {
       CommonFun.isBloc(
         userData,
         onCompletion: () {
           pageIndex = index;
           SessionManager.instance.setInt(key: keyActiveTabIndex, value: pageIndex);
-          if (pageController.hasClients) {
-            pageController.animateToPage(index,
-                duration: const Duration(milliseconds: 250),
-                curve: Curves.easeInOut);
-          }
         },
       );
     }
     notifyListeners();
-  }
-
-  @override
-  void dispose() {
-    pageController.dispose();
-    super.dispose();
   }
 
   void initBranch() {

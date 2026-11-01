@@ -17,7 +17,29 @@ class CreatePostPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        Container(
+          constraints: const BoxConstraints(minHeight: 120, maxHeight: 200),
+          color: ColorRes.aquaHaze,
+          child: DetectableTextField(
+            controller: model.detectableTextFieldController,
+            onChanged: model.onChangeDetectableTextField,
+            focusNode: model.detectableTextFieldFocusNode,
+            maxLines: null,
+            minLines: 4,
+            expands: false,
+            scrollPadding: const EdgeInsets.only(bottom: 100),
+            maxLength: ((model.appData?.postDescriptionLimit ?? 0) <= 0) ? null : model.appData?.postDescriptionLimit,
+            decoration: InputDecoration(
+                border: InputBorder.none,
+                hintText: S.of(context).writeSomethingHere,
+                hintStyle: const TextStyle(fontSize: 17, fontFamily: FontRes.regular, color: ColorRes.dimGrey2),
+                contentPadding: const EdgeInsets.all(15)),
+            style: const TextStyle(fontSize: 18, color: ColorRes.dimGrey3, fontFamily: FontRes.regular),
+          ),
+        ),
+        const SizedBox(height: 10),
         model.imagesFile.isEmpty
             ? Container(
                 color: ColorRes.lightGrey2,
@@ -40,26 +62,6 @@ class CreatePostPage extends StatelessWidget {
                 : model.contentType == 1
                     ? VideoPostView(model: model)
                     : const SizedBox(),
-        const SizedBox(height: 10),
-        Container(
-          height: 200,
-          color: ColorRes.aquaHaze,
-          child: DetectableTextField(
-            controller: model.detectableTextFieldController,
-            onChanged: model.onChangeDetectableTextField,
-            focusNode: model.detectableTextFieldFocusNode,
-            maxLines: null,
-            minLines: null,
-            expands: true,
-            maxLength: ((model.appData?.postDescriptionLimit ?? 0) <= 0) ? null : model.appData?.postDescriptionLimit,
-            decoration: InputDecoration(
-                border: InputBorder.none,
-                hintText: S.of(context).writeSomethingHere,
-                hintStyle: const TextStyle(fontSize: 17, fontFamily: FontRes.regular, color: ColorRes.dimGrey2),
-                contentPadding: const EdgeInsets.all(15)),
-            style: const TextStyle(fontSize: 18, color: ColorRes.dimGrey3, fontFamily: FontRes.regular),
-          ),
-        )
       ],
     );
   }

@@ -16,7 +16,7 @@ class VideoPostView extends StatelessWidget {
     return InkWell(
       onTap: model.videoPlayPause,
       child: Container(
-        height: 390,
+        height: 260,
         width: double.infinity,
         color: ColorRes.black,
         margin: const EdgeInsets.only(bottom: 10.0),

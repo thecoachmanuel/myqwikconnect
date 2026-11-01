@@ -1,5 +1,4 @@
 import 'package:figma_squircle/figma_squircle.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:orange_ui/common/common_fun.dart';
@@ -27,61 +26,17 @@ class CreateStoryScreen extends StatelessWidget {
           body: ClipRRect(
             child: Stack(
               children: [
-                kIsWeb
-                    ? Center(
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Icon(Icons.camera_alt_rounded,
-                                color: ColorRes.white, size: 64),
-                            const SizedBox(height: 20),
-                            ElevatedButton.icon(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: ColorRes.themeColor,
-                                shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(30)),
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 24, vertical: 12),
-                              ),
-                              onPressed: viewModel.captureImage,
-                              icon: const Icon(Icons.camera_alt,
-                                  color: Colors.white),
-                              label: const Text('Take Photo with Camera',
-                                  style: TextStyle(
-                                      color: Colors.white,
-                                      fontFamily: FontRes.semiBold)),
-                            ),
-                            const SizedBox(height: 12),
-                            OutlinedButton.icon(
-                              style: OutlinedButton.styleFrom(
-                                side: const BorderSide(color: Colors.white),
-                                shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(30)),
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 24, vertical: 12),
-                              ),
-                              onPressed: viewModel.recordVideoFallback,
-                              icon: const Icon(Icons.videocam,
-                                  color: Colors.white),
-                              label: const Text('Record Video with Camera',
-                                  style: TextStyle(
-                                      color: Colors.white,
-                                      fontFamily: FontRes.semiBold)),
-                            ),
-                          ],
-                        ),
-                      )
-                    : Align(
-                        alignment: Alignment.center,
-                        child: AspectRatio(
-                          aspectRatio: 0.52,
-                          child: ClipSmoothRect(
-                            radius: SmoothBorderRadius(
-                                cornerRadius: 20, cornerSmoothing: 1),
-                            child: RetrytechPlugin.shared.cameraView,
-                          ),
-                        ),
-                      ),
+                Align(
+                  alignment: Alignment.center,
+                  child: AspectRatio(
+                    aspectRatio: 0.52,
+                    child: ClipSmoothRect(
+                      radius: SmoothBorderRadius(
+                          cornerRadius: 20, cornerSmoothing: 1),
+                      child: RetrytechPlugin.shared.cameraView,
+                    ),
+                  ),
+                ),
                 SafeArea(
                   child: Column(
                     children: [
@@ -138,17 +93,6 @@ class CreateStoryScreen extends StatelessWidget {
                         ],
                       ),
                       const Spacer(),
-                      Padding(
-                        padding: const EdgeInsets.only(bottom: 10),
-                        child: Text(
-                          'Tap for Photo • Tap Video icon for 30s Record',
-                          style: TextStyle(
-                            color: ColorRes.white.withValues(alpha: 0.8),
-                            fontSize: 12,
-                            fontFamily: FontRes.medium,
-                          ),
-                        ),
-                      ),
                       Container(
                         margin: const EdgeInsets.only(bottom: 20),
                         child: Row(
@@ -158,21 +102,6 @@ class CreateStoryScreen extends StatelessWidget {
                               onTap: viewModel.onMediaTap,
                               child: Image.asset(AssetRes.icMedia,
                                   width: 30, height: 30),
-                            ),
-                            InkWell(
-                              onTap: viewModel.recordInstantVideo,
-                              child: Container(
-                                height: 42,
-                                width: 42,
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  color: Colors.red.withValues(alpha: 0.3),
-                                  border: Border.all(color: Colors.red, width: 2),
-                                ),
-                                alignment: Alignment.center,
-                                child: const Icon(Icons.videocam_rounded,
-                                    color: Colors.white, size: 24),
-                              ),
                             ),
                             GestureDetector(
                               onTap: viewModel.captureImage,

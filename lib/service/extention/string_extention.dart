@@ -32,7 +32,7 @@ extension StringExtention on String {
 
     if (fullUrl.contains('uploads/user') || fullUrl.contains('uploads/story')) {
       if (!fullUrl.contains('?v=')) {
-        fullUrl += (fullUrl.contains('?') ? '&' : '?') + 'v=4';
+        fullUrl += '${fullUrl.contains('?') ? '&' : '?'}v=4';
       }
     }
     return fullUrl;

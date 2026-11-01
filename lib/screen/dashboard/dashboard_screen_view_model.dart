@@ -60,6 +60,7 @@ class DashboardScreenViewModel extends BaseViewModel {
         .then((value) {
       if (value.data != null) {
         userData = value.data;
+        SessionManager.instance.setUser(value.data);
         notifyListeners();
       }
     }).catchError((e) {});

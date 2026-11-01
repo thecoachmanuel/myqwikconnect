@@ -8,25 +8,32 @@ import 'package:orange_ui/utils/const_res.dart';
 extension StringExtention on String {
   String addBaseURL() {
     if (isEmpty) return '';
-    if (startsWith('http://') || startsWith('https://') || startsWith('blob:') || startsWith('data:')) {
+    if (startsWith('blob:') || startsWith('data:')) {
       return this;
     }
-    if (startsWith('/public/storage/')) {
-      return '${ConstRes.base}${substring(1)}';
+    String fullUrl;
+    if (startsWith('http://') || startsWith('https://')) {
+      fullUrl = this;
+    } else if (startsWith('/public/storage/')) {
+      fullUrl = '${ConstRes.base}${substring(1)}';
+    } else if (startsWith('public/storage/')) {
+      fullUrl = '${ConstRes.base}$this';
+    } else if (startsWith('/storage/')) {
+      fullUrl = '${ConstRes.base}public$this';
+    } else if (startsWith('storage/')) {
+      fullUrl = '${ConstRes.base}public/$this';
+    } else if (startsWith('/')) {
+      fullUrl = '${ConstRes.aImageBaseUrl}${substring(1)}';
+    } else {
+      fullUrl = (ConstRes.aImageBaseUrl) + this;
     }
-    if (startsWith('public/storage/')) {
-      return '${ConstRes.base}$this';
+
+    if (fullUrl.contains('uploads/user') || fullUrl.contains('uploads/story')) {
+      if (!fullUrl.contains('?v=')) {
+        fullUrl += (fullUrl.contains('?') ? '&' : '?') + 'v=4';
+      }
     }
-    if (startsWith('/storage/')) {
-      return '${ConstRes.base}public$this';
-    }
-    if (startsWith('storage/')) {
-      return '${ConstRes.base}public/$this';
-    }
-    if (startsWith('/')) {
-      return '${ConstRes.aImageBaseUrl}${substring(1)}';
-    }
-    return (ConstRes.aImageBaseUrl) + this;
+    return fullUrl;
   }
 
   String get removeEmojis {

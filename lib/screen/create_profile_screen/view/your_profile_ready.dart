@@ -90,7 +90,7 @@ class YourProfileReady extends StatelessWidget {
                                   description:
                                       '${viewModel.selectedDistance.toInt()} ${S.current.km.toUpperCase()}',
                                 ),
-                              if (viewModel.selectedRelationShipGoal != null)
+                              if (viewModel.selectedRelationshipGoals.isNotEmpty)
                                 Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   spacing: 10,
@@ -102,11 +102,12 @@ class YourProfileReady extends StatelessWidget {
                                             fontFamily: FontRes.medium,
                                             fontSize: 16,
                                             color: ColorRes.dimGrey3)),
-                                    RelationshipCard(
-                                        onTap: () {},
-                                        isSelected: true,
-                                        goal:
-                                            viewModel.selectedRelationShipGoal)
+                                    ...viewModel.selectedRelationshipGoals.map(
+                                      (goal) => RelationshipCard(
+                                          onTap: () {},
+                                          isSelected: true,
+                                          goal: goal),
+                                    ),
                                   ],
                                 ),
                             ],

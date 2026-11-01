@@ -266,6 +266,17 @@ class AuthScreenViewModel extends BaseViewModel {
     if (userData == null) return;
     Appdata? appData = SessionManager.instance.getSettings()?.appdata;
 
+    bool isLogin = SessionManager.instance.getBool(key: SessionKeys.isLogin);
+    bool hasBasicProfile = !_isBasicProfileIncomplete(userData);
+    bool hasImages = (userData.images ?? []).isNotEmpty;
+
+    // If an existing logged-in user already has their basic profile and photos set up,
+    // take them directly to Dashboard without forcing onboarding
+    if (isLogin && hasBasicProfile && hasImages) {
+      Get.off(() => const DashboardScreen(), routeName: '/dashboard');
+      return;
+    }
+
     final controller = Get.put(CreateProfileScreenViewModel());
     controller.init(userData);
     if (appData?.isDating == 1) {
@@ -279,22 +290,22 @@ class AuthScreenViewModel extends BaseViewModel {
         return;
       }
 
-      if (userData.interests == null) {
+      if (userData.interests == null || userData.interests!.isEmpty) {
         Get.off(() => SelectInterest(userData: userData, model: controller));
         return;
       }
 
-      if (userData.relationshipGoalId == null) {
+      if (userData.relationshipGoalIdsList.isEmpty) {
         Get.off(() => RelationshipGoal(userData: userData, model: controller));
         return;
       }
 
-      if (userData.religionKey == null) {
+      if (userData.religionKey == null || userData.religionKey!.isEmpty) {
         Get.off(() => ChooseReligion(userData: userData, model: controller));
         return;
       }
 
-      if (userData.languageKeys == null) {
+      if (userData.languageKeys == null || userData.languageKeys!.isEmpty) {
         Get.off(() => SelectLanguages(userData: userData, model: controller));
         return;
       }
@@ -308,7 +319,7 @@ class AuthScreenViewModel extends BaseViewModel {
         Get.off(() => const CreateProfileScreen());
         return;
       }
-      if (userData.interests == null) {
+      if (userData.interests == null || userData.interests!.isEmpty) {
         Get.off(() => SelectInterest(userData: userData, model: controller));
         return;
       }
@@ -323,11 +334,11 @@ class AuthScreenViewModel extends BaseViewModel {
 
 // Helper functions for clarity
   bool _isBasicProfileIncomplete(UserData user) {
-    return user.fullname == null ||
-        user.bio == null ||
-        user.country == null ||
-        user.state == null ||
-        user.city == null;
+    return (user.fullname?.trim().isEmpty ?? true) ||
+        (user.bio?.trim().isEmpty ?? true) ||
+        (user.country?.trim().isEmpty ?? true) ||
+        (user.state?.trim().isEmpty ?? true) ||
+        (user.city?.trim().isEmpty ?? true);
   }
 
   bool _isMatchPreferenceIncomplete(UserData user) {

@@ -28,6 +28,17 @@ class RelationshipGoal extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            Padding(
+              padding: const EdgeInsets.only(bottom: 10.0),
+              child: Text(
+                'Select one or more goals that describe what you are looking for',
+                style: const TextStyle(
+                  fontFamily: FontRes.regular,
+                  fontSize: 14,
+                  color: ColorRes.dimGrey3,
+                ),
+              ),
+            ),
             Expanded(
               child: viewModel.relationshipGoals.isEmpty
                   ? ErrorTextWidget(S
@@ -73,6 +84,7 @@ class RelationshipCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: onTap,
+      borderRadius: BorderRadius.circular(15),
       child: Container(
         decoration: ShapeDecoration(
             shape: SmoothRectangleBorder(
@@ -81,27 +93,53 @@ class RelationshipCard extends StatelessWidget {
                 side: BorderSide(
                     color: isSelected
                         ? ColorRes.themeColor
-                        : ColorRes.borderColor)),
+                        : ColorRes.borderColor,
+                    width: isSelected ? 1.5 : 1.0)),
             color: isSelected
-                ? ColorRes.themeColor.withValues(alpha: 0.06)
+                ? ColorRes.themeColor.withValues(alpha: 0.08)
                 : ColorRes.white),
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
         margin: const EdgeInsets.symmetric(vertical: 5),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          spacing: 5,
+        child: Row(
           children: [
-            Text(goal?.title ?? '',
-                style: TextStyle(
-                    fontFamily: FontRes.medium,
-                    fontSize: 16,
-                    color: isSelected ? ColorRes.themeColor : ColorRes.black)),
-            Text(
-              goal?.description ?? '',
-              style: const TextStyle(
-                  fontFamily: FontRes.regular,
-                  fontSize: 16,
-                  color: ColorRes.dimGrey3),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                spacing: 5,
+                children: [
+                  Text(goal?.title ?? '',
+                      style: TextStyle(
+                          fontFamily: FontRes.medium,
+                          fontSize: 16,
+                          color: isSelected ? ColorRes.themeColor : ColorRes.black)),
+                  if ((goal?.description ?? '').isNotEmpty)
+                    Text(
+                      goal?.description ?? '',
+                      style: const TextStyle(
+                          fontFamily: FontRes.regular,
+                          fontSize: 14,
+                          color: ColorRes.dimGrey3),
+                    ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 12),
+            Container(
+              width: 24,
+              height: 24,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: isSelected ? ColorRes.themeColor : ColorRes.transparent,
+                border: Border.all(
+                  color: isSelected
+                      ? ColorRes.themeColor
+                      : ColorRes.dimGrey3.withValues(alpha: 0.4),
+                  width: 1.5,
+                ),
+              ),
+              child: isSelected
+                  ? const Icon(Icons.check, size: 16, color: ColorRes.white)
+                  : null,
             ),
           ],
         ),

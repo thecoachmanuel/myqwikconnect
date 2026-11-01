@@ -64,6 +64,13 @@ class CreateProfileScreenViewModel extends BaseViewModel {
     initImage();
 
     _initializeUserPreferences();
+    if (userData.country != null && userData.country!.trim().isNotEmpty) {
+      selectCountryController.setLocationFromStrings(
+        country: userData.country,
+        state: userData.state,
+        city: userData.city,
+      );
+    }
     notifyListeners();
   }
 
@@ -298,7 +305,8 @@ class CreateProfileScreenViewModel extends BaseViewModel {
         settingData?.interests?.where((e) => e.isDeleted == 0).toList() ?? [];
     List<String> savedInterest = userData?.interests?.split(',') ?? [];
     interestList.toList().forEach((element) {
-      if (savedInterest.contains('${element.id}')) {
+      if (savedInterest.contains('${element.id}') &&
+          !selectedInterest.any((e) => e.id == element.id)) {
         selectedInterest.add(element);
       }
     });
@@ -307,12 +315,31 @@ class CreateProfileScreenViewModel extends BaseViewModel {
             ?.where((e) => e.isDeleted == 0)
             .toList() ??
         [];
+    final goalIds = userData?.relationshipGoalIdsList ?? [];
+    if (goalIds.isNotEmpty && selectedRelationshipGoals.isEmpty) {
+      selectedRelationshipGoals = relationshipGoals
+          .where((element) => goalIds.contains(element.id))
+          .toList();
+    }
 
     religions =
         settingData?.religions?.where((e) => e.isDeleted == 0).toList() ?? [];
+    if (userData?.religionKey != null && selectedReligion == null) {
+      selectedReligion = religions.firstWhereOrNull(
+          (element) => element.title?.toLowerCase() == userData?.religionKey?.toLowerCase());
+    }
 
     languages =
         settingData?.language?.where((e) => e.isDeleted == 0).toList() ?? [];
+    final savedLangs = (userData?.languageKeys ?? '')
+        .split(',')
+        .map((e) => e.trim().toLowerCase())
+        .toList();
+    if (savedLangs.isNotEmpty && selectedLanguages.isEmpty) {
+      selectedLanguages = languages
+          .where((element) => savedLangs.contains(element.title?.removeEmojis.toLowerCase()))
+          .toList();
+    }
   }
 
   void tapFinalProfile() {
@@ -324,14 +351,27 @@ class CreateProfileScreenViewModel extends BaseViewModel {
       return CommonUI.snackBar(message: S.current.enterBio);
     }
 
-    if (selectCountryController.selectedCountry.value == null) {
-      return CommonUI.snackBar(message: S.current.pleaseSelectCountry);
+    final hasCountry = (selectCountryController.selectedCountry.value?.countryName?.trim().isNotEmpty ?? false) ||
+        (userData?.country?.trim().isNotEmpty ?? false);
+    final hasState = (selectCountryController.selectedState.value?.name?.trim().isNotEmpty ?? false) ||
+        (userData?.state?.trim().isNotEmpty ?? false);
+    final hasCity = (selectCountryController.selectedCity.value?.name?.trim().isNotEmpty ?? false) ||
+        (userData?.city?.trim().isNotEmpty ?? false);
+
+    if (!hasCountry) {
+      CommonUI.snackBar(message: S.current.pleaseSelectCountry);
+      Get.to(() => const CreateProfileScreen());
+      return;
     }
-    if (selectCountryController.selectedState.value == null) {
-      return CommonUI.snackBar(message: S.current.pleaseSelectState);
+    if (!hasState) {
+      CommonUI.snackBar(message: S.current.pleaseSelectState);
+      Get.to(() => const CreateProfileScreen());
+      return;
     }
-    if (selectCountryController.selectedCity.value == null) {
-      return CommonUI.snackBar(message: S.current.pleaseSelectCity);
+    if (!hasCity) {
+      CommonUI.snackBar(message: S.current.pleaseSelectCity);
+      Get.to(() => const CreateProfileScreen());
+      return;
     }
 
     if (selectedInterest.isEmpty) {
@@ -359,6 +399,13 @@ class CreateProfileScreenViewModel extends BaseViewModel {
     List<XFile> image =
         images.where((element) => element.id == -1).map((e) => e.file).toList();
 
+    final country = selectCountryController.selectedCountry.value?.countryName ??
+        (userData?.country?.trim().isNotEmpty == true ? userData?.country?.trim() : 'United States');
+    final state = selectCountryController.selectedState.value?.name ??
+        (userData?.state?.trim().isNotEmpty == true ? userData?.state?.trim() : 'California');
+    final city = selectCountryController.selectedCity.value?.name ??
+        (userData?.city?.trim().isNotEmpty == true ? userData?.city?.trim() : 'San Francisco');
+
     CommonUI.lottieLoader();
     ApiProvider()
         .updateProfile(
@@ -367,9 +414,9 @@ class CreateProfileScreenViewModel extends BaseViewModel {
             about: aboutController.text.trim(),
             dob: selectedDob.dobFormat,
             gender: selectedGenderType.value,
-            country: selectCountryController.selectedCountry.value?.countryName,
-            state: selectCountryController.selectedState.value?.name,
-            city: selectCountryController.selectedCity.value?.name,
+            country: country,
+            state: state,
+            city: city,
             genderPreferred: selectedPreferredGender.value,
             ageMin: selectedAgeRange.start,
             ageMax: selectedAgeRange.end,
@@ -384,6 +431,9 @@ class CreateProfileScreenViewModel extends BaseViewModel {
         .then((value) {
       Get.back();
       if (value.status == true) {
+        if (value.data != null) {
+          SessionManager.instance.setUser(value.data);
+        }
         Get.offAll(() => const DashboardScreen());
       } else {
         CommonUI.snackBar(message: value.message ?? '');

@@ -79,4 +79,41 @@ class SelectCountryController extends GetxController {
     filteredCities.value =
         selectedCitiesFromState.search(query, (model) => model.name);
   }
+
+  Future<void> setLocationFromStrings(
+      {String? country, String? state, String? city}) async {
+    if (country == null || country.trim().isEmpty) return;
+    if (allCountries.isEmpty || allStates.isEmpty) {
+      await _loadData();
+    }
+    final c = allCountries.firstWhereOrNull((element) =>
+            element.countryName.toLowerCase() == country.trim().toLowerCase()) ??
+        allCountries.search(country, (p) => p.countryName).firstOrNull;
+    if (c != null) {
+      selectCountry(country: c);
+      if (state != null && state.trim().isNotEmpty) {
+        final s = selectedStatesFromCountry.firstWhereOrNull((element) =>
+                element.name.toLowerCase() == state.trim().toLowerCase()) ??
+            allStates.firstWhereOrNull((element) =>
+                element.name.toLowerCase() == state.trim().toLowerCase() &&
+                element.countryCode == c.countryCode);
+        if (s != null) {
+          selectState(state: s);
+          if (city != null && city.trim().isNotEmpty) {
+            if (allCities.isEmpty) {
+              allCities = await parseCities(filePath: AssetRes.cities);
+            }
+            final ct = selectedCitiesFromState.firstWhereOrNull((element) =>
+                    element.name.toLowerCase() == city.trim().toLowerCase()) ??
+                allCities.firstWhereOrNull((element) =>
+                    element.name.toLowerCase() == city.trim().toLowerCase() &&
+                    element.stateCode == s.stateCode);
+            if (ct != null) {
+              selectCity(city: ct);
+            }
+          }
+        }
+      }
+    }
+  }
 }

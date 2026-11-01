@@ -70,7 +70,9 @@ class CreateProfileScreen extends StatelessWidget {
                               () => MySelectiveField(
                                 placeholder: viewModel.selectCountryController
                                         .selectedCountry.value?.countryName ??
-                                    S.current.country,
+                                    (viewModel.userData?.country?.trim().isNotEmpty == true
+                                        ? viewModel.userData!.country!
+                                        : S.current.country),
                                 bottomSheet: SelectCountrySheet(
                                   controller: viewModel.selectCountryController,
                                 ),
@@ -92,7 +94,9 @@ class CreateProfileScreen extends StatelessWidget {
                               () => MySelectiveField(
                                 placeholder: viewModel.selectCountryController
                                         .selectedState.value?.name ??
-                                    S.of(context).state,
+                                    (viewModel.userData?.state?.trim().isNotEmpty == true
+                                        ? viewModel.userData!.state!
+                                        : S.of(context).state),
                                 bottomSheet: SelectStateSheet(
                                     controller:
                                         viewModel.selectCountryController),
@@ -102,7 +106,8 @@ class CreateProfileScreen extends StatelessWidget {
                                 },
                                 isSelected: viewModel.selectCountryController
                                         .selectedCountry.value !=
-                                    null,
+                                    null ||
+                                    (viewModel.userData?.country?.trim().isNotEmpty ?? false),
                               ),
                             ),
                           ],
@@ -116,7 +121,9 @@ class CreateProfileScreen extends StatelessWidget {
                               () => MySelectiveField(
                                 placeholder: viewModel.selectCountryController
                                         .selectedCity.value?.name ??
-                                    S.of(context).city,
+                                    (viewModel.userData?.city?.trim().isNotEmpty == true
+                                        ? viewModel.userData!.city!
+                                        : S.of(context).city),
                                 bottomSheet: SelectCitySheet(
                                     controller:
                                         viewModel.selectCountryController),
@@ -126,7 +133,8 @@ class CreateProfileScreen extends StatelessWidget {
                                 },
                                 isSelected: viewModel.selectCountryController
                                         .selectedState.value !=
-                                    null,
+                                    null ||
+                                    (viewModel.userData?.state?.trim().isNotEmpty ?? false),
                               ),
                             ),
                           ],

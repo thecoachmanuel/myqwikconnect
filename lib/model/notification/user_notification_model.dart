@@ -50,6 +50,7 @@ class UserNotificationData {
   int? type;
   DateTime? createdAt;
   DateTime? updatedAt;
+  int? isRead;
   UserData? user;
 
   UserNotificationData({
@@ -58,6 +59,7 @@ class UserNotificationData {
     this.userId,
     this.itemId,
     this.type,
+    this.isRead,
     this.createdAt,
     this.updatedAt,
     this.user,
@@ -70,6 +72,7 @@ class UserNotificationData {
         userId: json["user_id"],
         itemId: json["item_id"],
         type: json["type"],
+        isRead: json["is_read"] ?? json["isRead"],
         createdAt: json["created_at"] == null
             ? null
             : DateTime.parse(json["created_at"]),
@@ -85,6 +88,7 @@ class UserNotificationData {
         "user_id": userId,
         "item_id": itemId,
         "type": type,
+        "is_read": isRead,
         "created_at": createdAt?.toIso8601String(),
         "updated_at": updatedAt?.toIso8601String(),
         "user": user?.toJson(),

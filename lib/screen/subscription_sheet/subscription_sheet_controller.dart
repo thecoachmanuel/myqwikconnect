@@ -5,6 +5,7 @@ import 'package:orange_ui/model/user/registration_user.dart';
 import 'package:orange_ui/service/session_manager.dart';
 import 'package:orange_ui/service/subscription/subscription_manager.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class SubscriptionSheetController extends GetxController {
   RxList<Package> packages = <Package>[].obs;
@@ -25,8 +26,53 @@ class SubscriptionSheetController extends GetxController {
   }
 
   void onMakePurchase(Package? package) async {
+    final myUser = SessionManager.instance.getUser();
+    CommonUI.lottieLoader();
+
+    // Initiate Paystack payment
+    try {
+      final paystackInit = await ApiProvider().initializePaystack(
+        email: (myUser?.identity?.contains('@') == true)
+            ? myUser!.identity!
+            : 'user_${myUser?.id ?? 0}@orangeapp.com',
+        amount: package != null && package.storeProduct.price > 0
+            ? package.storeProduct.price
+            : 5000.0,
+        diamonds: 0,
+        planId: package?.identifier ?? 'pkg_1m',
+        type: 'subscription',
+        months: 1,
+      );
+
+      final authUrl = paystackInit['authorization_url']?.toString();
+      final reference = paystackInit['reference']?.toString();
+
+      if (authUrl != null && authUrl.isNotEmpty) {
+        final uri = Uri.tryParse(authUrl);
+        if (uri != null && await canLaunchUrl(uri)) {
+          await launchUrl(uri, mode: LaunchMode.externalApplication);
+        }
+      }
+
+      final verifyRes = await ApiProvider().verifyPaystack(
+        reference: reference ?? '',
+        type: 'subscription',
+        months: 1,
+      );
+
+      Get.back();
+      if (verifyRes.status == true) {
+        purchaseCallBack?.call();
+        UserData? user = SessionManager.instance.getUser();
+        user?.isVerified = 3;
+        SessionManager.instance.setUser(user);
+        CommonUI.snackBar(message: 'Subscription activated successfully!');
+        Get.back(result: true);
+        return;
+      }
+    } catch (_) {}
+
     if (package != null) {
-      CommonUI.lottieLoader();
       bool? status = await SubscriptionManager.shared.makePurchase(package);
       Get.back();
       if (status == true) {
@@ -39,6 +85,8 @@ class SubscriptionSheetController extends GetxController {
           Get.back(result: true);
         }
       }
+    } else {
+      Get.back();
     }
   }
 }

@@ -30,6 +30,14 @@ class SelectCountryController extends GetxController {
   Future<void> _loadData() async {
     allCountries = await parseCountries(filePath: AssetRes.countries);
     allStates = await parseStates(filePath: AssetRes.states);
+    // Prioritize Nigeria at index 0
+    final ngIndex = allCountries.indexWhere((c) =>
+        c.countryCode.toUpperCase() == 'NG' ||
+        c.countryName.toLowerCase() == 'nigeria');
+    if (ngIndex > 0) {
+      final nigeria = allCountries.removeAt(ngIndex);
+      allCountries.insert(0, nigeria);
+    }
     filteredCountries.value = allCountries;
   }
 
@@ -55,7 +63,21 @@ class SelectCountryController extends GetxController {
       countryCode: state.countryCode,
     );
     if (selectedCitiesFromState.isEmpty) {
-      selectedCitiesFromState = getCitiesByStateCode(allCities, state.stateCode);
+      // Fallback only within the same country
+      selectedCitiesFromState = allCities
+          .where((c) =>
+              c.countryCode == state.countryCode &&
+              c.stateCode == state.stateCode)
+          .toList();
+    }
+    if (selectedCitiesFromState.isEmpty) {
+      selectedCitiesFromState = [
+        City(
+          name: state.name,
+          stateCode: state.stateCode,
+          countryCode: state.countryCode,
+        )
+      ];
     }
     filteredCities.value = selectedCitiesFromState;
     selectedCity.value = null;

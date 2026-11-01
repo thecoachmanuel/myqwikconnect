@@ -10,7 +10,6 @@ import 'package:orange_ui/model/user/registration_user.dart';
 import 'package:orange_ui/screen/countries/select_country_controller.dart';
 import 'package:orange_ui/screen/create_profile_screen/create_profile_screen_view_model.dart';
 import 'package:orange_ui/service/extention/datetime_extention.dart';
-import 'package:orange_ui/service/extention/list_extension.dart';
 import 'package:orange_ui/service/extention/string_extention.dart';
 import 'package:orange_ui/service/session_manager.dart';
 import 'package:orange_ui/utils/app_res.dart';
@@ -90,18 +89,11 @@ class EditProfileScreenViewModel extends BaseViewModel {
     selectedGender = userData!.gender;
     selectedGenderPref = userData!.genderPreferred;
     selectedDob = userData?.ageToDateTime ?? selectedDob;
-    var country = selectCountryController.allCountries
-        .search(userData?.country ?? '', (p0) => p0.countryName)
-        .firstOrNull;
-    if (country != null) {
-      selectCountryController.selectCountry(country: country);
-    }
-    var state = selectCountryController.allStates
-        .firstWhereOrNull((element) => element.name == (userData?.state ?? ''));
-    if (state != null) selectCountryController.selectState(state: state);
-    var city = selectCountryController.allCities
-        .firstWhereOrNull((element) => element.name == (userData?.city ?? ''));
-    if (city != null) selectCountryController.selectCity(city: city);
+    selectCountryController.setLocationFromStrings(
+      country: userData?.country,
+      state: userData?.state,
+      city: userData?.city,
+    );
 // Interests
     selectedInterests = (userData?.interests ?? '')
         .split(',')
@@ -198,9 +190,11 @@ class EditProfileScreenViewModel extends BaseViewModel {
       userName: userNameController.text.trim(),
       bio: bioController.text.trim(),
       about: aboutController.text.trim(),
-      country: selectCountryController.selectedCountry.value?.countryName,
-      state: selectCountryController.selectedState.value?.name,
-      city: selectCountryController.selectedCity.value?.name,
+      country: selectCountryController.selectedCountry.value?.countryName ??
+          userData?.country,
+      state: selectCountryController.selectedState.value?.name ??
+          userData?.state,
+      city: selectCountryController.selectedCity.value?.name ?? userData?.city,
       dob: selectedDob.dobFormat,
       gender: selectedGender.value,
       instagram: instagramController.text.trim(),

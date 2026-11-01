@@ -353,13 +353,13 @@ class CreateProfileScreenViewModel extends BaseViewModel {
     }
 
     final hasCountry = (selectCountryController.selectedCountry.value?.countryName != null &&
-            selectCountryController.selectedCountry.value!.countryName!.trim().isNotEmpty) ||
+            selectCountryController.selectedCountry.value!.countryName.trim().isNotEmpty) ||
         (userData?.country != null && userData!.country!.trim().isNotEmpty);
     final hasState = (selectCountryController.selectedState.value?.name != null &&
-            selectCountryController.selectedState.value!.name!.trim().isNotEmpty) ||
+            selectCountryController.selectedState.value!.name.trim().isNotEmpty) ||
         (userData?.state != null && userData!.state!.trim().isNotEmpty);
     final hasCity = (selectCountryController.selectedCity.value?.name != null &&
-            selectCountryController.selectedCity.value!.name!.trim().isNotEmpty) ||
+            selectCountryController.selectedCity.value!.name.trim().isNotEmpty) ||
         (userData?.city != null && userData!.city!.trim().isNotEmpty);
 
     if (!hasCountry) {
@@ -404,11 +404,11 @@ class CreateProfileScreenViewModel extends BaseViewModel {
         images.where((element) => element.id == -1).map((e) => e.file).toList();
 
     final country = selectCountryController.selectedCountry.value?.countryName ??
-        (userData?.country?.trim().isNotEmpty == true ? userData?.country?.trim() : 'United States');
+        (userData?.country?.trim().isNotEmpty == true ? userData?.country?.trim() : 'Nigeria');
     final state = selectCountryController.selectedState.value?.name ??
-        (userData?.state?.trim().isNotEmpty == true ? userData?.state?.trim() : 'California');
+        (userData?.state?.trim().isNotEmpty == true ? userData?.state?.trim() : 'Lagos');
     final city = selectCountryController.selectedCity.value?.name ??
-        (userData?.city?.trim().isNotEmpty == true ? userData?.city?.trim() : 'San Francisco');
+        (userData?.city?.trim().isNotEmpty == true ? userData?.city?.trim() : 'Ikeja');
 
     CommonUI.lottieLoader();
     ApiProvider()

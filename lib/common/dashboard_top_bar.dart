@@ -11,13 +11,17 @@ class DashboardTopBar extends StatelessWidget {
   final VoidCallback onSearchTap;
   final VoidCallback onLivesBtnClick;
   final int? isDating;
+  final int unreadCount;
 
-  const DashboardTopBar({super.key,
-      required this.onNotificationTap,
-      this.onTitleTap,
-      required this.onSearchTap,
-      required this.onLivesBtnClick,
-      required this.isDating});
+  const DashboardTopBar({
+    super.key,
+    required this.onNotificationTap,
+    this.onTitleTap,
+    required this.onSearchTap,
+    required this.onLivesBtnClick,
+    required this.isDating,
+    this.unreadCount = 0,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -59,9 +63,39 @@ class DashboardTopBar extends StatelessWidget {
                   ),
                 ),
               ),
-              if (isDating == 1)
-                RoundIconButton(
-                    onTap: onNotificationTap, icon: AssetRes.bell, padding: 8),
+              Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  RoundIconButton(
+                      onTap: onNotificationTap, icon: AssetRes.bell, padding: 8),
+                  if (unreadCount > 0)
+                    Positioned(
+                      top: 4,
+                      right: 4,
+                      child: Container(
+                        padding: const EdgeInsets.all(3),
+                        decoration: const BoxDecoration(
+                          color: ColorRes.themeColor,
+                          shape: BoxShape.circle,
+                        ),
+                        constraints: const BoxConstraints(
+                          minWidth: 15,
+                          minHeight: 15,
+                        ),
+                        child: Center(
+                          child: Text(
+                            unreadCount > 9 ? '9+' : '$unreadCount',
+                            style: const TextStyle(
+                              color: ColorRes.white,
+                              fontSize: 9,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
               RoundIconButton(
                   onTap: onSearchTap, icon: AssetRes.search, padding: 8),
             ],

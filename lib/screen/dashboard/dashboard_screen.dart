@@ -42,6 +42,7 @@ class DashboardScreen extends StatelessWidget {
                   onSearchTap: model.onSearchTap,
                   onLivesBtnClick: model.onLivesBtnClick,
                   isDating: model.settingAppData?.isDating,
+                  unreadCount: model.unreadNotificationCount,
                 ),
                 Expanded(
                   child: LazyIndexedStack(

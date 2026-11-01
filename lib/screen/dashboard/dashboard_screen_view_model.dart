@@ -24,6 +24,7 @@ import 'package:stacked/stacked.dart';
 class DashboardScreenViewModel extends BaseViewModel {
   static const String keyActiveTabIndex = 'dashboard_active_tab_index';
   int pageIndex = 0;
+  int unreadNotificationCount = 0;
   UserData? userData;
 
   Appdata? settingAppData = SessionManager.instance.getSettings()?.appdata;
@@ -41,6 +42,14 @@ class DashboardScreenViewModel extends BaseViewModel {
     }
     initBranch();
     getProfileApiCall();
+    fetchUnreadNotifications();
+    ApiProvider().getSettingData().then((value) {
+      if (value.status == true && value.data != null) {
+        SessionManager.instance.setSettings(value.data);
+        settingAppData = value.data?.appdata;
+        notifyListeners();
+      }
+    }).catchError((_) {});
   }
 
   void getProfileApiCall() {
@@ -100,11 +109,24 @@ class DashboardScreenViewModel extends BaseViewModel {
     });
   }
 
+  void fetchUnreadNotifications() {
+    ApiProvider().getUserNotification(0).then((value) {
+      if (value.status == true && value.data != null) {
+        unreadNotificationCount = value.data!.where((n) => n.isRead != 1).length;
+        notifyListeners();
+      }
+    }).catchError((_) {});
+  }
+
   void onNotificationTap() {
     CommonFun.isBloc(
       userData,
       onCompletion: () {
-        Get.to(() => const NotificationScreen());
+        unreadNotificationCount = 0;
+        notifyListeners();
+        Get.to(() => const NotificationScreen())?.then((_) {
+          fetchUnreadNotifications();
+        });
       },
     );
   }

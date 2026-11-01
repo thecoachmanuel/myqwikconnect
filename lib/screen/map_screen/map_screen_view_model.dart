@@ -25,7 +25,7 @@ import 'package:stacked/stacked.dart';
 class MapScreenViewModel extends BaseViewModel {
   int selectedDistance = 1;
   List<int> distanceList = [1, 5, 10, 20, 50, 500];
-  LatLng center = const LatLng(21.2408, 72.8806);
+  LatLng center = const LatLng(6.5244, 3.3792);
   List<UserData> userList = [];
   Set<Marker> marker = {};
   List<Place> items = [];

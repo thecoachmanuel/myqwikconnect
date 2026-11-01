@@ -58,6 +58,10 @@ class Urls {
       '${ConstRes.aBaseUrl}getExplorePageProfileList';
   static const String aGetRandomProfile =
       '${ConstRes.aBaseUrl}getRandomProfile';
+  static const String aPaystackInitialize =
+      '${ConstRes.aBaseUrl}paystack/initialize';
+  static const String aPaystackVerify =
+      '${ConstRes.aBaseUrl}paystack/verify';
   static const String aLogoutUser = '${ConstRes.aBaseUrl}logOutUser';
   static const String aNotificationUrl =
       '${ConstRes.aBaseUrl}pushNotificationToSingleUser';

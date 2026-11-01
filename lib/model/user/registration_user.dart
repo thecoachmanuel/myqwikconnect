@@ -525,7 +525,14 @@ class UserData {
   }
 
   String get address {
-    return country == null ? '' : '$city, $state, $country';
+    final parts = [city, state, country]
+        .where((s) => s != null && s.toString().trim().isNotEmpty && s.toString().trim() != 'null')
+        .map((s) => s.toString().trim())
+        .toList();
+    if (parts.isNotEmpty) {
+      return parts.join(', ');
+    }
+    return '';
   }
 
   String get locationDistance {

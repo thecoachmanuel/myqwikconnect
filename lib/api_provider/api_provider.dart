@@ -429,6 +429,67 @@ class ApiProvider {
     }
   }
 
+  Future<Map<String, dynamic>> initializePaystack({
+    required String email,
+    required double amount,
+    required int diamonds,
+    required String planId,
+    required String type,
+    int months = 1,
+  }) async {
+    try {
+      final response = await http.post(
+        Uri.parse(Urls.aPaystackInitialize),
+        headers: {Urls.apiKeyName: ConstRes.apiKey},
+        body: {
+          'email': email,
+          'amount': amount.toString(),
+          'diamonds': diamonds.toString(),
+          'plan_id': planId,
+          'type': type,
+          'months': months.toString(),
+          'user_id': SessionManager.instance.getUserID().toString(),
+        },
+      );
+      final json = jsonDecode(response.body);
+      if (json['status'] == true && json['data'] != null) {
+        return Map<String, dynamic>.from(json['data']);
+      }
+    } catch (e) {
+      log('initializePaystack error: $e');
+    }
+    return {};
+  }
+
+  Future<UserModel> verifyPaystack({
+    required String reference,
+    int diamonds = 0,
+    int months = 1,
+    required String type,
+  }) async {
+    try {
+      final response = await http.post(
+        Uri.parse(Urls.aPaystackVerify),
+        headers: {Urls.apiKeyName: ConstRes.apiKey},
+        body: {
+          'reference': reference,
+          'user_id': SessionManager.instance.getUserID().toString(),
+          'diamonds': diamonds.toString(),
+          'months': months.toString(),
+          'type': type,
+        },
+      );
+      final model = UserModel.fromJson(jsonDecode(response.body));
+      if (model.status == true && model.data != null) {
+        SessionManager.instance.setUser(model.data);
+      }
+      return model;
+    } catch (e) {
+      log('verifyPaystack error: $e');
+      return UserModel(status: false, message: e.toString());
+    }
+  }
+
   Future<SearchUser> searchUser(
       {required String searchKeyword, required int start}) async {
     http.Response response =

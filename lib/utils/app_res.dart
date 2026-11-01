@@ -40,7 +40,7 @@ class AppRes {
       'Hey, $name is now live';
 
   static String planName = 'Diamond';
-  static String defaultCurrencyCode = '\$';
+  static String defaultCurrencyCode = '₦';
 
   ///------------------------ Notification Topic ------------------------///
   static const String subscribeTopic = 'orange';

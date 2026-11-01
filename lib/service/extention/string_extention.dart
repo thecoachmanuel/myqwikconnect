@@ -1,8 +1,10 @@
 import 'dart:io';
-import 'dart:typed_data';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:orange_ui/common/dominant_color.dart';
+import 'package:orange_ui/utils/color_res.dart';
 import 'package:orange_ui/utils/const_res.dart';
 
 extension StringExtention on String {
@@ -67,15 +69,26 @@ extension StringExtention on String {
 
   Future<LinearGradient> get getGradientFromImage async {
     List<Color> colors = [];
-    Uint8List imageBytes = await File(this).readAsBytes();
     try {
+      Uint8List imageBytes;
+      if (kIsWeb) {
+        imageBytes = await XFile(this).readAsBytes();
+      } else {
+        imageBytes = await File(this).readAsBytes();
+      }
       DominantColors extractor =
           DominantColors(bytes: imageBytes, dominantColorsCount: 5);
-
-      List<Color> dominantColors = extractor.extractDominantColors();
-      colors = dominantColors;
-    } catch (e) {
+      colors = extractor.extractDominantColors();
+    } catch (_) {
       colors.clear();
+    }
+
+    if (colors.length < 2) {
+      return const LinearGradient(
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        colors: [ColorRes.lightOrange, ColorRes.themeColor],
+      );
     }
 
     return LinearGradient(

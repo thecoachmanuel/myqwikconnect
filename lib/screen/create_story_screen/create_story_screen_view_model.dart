@@ -63,6 +63,10 @@ class CreateStoryScreenViewModel extends BaseViewModel {
   }
 
   void recordVideoFallback() async {
+    recordInstantVideo();
+  }
+
+  void recordInstantVideo() async {
     try {
       final video = await imagePicker.pickVideo(
         source: ImageSource.camera,
@@ -73,7 +77,8 @@ class CreateStoryScreenViewModel extends BaseViewModel {
             () => CameraPreviewScreen(xFile: video, value: CameraType.video));
       }
     } catch (e) {
-      debugPrint('recordVideoFallback error: $e');
+      debugPrint('recordInstantVideo error: $e');
+      CommonUI.snackBar(message: 'Camera video error: $e');
     }
   }
 

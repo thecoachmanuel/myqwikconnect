@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:orange_ui/api_provider/api_provider.dart';
+import 'package:orange_ui/common/common_ui.dart';
 import 'package:orange_ui/common/screenshot_manager.dart';
 import 'package:orange_ui/screen/camera_preview_screen/camera_preview_screen.dart';
 import 'package:orange_ui/service/session_manager.dart';
@@ -63,12 +64,15 @@ class CameraPreviewScreenViewModel extends BaseViewModel {
   }
 
   void createStoryApiCall({required XFile xFile, required int duration}) {
+    CommonUI.lottieLoader();
     ApiProvider().multiPartCallApi(
         url: Urls.aCreateStory,
         completion: (response) {
           isStoryUploading.value = false;
-          Get.back();
-          Get.back();
+          Get.back(); // close loader
+          CommonUI.snackBar(message: 'Status uploaded successfully!');
+          Get.back(); // return from CameraPreviewScreen
+          Get.back(); // return to FeedScreen
         },
         param: {
           Urls.userId: SessionManager.instance.getUserID().toString(),

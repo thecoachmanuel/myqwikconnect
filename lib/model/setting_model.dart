@@ -382,6 +382,7 @@ class Appdata {
     this.streamAndGiftCommission,
     this.termsofuse,
     this.privacypolicy,
+    this.webMobileView = 1,
     this.createdAt,
     this.updatedAt,
   });
@@ -409,6 +410,11 @@ class Appdata {
     streamAndGiftCommission = json['stream_and_gift_commission'];
     termsofuse = json['termsofuse'];
     privacypolicy = json['privacypolicy'];
+    webMobileView = json['web_mobile_view'] != null
+        ? (json['web_mobile_view'] is int
+            ? json['web_mobile_view']
+            : int.tryParse(json['web_mobile_view'].toString()) ?? 1)
+        : 1;
     createdAt = json['created_at'];
     updatedAt = json['updated_at'];
   }
@@ -435,6 +441,7 @@ class Appdata {
   int? streamAndGiftCommission;
   String? termsofuse;
   String? privacypolicy;
+  int? webMobileView;
   String? createdAt;
   String? updatedAt;
 
@@ -462,6 +469,7 @@ class Appdata {
     map['stream_and_gift_commission'] = streamAndGiftCommission;
     map['termsofuse'] = termsofuse;
     map['privacypolicy'] = privacypolicy;
+    map['web_mobile_view'] = webMobileView;
     map['created_at'] = createdAt;
     map['updated_at'] = updatedAt;
     return map;

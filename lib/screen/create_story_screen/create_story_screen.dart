@@ -138,6 +138,17 @@ class CreateStoryScreen extends StatelessWidget {
                         ],
                       ),
                       const Spacer(),
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 10),
+                        child: Text(
+                          'Tap for Photo • Tap Video icon for 30s Record',
+                          style: TextStyle(
+                            color: ColorRes.white.withValues(alpha: 0.8),
+                            fontSize: 12,
+                            fontFamily: FontRes.medium,
+                          ),
+                        ),
+                      ),
                       Container(
                         margin: const EdgeInsets.only(bottom: 20),
                         child: Row(
@@ -147,6 +158,21 @@ class CreateStoryScreen extends StatelessWidget {
                               onTap: viewModel.onMediaTap,
                               child: Image.asset(AssetRes.icMedia,
                                   width: 30, height: 30),
+                            ),
+                            InkWell(
+                              onTap: viewModel.recordInstantVideo,
+                              child: Container(
+                                height: 42,
+                                width: 42,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: Colors.red.withValues(alpha: 0.3),
+                                  border: Border.all(color: Colors.red, width: 2),
+                                ),
+                                alignment: Alignment.center,
+                                child: const Icon(Icons.videocam_rounded,
+                                    color: Colors.white, size: 24),
+                              ),
                             ),
                             GestureDetector(
                               onTap: viewModel.captureImage,

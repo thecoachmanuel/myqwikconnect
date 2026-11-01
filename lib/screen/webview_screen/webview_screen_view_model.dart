@@ -1,11 +1,13 @@
+import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:orange_ui/api_provider/api_provider.dart';
+import 'package:http/http.dart' as http;
 import 'package:orange_ui/common/common_ui.dart';
 import 'package:orange_ui/service/session_manager.dart';
 import 'package:orange_ui/utils/color_res.dart';
 import 'package:orange_ui/utils/const_res.dart';
 import 'package:orange_ui/utils/font_res.dart';
+import 'package:orange_ui/utils/urls.dart';
 import 'package:stacked/stacked.dart';
 import 'package:webview_flutter_plus/webview_flutter_plus.dart';
 
@@ -56,28 +58,50 @@ class WebViewScreenViewModel extends BaseViewModel {
     if (found != null && found.trim().isNotEmpty) {
       contentText = found;
       notifyListeners();
-      return;
+    } else {
+      isLoading = true;
+      notifyListeners();
     }
 
-    // Background fetch if not available in cache
-    isLoading = true;
-    notifyListeners();
-    ApiProvider().getSettingData().then((val) {
+    final endpoint = isTerms ? 'viewTerms' : 'viewPrivacy';
+    http.post(
+      Uri.parse('${ConstRes.aBaseUrl}$endpoint'),
+      headers: {Urls.apiKeyName: ConstRes.apiKey},
+    ).then((res) {
       isLoading = false;
-      if (val.status == true && val.data != null) {
-        SessionManager.instance.setSettings(val.data);
-        contentText = isTerms
-            ? (val.data?.appdata?.termsofuse ?? '')
-            : (val.data?.appdata?.privacypolicy ?? '');
+      if (res.statusCode == 200) {
+        final data = jsonDecode(res.body);
+        final page = data['data'];
+        if (page != null) {
+          final text = isTerms
+              ? (page['termsofuse'] ?? page['terms'])
+              : (page['privacy'] ?? page['privacypolicy']);
+          if (text != null && text.toString().trim().isNotEmpty) {
+            contentText = text.toString();
+            final appdata = settings?.appdata;
+            if (appdata != null) {
+              if (isTerms) {
+                appdata.termsofuse = text.toString();
+              } else {
+                appdata.privacypolicy = text.toString();
+              }
+              SessionManager.instance.setSettings(settings);
+            }
+            notifyListeners();
+            return;
+          }
+        }
       }
       if (contentText.isEmpty) {
         contentText = isTerms ? _defaultTerms : _defaultPrivacy;
+        notifyListeners();
       }
-      notifyListeners();
     }).catchError((_) {
       isLoading = false;
-      contentText = isTerms ? _defaultTerms : _defaultPrivacy;
-      notifyListeners();
+      if (contentText.isEmpty) {
+        contentText = isTerms ? _defaultTerms : _defaultPrivacy;
+        notifyListeners();
+      }
     });
   }
 

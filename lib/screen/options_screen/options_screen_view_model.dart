@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:orange_ui/api_provider/api_provider.dart';
@@ -132,11 +133,9 @@ class OptionalScreenViewModel extends BaseViewModel {
   Future<void> onLogOutYesBtnClick() async {
     Get.back();
     try {
-      if (userData?.loginType == 1) {
-        await googleSignOut();
-      }
-      if (userData?.loginType == 4) {
-        await FirebaseAuth.instance.signOut();
+      await FirebaseAuth.instance.signOut();
+      if (!kIsWeb) {
+        await GoogleSignIn.instance.signOut();
       }
     } catch (e) {
       log("Sign out error: $e");

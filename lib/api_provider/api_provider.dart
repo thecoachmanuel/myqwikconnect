@@ -45,13 +45,17 @@ class ApiProvider {
       required String? fullName,
       required String? deviceToken,
       required int? loginType,
-      String? password}) async {
+      String? password,
+      String? firebaseUid}) async {
     Map<String, dynamic> map = {};
     map[Urls.fullName] = fullName;
     map[Urls.deviceToken] = deviceToken;
     map[Urls.deviceType] = AppPlatform.isAndroid ? Urls.aOne : Urls.aTwo;
     map[Urls.loginType] = loginType.toString();
     map[Urls.identity] = email;
+    if (firebaseUid != null && firebaseUid.isNotEmpty) {
+      map['firebase_uid'] = firebaseUid;
+    }
     http.Response response = await http.post(
       Uri.parse(Urls.aRegister),
       headers: {Urls.apiKeyName: ConstRes.apiKey},
@@ -453,12 +457,22 @@ class ApiProvider {
       );
       final json = jsonDecode(response.body);
       if (json['status'] == true && json['data'] != null) {
-        return Map<String, dynamic>.from(json['data']);
+        final data = Map<String, dynamic>.from(json['data']);
+        data['status'] = true;
+        return data;
+      } else {
+        return {
+          'status': false,
+          'message': json['message'] ?? 'Paystack initialization failed',
+        };
       }
     } catch (e) {
       log('initializePaystack error: $e');
+      return {
+        'status': false,
+        'message': 'Network error connecting to payment gateway: $e',
+      };
     }
-    return {};
   }
 
   Future<UserModel> verifyPaystack({

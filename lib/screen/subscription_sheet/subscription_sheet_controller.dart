@@ -51,14 +51,19 @@ class SubscriptionSheetController extends GetxController {
       final authUrl = paystackInit['authorization_url']?.toString();
       final reference = paystackInit['reference']?.toString();
 
-      if (authUrl != null && authUrl.isNotEmpty) {
-        final uri = Uri.tryParse(authUrl);
-        if (uri != null && await canLaunchUrl(uri)) {
-          if (kIsWeb) {
-            await launchUrl(uri, webOnlyWindowName: '_blank');
-          } else {
-            await launchUrl(uri, mode: LaunchMode.externalApplication);
-          }
+      if (paystackInit['status'] == false || authUrl == null || authUrl.isEmpty) {
+        final errorMsg = paystackInit['message']?.toString() ??
+            'Could not initialize Paystack payment. Please check your Paystack API keys.';
+        CommonUI.snackBar(message: errorMsg);
+        return;
+      }
+
+      final uri = Uri.tryParse(authUrl);
+      if (uri != null && await canLaunchUrl(uri)) {
+        if (kIsWeb) {
+          await launchUrl(uri, webOnlyWindowName: '_blank');
+        } else {
+          await launchUrl(uri, mode: LaunchMode.externalApplication);
         }
       }
 

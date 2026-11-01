@@ -68,14 +68,19 @@ class BottomDiamondShopModel extends BaseViewModel {
       final authUrl = paystackInit['authorization_url']?.toString();
       final reference = paystackInit['reference']?.toString();
 
-      if (authUrl != null && authUrl.isNotEmpty) {
-        final uri = Uri.tryParse(authUrl);
-        if (uri != null && await canLaunchUrl(uri)) {
-          if (kIsWeb) {
-            await launchUrl(uri, webOnlyWindowName: '_blank');
-          } else {
-            await launchUrl(uri, mode: LaunchMode.externalApplication);
-          }
+      if (paystackInit['status'] == false || authUrl == null || authUrl.isEmpty) {
+        final errorMsg = paystackInit['message']?.toString() ??
+            'Could not initialize Paystack payment. Please check your Paystack API keys.';
+        CommonUI.snackBar(message: errorMsg);
+        return;
+      }
+
+      final uri = Uri.tryParse(authUrl);
+      if (uri != null && await canLaunchUrl(uri)) {
+        if (kIsWeb) {
+          await launchUrl(uri, webOnlyWindowName: '_blank');
+        } else {
+          await launchUrl(uri, mode: LaunchMode.externalApplication);
         }
       }
 
@@ -98,15 +103,12 @@ class BottomDiamondShopModel extends BaseViewModel {
             if (verifyRes.status == true) {
               CommonUI.snackBar(
                   message: 'Added ${coinPlan.coin} diamonds to your wallet!');
-              final user = SessionManager.instance.getUser();
-              if (user != null) {
-                user.wallet = (user.wallet ?? 0) + coinPlan.coin;
-                SessionManager.instance.setUser(user);
-              }
+              // Re-fetch user profile from server for accurate wallet
+              ApiProvider().fetchMyUserProfile();
               Get.back(result: coinPlan.coin);
             } else {
               CommonUI.snackBar(
-                  message: verifyRes.message ?? 'Payment verification failed');
+                  message: verifyRes.message ?? 'Payment verification failed: payment was not completed on Paystack.');
             }
           },
         ),

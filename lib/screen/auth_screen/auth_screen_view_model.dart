@@ -1,6 +1,7 @@
 import 'dart:developer';
 
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -76,36 +77,59 @@ class AuthScreenViewModel extends BaseViewModel {
     UserCredential? credential;
     try {
       credential = await signInWithGoogle();
+    } on FirebaseAuthException catch (e) {
+      if (Get.isDialogOpen == true) Get.back();
+      log('Firebase Auth Error (Google): ${e.code} - ${e.message}');
+      CommonUI.snackBar(message: _getFirebaseErrorMessage(e));
+      return;
     } catch (e) {
-      log(e.toString());
-      Get.back();
+      if (Get.isDialogOpen == true) Get.back();
+      log('Google Sign-In Error: $e');
+      final err = e.toString().toLowerCase();
+      if (!err.contains('cancel') && !err.contains('abort') && !err.contains('closed')) {
+        CommonUI.snackBar(message: 'Google Sign-In failed: ${e.toString().replaceAll('Exception:', '').trim()}');
+      }
+      return;
     }
 
-    if (credential?.user == null) return;
+    if (credential?.user == null) {
+      if (Get.isDialogOpen == true) Get.back();
+      return;
+    }
     registration(
       email: credential?.user?.email ?? '',
       loginType: LoginType.google.value,
       fullName: credential?.user?.displayName ??
           credential?.user?.email?.split('@')[0] ??
-          'Unknown',
+          'User',
+      firebaseUid: credential?.user?.uid,
     );
   }
 
-  Future<UserCredential> signInWithGoogle() async {
-    signIn.initialize();
-    // Trigger the authentication flow
-    final GoogleSignInAccount googleUser =
-        await signIn.authenticate(scopeHint: ['email']);
+  Future<UserCredential?> signInWithGoogle() async {
+    if (kIsWeb) {
+      GoogleAuthProvider googleProvider = GoogleAuthProvider();
+      googleProvider.addScope('email');
+      googleProvider.addScope('profile');
+      return await FirebaseAuth.instance.signInWithPopup(googleProvider);
+    } else {
+      signIn.initialize();
+      // Trigger the authentication flow
+      final GoogleSignInAccount? googleUser =
+          await signIn.authenticate(scopeHint: ['email']);
+      if (googleUser == null) return null;
 
-    // Obtain the auth details from the request
-    final GoogleSignInAuthentication googleAuth = googleUser.authentication;
+      // Obtain the auth details from the request
+      final GoogleSignInAuthentication googleAuth = googleUser.authentication;
 
-    // Create a new credential
-    final credential =
-        GoogleAuthProvider.credential(idToken: googleAuth.idToken);
+      // Create a new credential
+      final credential = GoogleAuthProvider.credential(
+        idToken: googleAuth.idToken,
+      );
 
-    // Once signed in, return the UserCredential
-    return await FirebaseAuth.instance.signInWithCredential(credential);
+      // Once signed in, return the UserCredential
+      return await FirebaseAuth.instance.signInWithCredential(credential);
+    }
   }
 
   void registration(
@@ -113,6 +137,7 @@ class AuthScreenViewModel extends BaseViewModel {
       required String email,
       required String fullName,
       required int loginType,
+      String? firebaseUid,
       Function(UserData? userData)? onCompletion}) {
     FirebaseNotificationManager.shared.getNotificationToken(
       (token) {
@@ -121,10 +146,11 @@ class AuthScreenViewModel extends BaseViewModel {
                 email: email,
                 fullName: fullName,
                 deviceToken: token,
-                loginType: loginType)
+                loginType: loginType,
+                firebaseUid: firebaseUid ?? FirebaseAuth.instance.currentUser?.uid)
             .then((value) {
           if (value.status == true) {
-            Get.back();
+            if (Get.isDialogOpen == true) Get.back();
             if (isRegistration) {
               onCompletion?.call(value.data);
             } else {
@@ -151,11 +177,11 @@ class AuthScreenViewModel extends BaseViewModel {
               });
             }
           } else {
-            Get.back();
+            if (Get.isDialogOpen == true) Get.back();
             CommonUI.snackBar(message: value.message ?? 'Authentication failed');
           }
         }).catchError((e) {
-          Get.back();
+          if (Get.isDialogOpen == true) Get.back();
           CommonUI.snackBar(message: 'Authentication failed. Please check connection.');
         });
       },
@@ -252,36 +278,57 @@ class AuthScreenViewModel extends BaseViewModel {
     UserCredential? credential;
     try {
       credential = await signInWithApple();
-      log('EMAIL : ${credential.user?.email} FULLNAME : ${credential.user?.displayName ?? credential.user?.email?.split('@')[0]}');
+      log('EMAIL : ${credential?.user?.email} FULLNAME : ${credential?.user?.displayName ?? credential?.user?.email?.split('@')[0]}');
+    } on FirebaseAuthException catch (e) {
+      if (Get.isDialogOpen == true) Get.back();
+      log('Firebase Auth Error (Apple): ${e.code} - ${e.message}');
+      CommonUI.snackBar(message: _getFirebaseErrorMessage(e));
+      return;
     } catch (e) {
-      log('$e');
-      Get.back();
+      if (Get.isDialogOpen == true) Get.back();
+      log('Apple Sign-In Error: $e');
+      final err = e.toString().toLowerCase();
+      if (!err.contains('cancel') && !err.contains('canceled') && !err.contains('1001')) {
+        CommonUI.snackBar(message: 'Apple Sign-In failed. Please try again.');
+      }
+      return;
     }
-    if (credential?.user == null) return;
+    if (credential?.user == null) {
+      if (Get.isDialogOpen == true) Get.back();
+      return;
+    }
     registration(
       email: credential?.user?.email ?? '',
       loginType: LoginType.apple.value,
       fullName: credential?.user?.displayName ??
           credential?.user?.email?.split('@')[0] ??
-          'Unknown',
+          'User',
+      firebaseUid: credential?.user?.uid,
     );
   }
 
-  Future<UserCredential> signInWithApple() async {
-    // Request credential for the currently signed in Apple account.
-    final appleCredential = await SignInWithApple.getAppleIDCredential(
-      scopes: [
-        AppleIDAuthorizationScopes.email,
-        AppleIDAuthorizationScopes.fullName
-      ],
-    );
+  Future<UserCredential?> signInWithApple() async {
+    if (kIsWeb) {
+      OAuthProvider appleProvider = OAuthProvider("apple.com");
+      appleProvider.addScope('email');
+      appleProvider.addScope('name');
+      return await FirebaseAuth.instance.signInWithPopup(appleProvider);
+    } else {
+      // Request credential for the currently signed in Apple account.
+      final appleCredential = await SignInWithApple.getAppleIDCredential(
+        scopes: [
+          AppleIDAuthorizationScopes.email,
+          AppleIDAuthorizationScopes.fullName
+        ],
+      );
 
-    // Create an `OAuthCredential` from the credential returned by Apple.
-    final oauthCredential = OAuthProvider("apple.com").credential(
-        idToken: appleCredential.identityToken,
-        accessToken: appleCredential.authorizationCode);
+      // Create an `OAuthCredential` from the credential returned by Apple.
+      final oauthCredential = OAuthProvider("apple.com").credential(
+          idToken: appleCredential.identityToken,
+          accessToken: appleCredential.authorizationCode);
 
-    return await FirebaseAuth.instance.signInWithCredential(oauthCredential);
+      return await FirebaseAuth.instance.signInWithCredential(oauthCredential);
+    }
   }
 
   Future<void> navigateScreen({UserData? userData, bool isRegistration = false}) async {
@@ -373,10 +420,16 @@ class AuthScreenViewModel extends BaseViewModel {
     if (emailController.text.trim().isEmpty) {
       return CommonUI.snackBar(message: S.current.enterEmail);
     }
+    if (!GetUtils.isEmail(emailController.text.trim())) {
+      return CommonUI.snackBar(message: 'Please enter a valid email address');
+    }
     if (passwordController.text.trim().isEmpty) {
       return CommonUI.snackBar(message: S.current.enterPassword);
     }
     if (pageIndex == 1) {
+      if (passwordController.text.trim().length < 6) {
+        return CommonUI.snackBar(message: 'Password must be at least 6 characters');
+      }
       if (confirmPasswordController.text.trim().isEmpty) {
         return CommonUI.snackBar(message: S.current.enterConfirmPassword);
       }
@@ -401,12 +454,6 @@ class AuthScreenViewModel extends BaseViewModel {
         loginAsDemoUser();
         return;
       }
-      if (!GetUtils.isEmail(emailController.text.trim())) {
-        fakeLoginUser(
-            email: emailController.text.trim(),
-            password: passwordController.text.trim());
-        return;
-      }
       userCredential = await signInWithEmailAndPassword();
     } else {
       userCredential = await createUserWithEmailAndPassword();
@@ -426,6 +473,7 @@ class AuthScreenViewModel extends BaseViewModel {
         email: emailController.text.trim(),
         fullName: fullNameController.text.trim(),
         loginType: LoginType.email.value,
+        firebaseUid: userCredential.user?.uid,
         isRegistration: false,
       );
     } else {
@@ -436,6 +484,7 @@ class AuthScreenViewModel extends BaseViewModel {
             : (userCredential.user?.displayName ??
                 emailController.text.trim().split('@')[0]),
         loginType: LoginType.email.value,
+        firebaseUid: userCredential.user?.uid,
         isRegistration: false,
       );
     }
@@ -448,16 +497,15 @@ class AuthScreenViewModel extends BaseViewModel {
           password: passwordController.text.trim());
       return credential;
     } on FirebaseAuthException catch (e) {
-      Get.back();
-      if (e.code == 'user-not-found') {
-        CommonUI.snackBar(
-            message: S.current.noUserFoundWithThatEmailPleaseRegisterWithThis);
-      } else if (e.code == 'wrong-password') {
-        CommonUI.snackBar(
-            message: S.current.incorrectPasswordProvidedForThisUser);
-      }
+      if (Get.isDialogOpen == true) Get.back();
+      log('Firebase Auth Error (Login): ${e.code} - ${e.message}');
+      CommonUI.snackBar(message: _getFirebaseErrorMessage(e));
       return null;
     } catch (e) {
+      if (Get.isDialogOpen == true) Get.back();
+      log('Login unexpected error: $e');
+      CommonUI.snackBar(
+          message: 'Sign-in failed. Please check your credentials and try again.');
       return null;
     }
   }
@@ -470,16 +518,15 @@ class AuthScreenViewModel extends BaseViewModel {
               password: passwordController.text.trim());
       return credential;
     } on FirebaseAuthException catch (e) {
-      Get.back();
-      log(e.message.toString());
-      if (e.code == 'weak-password') {
-        CommonUI.snackBar(message: S.current.thePasswordProvidedIsTooWeak);
-      } else if (e.code == 'email-already-in-use') {
-        CommonUI.snackBar(
-            message: S.current.theAccountAlreadyExistsForThatEmail);
-      } else {
-        CommonUI.snackBar(message: e.message.toString());
-      }
+      if (Get.isDialogOpen == true) Get.back();
+      log('Firebase Auth Error (Register): ${e.code} - ${e.message}');
+      CommonUI.snackBar(message: _getFirebaseErrorMessage(e));
+      return null;
+    } catch (e) {
+      if (Get.isDialogOpen == true) Get.back();
+      log('Register unexpected error: $e');
+      CommonUI.snackBar(
+          message: 'Registration failed. Please check your network and try again.');
       return null;
     }
   }
@@ -492,18 +539,59 @@ class AuthScreenViewModel extends BaseViewModel {
     if (emailController.text.trim().isEmpty) {
       return CommonUI.snackBar(message: S.current.enterEmail);
     }
+    if (!GetUtils.isEmail(emailController.text.trim())) {
+      return CommonUI.snackBar(message: 'Please enter a valid email address');
+    }
     CommonUI.lottieLoader();
     try {
       await FirebaseAuth.instance
           .sendPasswordResetEmail(email: emailController.text.trim());
-      Get.back();
+      if (Get.isDialogOpen == true) Get.back();
       Get.back();
       CommonUI.snackBar(
           message: S.current.aResetPasswordLinkHasBeenSentToYourEmail);
     } on FirebaseAuthException catch (e) {
-      Get.back();
-      CommonUI.snackBar(
-          message: e.message ?? "An error occurred. Please try again.");
+      if (Get.isDialogOpen == true) Get.back();
+      CommonUI.snackBar(message: _getFirebaseErrorMessage(e));
+    } catch (e) {
+      if (Get.isDialogOpen == true) Get.back();
+      CommonUI.snackBar(message: 'Failed to send reset link. Please try again.');
+    }
+  }
+
+  String _getFirebaseErrorMessage(FirebaseAuthException e) {
+    switch (e.code.toLowerCase()) {
+      case 'invalid-credential':
+      case 'invalid_login_credentials':
+      case 'wrong-password':
+        return 'Incorrect email or password. Please verify your credentials or register an account.';
+      case 'user-not-found':
+        return 'No account found with this email. Please switch to the Register tab to create an account.';
+      case 'email-already-in-use':
+        return 'An account already exists with this email address. Please switch to Log In.';
+      case 'weak-password':
+        return 'The password provided is too weak. Please use at least 6 characters.';
+      case 'invalid-email':
+        return 'The email address is invalid. Please enter a valid email address.';
+      case 'user-disabled':
+        return 'This account has been disabled. Please contact customer support.';
+      case 'too-many-requests':
+        return 'Too many failed attempts. Access is temporarily disabled. Please try again later.';
+      case 'operation-not-allowed':
+        return 'This sign-in method is currently disabled in Firebase Console. Please enable it in Firebase Console > Authentication > Sign-in method.';
+      case 'unauthorized-domain':
+        return 'This domain is not authorized in Firebase Console. Please add your web domain to Firebase Console > Authentication > Settings > Authorized domains.';
+      case 'network-request-failed':
+        return 'Network connection error. Please check your internet connection and try again.';
+      case 'popup-closed-by-user':
+        return 'Sign-in popup was closed before completing.';
+      case 'account-exists-with-different-credential':
+        return 'An account already exists with the same email using a different sign-in provider.';
+      default:
+        if (e.message != null && e.message!.isNotEmpty) {
+          return e.message!;
+        }
+        return 'Authentication failed (${e.code}). Please try again.';
     }
   }
 }

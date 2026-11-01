@@ -55,12 +55,10 @@ Future<void> main() async {
     usePathUrlStrategy();
   }
   try {
-    if (kIsWeb) {
+    if (Firebase.apps.isEmpty) {
       await Firebase.initializeApp(
         options: DefaultFirebaseOptions.currentPlatform,
       );
-    } else {
-      await Firebase.initializeApp();
     }
   } catch (e) {
     debugPrint('Firebase initialization error: $e');
@@ -118,7 +116,42 @@ class _MyAppState extends State<MyApp> {
       onInit: () {
         Get.lazyPut(() => SelectCountryController(), fenix: true);
       },
-      builder: (context, child) => ScrollConfiguration(behavior: MyBehavior(), child: child!),
+      builder: (context, child) {
+        final content = ScrollConfiguration(behavior: MyBehavior(), child: child!);
+        if (!kIsWeb) return content;
+
+        final isMobileViewEnabled =
+            (SessionManager.instance.getSettings()?.appdata?.webMobileView ?? 1) == 1;
+
+        final screenWidth = MediaQuery.of(context).size.width;
+        if (!isMobileViewEnabled || screenWidth <= 520) {
+          return content;
+        }
+
+        return Container(
+          color: const Color(0xFF18191A),
+          alignment: Alignment.center,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 480),
+            child: Container(
+              clipBehavior: Clip.antiAlias,
+              decoration: BoxDecoration(
+                color: ColorRes.white,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.4),
+                    blurRadius: 30,
+                    spreadRadius: 4,
+                    offset: const Offset(0, 10),
+                  ),
+                ],
+              ),
+              child: content,
+            ),
+          ),
+        );
+      },
       supportedLocales: S.delegate.supportedLocales,
       locale: Locale(
         S.delegate.isSupported(Locale(LanguagesScreenViewModel.selectedLanguage))

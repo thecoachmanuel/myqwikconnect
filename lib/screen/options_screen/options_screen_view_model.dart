@@ -145,10 +145,9 @@ class OptionalScreenViewModel extends BaseViewModel {
     try {
       await ApiProvider().logoutUser();
     } catch (_) {}
-    SessionManager.instance.clearSomeKey();
-    SessionManager.instance.setBool(key: SessionKeys.isLogin, value: false);
+    SessionManager.instance.cleanSession();
     CommonUI.snackBarWidget(S.current.logOut);
-    Get.offAll(() => const AuthScreen());
+    Get.offAll(() => const AuthScreen(), routeName: '/auth');
   }
 
   void onLogoutTap() async {

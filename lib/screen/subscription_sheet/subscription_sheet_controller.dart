@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import 'package:orange_ui/api_provider/api_provider.dart';
 import 'package:orange_ui/common/common_ui.dart';
@@ -53,7 +54,11 @@ class SubscriptionSheetController extends GetxController {
       if (authUrl != null && authUrl.isNotEmpty) {
         final uri = Uri.tryParse(authUrl);
         if (uri != null && await canLaunchUrl(uri)) {
-          await launchUrl(uri, mode: LaunchMode.externalApplication);
+          if (kIsWeb) {
+            await launchUrl(uri, webOnlyWindowName: '_blank');
+          } else {
+            await launchUrl(uri, mode: LaunchMode.externalApplication);
+          }
         }
       }
 

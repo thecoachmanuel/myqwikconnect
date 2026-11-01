@@ -53,36 +53,41 @@ class RandomStreamingScreen extends StatelessWidget {
                         ? AgoraVideoView(
                             controller: VideoViewController(rtcEngine: model.engine, canvas: const VideoCanvas(uid: 0)))
                         : CommonUI.lottieWidget(),
-                InkWell(
-                  onTap: () {
-                    model.commentFocus.unfocus();
-                  },
-                  splashColor: ColorRes.transparent,
-                  highlightColor: ColorRes.transparent,
-                  child: Column(
-                    children: [
-                      RandomStreamTopBarArea(
-                        onEndBtnTap: model.onEndBtnTap,
-                        onDiamondTap: model.onDiamondTap,
-                        onSpeakerTap: model.onSpeakerTap,
-                        onCameraTap: model.onCameraTap,
-                        mute: model.muted,
-                        user: model.liveStreamUser,
+                Column(
+                  children: [
+                    RandomStreamTopBarArea(
+                      onEndBtnTap: model.onEndBtnTap,
+                      onDiamondTap: model.onDiamondTap,
+                      onSpeakerTap: model.onSpeakerTap,
+                      onCameraTap: model.onCameraTap,
+                      mute: model.muted,
+                      user: model.liveStreamUser,
+                    ),
+                    Expanded(
+                      child: GestureDetector(
+                        behavior: HitTestBehavior.translucent,
+                        onTap: () {
+                          model.commentFocus.unfocus();
+                        },
+                        child: Column(
+                          children: [
+                            const Spacer(),
+                            CommentListArea(
+                              commentList: model.commentList,
+                              pageContext: context,
+                            ),
+                            BottomTextField(
+                              commentController: model.commentController,
+                              onMsgSend: model.onCommentSend,
+                              commentFocus: model.commentFocus,
+                            ),
+                            const SizedBox(height: 16),
+                          ],
+                        ),
                       ),
-                      const Spacer(),
-                      CommentListArea(
-                        commentList: model.commentList,
-                        pageContext: context,
-                      ),
-                      BottomTextField(
-                        commentController: model.commentController,
-                        onMsgSend: model.onCommentSend,
-                        commentFocus: model.commentFocus,
-                      ),
-                      const SizedBox(height: 16),
-                    ],
-                  ),
-                )
+                    ),
+                  ],
+                ),
               ],
             ),
           ),

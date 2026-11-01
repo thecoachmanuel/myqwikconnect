@@ -83,6 +83,9 @@ class RandomStreamingScreenViewModel extends BaseViewModel {
           channelProfile: ChannelProfileType.channelProfileLiveBroadcasting));
       // Enable the video module
       await engine.enableVideo();
+      // Enable audio module
+      await engine.enableAudio();
+      await engine.muteLocalAudioStream(false);
       // Enable local video preview
       await engine.startPreview();
       localUserJoined = true;
@@ -239,8 +242,12 @@ class RandomStreamingScreenViewModel extends BaseViewModel {
   void onSpeakerTap() {
     muted = !muted;
     notifyListeners();
-    engine.muteLocalAudioStream(muted);
-    engine.muteAllRemoteAudioStreams(muted);
+    try {
+      engine.muteLocalAudioStream(muted);
+      engine.muteAllRemoteAudioStreams(muted);
+    } catch (e) {
+      debugPrint('mute audio error: $e');
+    }
   }
 
   void onDiamondTap() {}

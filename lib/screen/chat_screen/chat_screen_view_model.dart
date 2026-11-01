@@ -80,11 +80,22 @@ class ChatScreenViewModel extends BaseViewModel {
     scrollToGetChat();
   }
 
+  String _getChatStorageKey() {
+    final int myId = registrationUserData?.id ?? SessionManager.instance.getUserID();
+    final convId = conversation.conversationId ?? conversationID;
+    return 'chat_${myId}_$convId';
+  }
+
   void _loadCachedChat() {
     try {
       final convId = conversation.conversationId ?? conversationID;
       if (convId.isEmpty) return;
-      final cached = SessionManager.instance.storage.read('chat_$convId');
+      final key = _getChatStorageKey();
+      var cached = SessionManager.instance.storage.read(key);
+      if (cached == null || (cached is List && cached.isEmpty)) {
+        // Fallback to legacy key
+        cached = SessionManager.instance.storage.read('chat_$convId');
+      }
       if (cached != null && cached is List && cached.isNotEmpty && chatData.isEmpty) {
         final List<ChatMessage> cachedList = [];
         for (var item in cached) {
@@ -106,7 +117,9 @@ class ChatScreenViewModel extends BaseViewModel {
       final convId = conversation.conversationId ?? conversationID;
       if (convId.isEmpty) return;
       if (chatData.isNotEmpty) {
-        final toSave = chatData.take(60).map((e) => e.toJson()).toList();
+        final toSave = chatData.take(100).map((e) => e.toJson()).toList();
+        final key = _getChatStorageKey();
+        SessionManager.instance.storage.write(key, toSave);
         SessionManager.instance.storage.write('chat_$convId', toSave);
         SessionManager.instance.storage.save();
       }
@@ -764,18 +777,19 @@ class ChatScreenViewModel extends BaseViewModel {
           )
           .snapshots()
           .listen((snapshot) {
-        final myId =
-            '${registrationUserData?.id ?? SessionManager.instance.getUserID()}';
-        final double delTime =
-            deletedId.isNotEmpty ? (double.tryParse(deletedId) ?? 0.0) : 0.0;
+        final myIdNum =
+            registrationUserData?.id ?? SessionManager.instance.getUserID();
+        final myIdStr = myIdNum.toString();
 
         final incoming = snapshot.docs
             .map((doc) => doc.data())
             .where((msg) {
-              if (delTime > 0.0 && (msg.time ?? 0.0) <= delTime) return false;
-              if (msg.notDeletedIdentities != null &&
+              // Only filter out if the message was explicitly deleted by this specific user
+              if (myIdNum > 0 &&
+                  msg.notDeletedIdentities != null &&
                   msg.notDeletedIdentities!.isNotEmpty &&
-                  !msg.notDeletedIdentities!.contains(myId)) {
+                  !msg.notDeletedIdentities!.contains(myIdStr) &&
+                  !msg.notDeletedIdentities!.contains(myIdNum)) {
                 return false;
               }
               return true;
@@ -856,6 +870,7 @@ class ChatScreenViewModel extends BaseViewModel {
     senderCon[FirebaseRes.lastMsg] = lastMessage;
     senderCon[FirebaseRes.time] = time.toDouble();
     senderCon[FirebaseRes.isDeleted] = false;
+    senderCon[FirebaseRes.deletedId] = '';
     final senderFuture = documentSender.set(senderCon, SetOptions(merge: true));
 
     // 3. Receiver conversation update (upsert with merge)

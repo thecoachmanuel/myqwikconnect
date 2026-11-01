@@ -32,15 +32,49 @@ class CreateStoryScreenViewModel extends BaseViewModel {
     });
   }
 
-  void captureImage() {
-    RetrytechPlugin.shared.captureImage().then((value) async {
+  void captureImage() async {
+    try {
+      final value = await RetrytechPlugin.shared.captureImage();
       imageCache.clear();
       imageCache.clearLiveImages();
-      if (value == null) return;
-      final bgColor = await value.getGradientFromImage;
-      Get.to(() => CameraPreviewScreen(
-          xFile: XFile(value), value: CameraType.image, bgColor: bgColor));
-    });
+      if (value != null && value.isNotEmpty) {
+        final bgColor = await value.getGradientFromImage;
+        Get.to(() => CameraPreviewScreen(
+            xFile: XFile(value), value: CameraType.image, bgColor: bgColor));
+        return;
+      }
+    } catch (_) {}
+
+    try {
+      final picked = await imagePicker.pickImage(
+        source: ImageSource.camera,
+        imageQuality: AppRes.quality,
+        maxHeight: AppRes.maxHeight,
+        maxWidth: AppRes.maxWidth,
+      );
+      if (picked != null) {
+        final bgColor = await picked.path.getGradientFromImage;
+        Get.to(() => CameraPreviewScreen(
+            xFile: picked, value: CameraType.image, bgColor: bgColor));
+      }
+    } catch (e) {
+      debugPrint('captureImage camera error: $e');
+    }
+  }
+
+  void recordVideoFallback() async {
+    try {
+      final video = await imagePicker.pickVideo(
+        source: ImageSource.camera,
+        maxDuration: const Duration(seconds: 30),
+      );
+      if (video != null) {
+        Get.to(
+            () => CameraPreviewScreen(xFile: video, value: CameraType.video));
+      }
+    } catch (e) {
+      debugPrint('recordVideoFallback error: $e');
+    }
   }
 
   void onCameraFlip() {
@@ -49,22 +83,28 @@ class CreateStoryScreenViewModel extends BaseViewModel {
 
   void onCaptureVideoStart(LongPressStartDetails details) async {
     HapticFeedback.mediumImpact();
-    RetrytechPlugin.shared.startRecording;
-    setCurrentTimerClock();
+    try {
+      RetrytechPlugin.shared.startRecording;
+      setCurrentTimerClock();
+    } catch (_) {
+      recordVideoFallback();
+    }
   }
 
   void onCaptureVideoEnd(LongPressEndDetails details) {
     timer?.cancel();
-    RetrytechPlugin.shared.stopRecording.then((value) {
-      if (value == null) return;
-      Get.to(() => CameraPreviewScreen(
-            xFile: XFile(value),
-            value: CameraType.video,
-          ))?.then((value) {
-        currentTime = ''.obs;
-        notifyListeners();
-      });
-    });
+    try {
+      RetrytechPlugin.shared.stopRecording.then((value) {
+        if (value == null) return;
+        Get.to(() => CameraPreviewScreen(
+              xFile: XFile(value),
+              value: CameraType.video,
+            ))?.then((value) {
+          currentTime = ''.obs;
+          notifyListeners();
+        });
+      }).catchError((_) {});
+    } catch (_) {}
   }
 
   void setCurrentTimerClock() {

@@ -21,13 +21,22 @@ class SplashScreenViewModel extends BaseViewModel {
     if (kIsWeb) {
       if (isLogin && cachedUser != null && cachedUser.id != null) {
         _hasNavigated = true;
-        AuthScreenViewModel().navigateScreen(userData: cachedUser);
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          AuthScreenViewModel().navigateScreen(userData: cachedUser);
+        });
         _syncInBackground();
       } else {
-        _hasNavigated = true;
         _navigate(() => const AuthScreen());
         _syncInBackground();
       }
+
+      // Safety watchdog for web: if still on splash after 1.5s, force navigate
+      Future.delayed(const Duration(milliseconds: 1500), () {
+        if (!_hasNavigated) {
+          _hasNavigated = true;
+          Get.offAll(() => const AuthScreen(), routeName: '/auth');
+        }
+      });
       return;
     }
 
@@ -118,7 +127,9 @@ class SplashScreenViewModel extends BaseViewModel {
   void _navigate(Widget Function() page, {String? routeName}) {
     if (_hasNavigated) return;
     _hasNavigated = true;
-    Get.off(page, routeName: routeName ?? '/auth');
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Get.offAll(page, routeName: routeName ?? '/auth');
+    });
   }
 
   void fetchProfile() async {

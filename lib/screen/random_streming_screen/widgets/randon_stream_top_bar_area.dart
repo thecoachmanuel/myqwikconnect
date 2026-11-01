@@ -101,73 +101,83 @@ class RandomStreamTopBarArea extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 6),
-          InkWell(
-            onTap: onDiamondTap,
-            child: Container(
-              height: 45,
-              width: Get.width,
-              margin: const EdgeInsets.symmetric(horizontal: 10),
-              padding: const EdgeInsets.symmetric(horizontal: 5),
-              decoration: ShapeDecoration(
-                color: ColorRes.black.withValues(alpha: 0.33),
-                shape: SmoothRectangleBorder(
-                    borderRadius: SmoothBorderRadius(
-                        cornerRadius: 30, cornerSmoothing: 1)),
-              ),
-              child: Row(
-                spacing: 5,
-                children: [
-                  const SizedBox(width: 5),
-                  Image.asset(AssetRes.diamond, width: 15, height: 15),
-                  Expanded(
-                    child: Text(
-                      "${user?.collectedDiamond?.numberFormat} ${S.current.collected}",
-                      style:
-                          const TextStyle(color: ColorRes.white, fontSize: 13),
-                    ),
-                  ),
-                  InkWell(
-                    borderRadius: BorderRadius.circular(37),
-                    onTap: onCameraTap,
-                    child: Container(
-                      height: 37,
-                      width: 37,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: ColorRes.black.withValues(alpha: 0.33),
-                      ),
-                      child: Center(
-                        child: Image.asset(
-                          AssetRes.icCameraFlip,
-                          height: 18,
-                          width: 18,
-                          color: ColorRes.white,
+          Container(
+            height: 45,
+            width: Get.width,
+            margin: const EdgeInsets.symmetric(horizontal: 10),
+            padding: const EdgeInsets.symmetric(horizontal: 5),
+            decoration: ShapeDecoration(
+              color: ColorRes.black.withValues(alpha: 0.33),
+              shape: SmoothRectangleBorder(
+                  borderRadius: SmoothBorderRadius(
+                      cornerRadius: 30, cornerSmoothing: 1)),
+            ),
+            child: Row(
+              spacing: 5,
+              children: [
+                const SizedBox(width: 5),
+                Expanded(
+                  child: InkWell(
+                    onTap: onDiamondTap,
+                    borderRadius: BorderRadius.circular(20),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Image.asset(AssetRes.diamond, width: 15, height: 15),
+                        const SizedBox(width: 5),
+                        Flexible(
+                          child: Text(
+                            "${user?.collectedDiamond?.numberFormat} ${S.current.collected}",
+                            style: const TextStyle(
+                                color: ColorRes.white, fontSize: 13),
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ),
+                      ],
+                    ),
+                  ),
+                ),
+                GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: onCameraTap,
+                  child: Container(
+                    height: 37,
+                    width: 37,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: ColorRes.black.withValues(alpha: 0.33),
+                    ),
+                    child: Center(
+                      child: Image.asset(
+                        AssetRes.icCameraFlip,
+                        height: 18,
+                        width: 18,
+                        color: ColorRes.white,
                       ),
                     ),
                   ),
-                  InkWell(
-                    borderRadius: BorderRadius.circular(37),
-                    onTap: onSpeakerTap,
-                    child: Container(
-                      height: 37,
-                      width: 37,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: ColorRes.black.withValues(alpha: 0.33),
-                      ),
-                      child: Center(
-                        child: Image.asset(
-                          !mute ? AssetRes.speaker : AssetRes.speakerOff,
-                          color: ColorRes.white,
-                          height: 15,
-                          width: 15,
-                        ),
+                ),
+                GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: onSpeakerTap,
+                  child: Container(
+                    height: 37,
+                    width: 37,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: ColorRes.black.withValues(alpha: 0.33),
+                    ),
+                    child: Center(
+                      child: Image.asset(
+                        !mute ? AssetRes.speaker : AssetRes.speakerOff,
+                        color: ColorRes.white,
+                        height: 15,
+                        width: 15,
                       ),
                     ),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
         ],

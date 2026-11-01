@@ -45,8 +45,11 @@ class DashboardScreen extends StatelessWidget {
                   unreadCount: model.unreadNotificationCount,
                 ),
                 Expanded(
-                  child: LazyIndexedStack(
-                    index: safeIndex,
+                  child: PageView(
+                    controller: model.pageController,
+                    physics: const PageScrollPhysics(),
+                    pageSnapping: true,
+                    onPageChanged: model.onPageChanged,
                     children: pages,
                   ),
                 ),

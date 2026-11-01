@@ -107,7 +107,24 @@
       navigator.serviceWorker.getRegistrations().then(function(registrations) {
         for (var registration of registrations) {
           registration.update();
+          if (registration.waiting) {
+            registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+          }
+          registration.addEventListener('updatefound', function() {
+            var newWorker = registration.installing;
+            if (newWorker) {
+              newWorker.addEventListener('statechange', function() {
+                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                  newWorker.postMessage({ type: 'SKIP_WAITING' });
+                }
+              });
+            }
+          });
         }
+      });
+      navigator.serviceWorker.addEventListener('controllerchange', function() {
+        console.log('New app version detected, reloading...');
+        window.location.reload();
       });
     }
     var script = document.createElement('script');

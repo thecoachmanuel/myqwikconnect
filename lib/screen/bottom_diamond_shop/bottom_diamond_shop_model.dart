@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import 'package:orange_ui/api_provider/api_provider.dart';
 import 'package:orange_ui/common/common_ui.dart';
@@ -22,37 +23,27 @@ class BottomDiamondShopModel extends BaseViewModel {
   void fetchDiamondPackage() {
     isLoading = true;
     notifyListeners();
-    List<Package> items = SubscriptionManager.shared.offering;
-    offerings.addAll(items);
     ApiProvider().getDiamondPack().then((value) async {
-      final currency = SessionManager.instance.getSettings()?.appdata?.currency ??
-          AppRes.defaultCurrencyCode;
+      coinPlans.clear();
+      final currency = SessionManager.instance.getSettings()?.appdata?.currency ?? '₦';
+      final currencySymbol = (currency.trim().isNotEmpty && currency.trim() != '\$')
+          ? currency.trim()
+          : '₦';
 
       for (DiamondPack data in value.data ?? []) {
-        bool matched = false;
-        for (var element in offerings) {
-          if ([data.iosProductId, data.androidProductId]
-              .contains(element.storeProduct.identifier)) {
-            coinPlans.add(CoinPlan(
-                data.amount ?? 0,
-                data.id ?? -1,
-                element.storeProduct.identifier,
-                element.storeProduct.priceString,
-                amountPrice: (data.price ?? 1500).toDouble()));
-            matched = true;
-          }
-        }
-        if (!matched) {
-          final price = data.price != null && data.price! > 0
-              ? data.price!
-              : ((data.amount ?? 100) * 15);
-          coinPlans.add(CoinPlan(
-              data.amount ?? 0,
-              data.id ?? -1,
-              data.androidProductId ?? 'coin_${data.amount}',
-              '$currency$price',
-              amountPrice: price.toDouble()));
-        }
+        final price = data.price != null && data.price! > 0
+            ? data.price!
+            : ((data.amount ?? 100) * 15);
+        final formattedPrice = price.toString().replaceAllMapped(
+            RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]},');
+
+        coinPlans.add(CoinPlan(
+          data.amount ?? 0,
+          data.id ?? -1,
+          data.androidProductId ?? 'coin_${data.amount}',
+          '$currencySymbol$formattedPrice',
+          amountPrice: price.toDouble(),
+        ));
       }
       isLoading = false;
       notifyListeners();
@@ -82,7 +73,11 @@ class BottomDiamondShopModel extends BaseViewModel {
       if (authUrl != null && authUrl.isNotEmpty) {
         final uri = Uri.tryParse(authUrl);
         if (uri != null && await canLaunchUrl(uri)) {
-          await launchUrl(uri, mode: LaunchMode.externalApplication);
+          if (kIsWeb) {
+            await launchUrl(uri, webOnlyWindowName: '_blank');
+          } else {
+            await launchUrl(uri, mode: LaunchMode.externalApplication);
+          }
         }
       }
 
@@ -105,6 +100,11 @@ class BottomDiamondShopModel extends BaseViewModel {
             if (verifyRes.status == true) {
               CommonUI.snackBar(
                   message: 'Added ${coinPlan.coin} diamonds to your wallet!');
+              final user = SessionManager.instance.getUser();
+              if (user != null) {
+                user.wallet = (user.wallet ?? 0) + coinPlan.coin;
+                SessionManager.instance.setUser(user);
+              }
               Get.back(result: coinPlan.coin);
             } else {
               CommonUI.snackBar(

@@ -142,11 +142,22 @@ class SessionManager {
     storage.erase();
   }
 
-  void clearSomeKey() {
+  void cleanSession() {
+    final uid = getUserID();
     storage.remove(SessionKeys.isLogin);
     storage.remove(SessionKeys.user);
     storage.remove(SessionKeys.authToken);
     storage.remove(SessionKeys.password);
+    if (uid > 0) {
+      storage.remove('inbox_$uid');
+    }
+    storage.remove('dashboard_active_tab_index');
+    notifyCount.value = 0;
+    isModerator.value = 0;
+  }
+
+  void clearSomeKey() {
+    cleanSession();
   }
 }
 

@@ -1,4 +1,5 @@
 import 'package:figma_squircle/figma_squircle.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:orange_ui/common/common_fun.dart';
@@ -26,17 +27,61 @@ class CreateStoryScreen extends StatelessWidget {
           body: ClipRRect(
             child: Stack(
               children: [
-                Align(
-                  alignment: Alignment.center,
-                  child: AspectRatio(
-                    aspectRatio: 0.52,
-                    child: ClipSmoothRect(
-                      radius: SmoothBorderRadius(
-                          cornerRadius: 20, cornerSmoothing: 1),
-                      child: RetrytechPlugin.shared.cameraView,
-                    ),
-                  ),
-                ),
+                kIsWeb
+                    ? Center(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.camera_alt_rounded,
+                                color: ColorRes.white, size: 64),
+                            const SizedBox(height: 20),
+                            ElevatedButton.icon(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: ColorRes.themeColor,
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(30)),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 24, vertical: 12),
+                              ),
+                              onPressed: viewModel.captureImage,
+                              icon: const Icon(Icons.camera_alt,
+                                  color: Colors.white),
+                              label: const Text('Take Photo with Camera',
+                                  style: TextStyle(
+                                      color: Colors.white,
+                                      fontFamily: FontRes.semiBold)),
+                            ),
+                            const SizedBox(height: 12),
+                            OutlinedButton.icon(
+                              style: OutlinedButton.styleFrom(
+                                side: const BorderSide(color: Colors.white),
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(30)),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 24, vertical: 12),
+                              ),
+                              onPressed: viewModel.recordVideoFallback,
+                              icon: const Icon(Icons.videocam,
+                                  color: Colors.white),
+                              label: const Text('Record Video with Camera',
+                                  style: TextStyle(
+                                      color: Colors.white,
+                                      fontFamily: FontRes.semiBold)),
+                            ),
+                          ],
+                        ),
+                      )
+                    : Align(
+                        alignment: Alignment.center,
+                        child: AspectRatio(
+                          aspectRatio: 0.52,
+                          child: ClipSmoothRect(
+                            radius: SmoothBorderRadius(
+                                cornerRadius: 20, cornerSmoothing: 1),
+                            child: RetrytechPlugin.shared.cameraView,
+                          ),
+                        ),
+                      ),
                 SafeArea(
                   child: Column(
                     children: [

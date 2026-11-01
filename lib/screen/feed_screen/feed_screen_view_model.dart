@@ -16,6 +16,7 @@ import 'package:orange_ui/screen/create_post_screen/create_post_screen.dart';
 import 'package:orange_ui/screen/story_view_screen/story_view_screen.dart';
 import 'package:orange_ui/screen/user_report_screen/report_sheet.dart';
 
+import 'package:orange_ui/service/post_upload_service.dart';
 import 'package:orange_ui/service/session_manager.dart';
 import 'package:orange_ui/service/share_manager.dart';
 import 'package:orange_ui/utils/color_res.dart';
@@ -40,6 +41,13 @@ class FeedScreenViewModel extends BaseViewModel {
     prefData();
     fetchFeedData();
     fetchScrollData();
+    PostUploadService.instance.newlyCreatedPost.listen((Post? newPost) {
+      if (newPost != null) {
+        postList.removeWhere((p) => p.id == newPost.id);
+        postList.insert(0, newPost);
+        notifyListeners();
+      }
+    });
   }
 
   Future<void> onRefresh() async {

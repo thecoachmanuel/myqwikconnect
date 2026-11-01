@@ -122,19 +122,33 @@ class AuthScreenViewModel extends BaseViewModel {
             } else {
               SessionManager.instance
                   .setBool(key: SessionKeys.isLogin, value: true);
+              if (value.data != null) {
+                SessionManager.instance.setUser(value.data);
+              }
               navigateScreen(userData: value.data);
             }
             notifyListeners();
 
-            ApiProvider()
-                .updateProfile(appLanguage: value.data?.appLanguage)
-                .then((value) {
-              RestartWidget.restartApp(Get.context!);
-              SessionManager.instance.setString(
-                  key: SessionKeys.languageCode,
-                  value: value.data?.appLanguage ?? AppPlatform.languageCode);
-            });
+            if (value.data?.appLanguage != null &&
+                value.data?.appLanguage !=
+                    SessionManager.instance
+                        .getString(key: SessionKeys.languageCode)) {
+              ApiProvider()
+                  .updateProfile(appLanguage: value.data?.appLanguage)
+                  .then((res) {
+                SessionManager.instance.setString(
+                    key: SessionKeys.languageCode,
+                    value: res.data?.appLanguage ?? AppPlatform.languageCode);
+                RestartWidget.restartApp(Get.context!);
+              });
+            }
+          } else {
+            Get.back();
+            CommonUI.snackBar(message: value.message ?? 'Authentication failed');
           }
+        }).catchError((e) {
+          Get.back();
+          CommonUI.snackBar(message: 'Authentication failed. Please check connection.');
         });
       },
     );
@@ -397,29 +411,31 @@ class AuthScreenViewModel extends BaseViewModel {
     if (userCredential == null) return;
     SessionManager.instance.setString(
         key: SessionKeys.password, value: passwordController.text.trim());
-    if (pageIndex == 0) {
-      if (userCredential.user?.emailVerified == false) {
-        Get.back();
-        return CommonUI.snackBar(
-            message: S.current.pleaseVerifyYourEmailFromYourInbox);
-      }
-    }
-    registration(
+    if (pageIndex == 1) {
+      try {
+        userCredential?.user
+            ?.updateDisplayName(fullNameController.text.trim());
+      } catch (_) {}
+      try {
+        userCredential?.user?.sendEmailVerification();
+      } catch (_) {}
+      registration(
         email: emailController.text.trim(),
         fullName: fullNameController.text.trim(),
         loginType: LoginType.email.value,
-        isRegistration: pageIndex == 1 ? true : false,
-        onCompletion: (userData) {
-          pageIndex = 0;
-          pageController.animateToPage(pageIndex,
-              duration: const Duration(milliseconds: 250),
-              curve: Curves.linear);
-          userCredential?.user
-              ?.updateDisplayName(fullNameController.text.trim());
-          userCredential?.user?.sendEmailVerification();
-          CommonUI.snackBar(
-              message: S.current.aVerificationLinkHasBeenSentToYourEmailPlease);
-        });
+        isRegistration: false,
+      );
+    } else {
+      registration(
+        email: emailController.text.trim(),
+        fullName: fullNameController.text.trim().isNotEmpty
+            ? fullNameController.text.trim()
+            : (userCredential.user?.displayName ??
+                emailController.text.trim().split('@')[0]),
+        loginType: LoginType.email.value,
+        isRegistration: false,
+      );
+    }
   }
 
   Future<UserCredential?> signInWithEmailAndPassword() async {

@@ -20,6 +20,7 @@ import 'package:orange_ui/screen/restart_app/restart_app.dart';
 import 'package:orange_ui/screen/splash_screen/splash_screen.dart';
 import 'package:orange_ui/service/ads_service.dart';
 import 'package:orange_ui/service/firebase_notification_manager.dart';
+import 'package:orange_ui/service/post_upload_service.dart';
 import 'package:orange_ui/service/session_manager.dart';
 import 'package:orange_ui/service/subscription/subscription_manager.dart';
 import 'package:orange_ui/utils/app_platform.dart';
@@ -66,6 +67,7 @@ Future<void> main() async {
   }
 
   await GetStorage.init('Orange');
+  PostUploadService.init();
   LanguagesScreenViewModel.selectedLanguage =
       SessionManager.instance.getString(key: SessionKeys.languageCode) ??
           AppPlatform.languageCode;

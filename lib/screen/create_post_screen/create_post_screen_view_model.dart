@@ -12,6 +12,7 @@ import 'package:orange_ui/common/common_ui.dart';
 import 'package:orange_ui/generated/l10n.dart';
 import 'package:orange_ui/model/setting_model.dart';
 import 'package:orange_ui/model/social/post/add_post.dart';
+import 'package:orange_ui/service/post_upload_service.dart';
 import 'package:orange_ui/service/session_manager.dart';
 import 'package:orange_ui/utils/app_res.dart';
 import 'package:orange_ui/utils/color_res.dart';
@@ -185,41 +186,27 @@ class CreatePostScreenViewModel extends BaseViewModel {
   }
 
   void addPostApiCalling() {
-    List<String> removeHasTag = [];
-    for (var element in hashtagList) {
-      removeHasTag.add(element.replaceAll('#', ''));
-    }
-    Map<String, List<XFile?>>? filesMap = {};
+    final desc = detectableTextFieldController.text.trim();
+    final effectiveThumbnail = thumbnailFile ??
+        (thumbnail != null && thumbnail!.isNotEmpty
+            ? XFile(thumbnail!)
+            : null);
+    final images = List<XFile>.from(imagesFile);
+    final tags = List<String>.from(hashtagList);
+    final interests = List<int>.from(selectedInterests);
+    final cType = images.isEmpty ? 2 : contentType;
 
-    if (imagesFile.isNotEmpty) {
-      if (contentType == 1 && (thumbnailFile != null || (thumbnail != null && thumbnail!.isNotEmpty))) {
-        filesMap[Urls.aThumbnail] = [thumbnailFile ?? XFile(thumbnail!)];
-      }
-      filesMap[Urls.aContents] = imagesFile;
-    }
-    CommonUI.lottieLoader();
-    ApiProvider().multiPartCallApi(
-      url: Urls.aAddPost,
-      completion: (response) {
-        Get.back(); // close loader
-        AddPost postData = AddPost.fromJson(response);
-        if (postData.status == true) {
-          Get.back(result: postData.data);
-          CommonUI.snackBar(message: S.current.postCreatedSuccessfully);
-        } else {
-          CommonUI.snackBar(message: postData.message);
-        }
-      },
-      param: {
-        Urls.userId: SessionManager.instance.getUserID().toString(),
-        if (detectableTextFieldController.text.trim().isNotEmpty)
-          Urls.aDescription: detectableTextFieldController.text.trim(),
-        if (removeHasTag.isNotEmpty) Urls.aHashtags: removeHasTag.join(','),
-        if (selectedInterests.isNotEmpty)
-          Urls.aInterestIds: selectedInterests.join(','),
-        Urls.aContentType: imagesFile.isEmpty ? 2 : contentType
-      },
-      filesMap: filesMap,
+    // Immediately return to feed screen (instant Instagram/Facebook UX)
+    Get.back();
+
+    // Hand off to background upload service
+    PostUploadService.instance.startUpload(
+      description: desc,
+      hashtags: tags,
+      selectedInterests: interests,
+      contentType: cType,
+      imagesFile: images,
+      thumbnailFile: effectiveThumbnail,
     );
   }
 

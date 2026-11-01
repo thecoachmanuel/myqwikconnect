@@ -228,8 +228,12 @@ class RandomStreamingScreenViewModel extends BaseViewModel {
     ));
   }
 
-  void onCameraTap() {
-    engine.switchCamera();
+  void onCameraTap() async {
+    try {
+      await engine.switchCamera();
+    } catch (e) {
+      debugPrint('switchCamera error: $e');
+    }
   }
 
   void onSpeakerTap() {

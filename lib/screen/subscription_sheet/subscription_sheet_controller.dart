@@ -1,6 +1,7 @@
 import 'package:get/get.dart';
 import 'package:orange_ui/api_provider/api_provider.dart';
 import 'package:orange_ui/common/common_ui.dart';
+import 'package:orange_ui/common/confirmation_dialog.dart';
 import 'package:orange_ui/model/user/registration_user.dart';
 import 'package:orange_ui/service/session_manager.dart';
 import 'package:orange_ui/service/subscription/subscription_manager.dart';
@@ -44,6 +45,8 @@ class SubscriptionSheetController extends GetxController {
         months: 1,
       );
 
+      Get.back(); // close loader
+
       final authUrl = paystackInit['authorization_url']?.toString();
       final reference = paystackInit['reference']?.toString();
 
@@ -54,22 +57,37 @@ class SubscriptionSheetController extends GetxController {
         }
       }
 
-      final verifyRes = await ApiProvider().verifyPaystack(
-        reference: reference ?? '',
-        type: 'subscription',
-        months: 1,
+      Get.dialog(
+        ConfirmationDialog(
+          heading: 'Confirm VIP',
+          description:
+              'Complete your VIP subscription payment on Paystack, then tap Confirm below.',
+          textButton: 'Confirm VIP',
+          onTap: () async {
+            Get.back();
+            CommonUI.lottieLoader();
+            final verifyRes = await ApiProvider().verifyPaystack(
+              reference: reference ?? '',
+              type: 'subscription',
+              months: 1,
+            );
+            Get.back();
+            if (verifyRes.status == true) {
+              purchaseCallBack?.call();
+              UserData? user = SessionManager.instance.getUser();
+              user?.isVerified = 3;
+              SessionManager.instance.setUser(user);
+              CommonUI.snackBar(
+                  message: 'Subscription activated successfully!');
+              Get.back(result: true);
+            } else {
+              CommonUI.snackBar(
+                  message: verifyRes.message ?? 'Payment verification failed');
+            }
+          },
+        ),
       );
-
-      Get.back();
-      if (verifyRes.status == true) {
-        purchaseCallBack?.call();
-        UserData? user = SessionManager.instance.getUser();
-        user?.isVerified = 3;
-        SessionManager.instance.setUser(user);
-        CommonUI.snackBar(message: 'Subscription activated successfully!');
-        Get.back(result: true);
-        return;
-      }
+      return;
     } catch (_) {}
 
     if (package != null) {

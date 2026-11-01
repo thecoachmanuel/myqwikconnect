@@ -52,7 +52,7 @@ class PrivacyPolicyText extends StatelessWidget {
                 ..onTap = () async {
                   //Code to launch your URL
                   Get.to(() => WebViewScreen(
-                      appBarTitle: S.current.termsOfUse,
+                      appBarTitle: S.current.privacyPolicy,
                       url: Urls.aPrivacyPolicy));
                 }),
         ],

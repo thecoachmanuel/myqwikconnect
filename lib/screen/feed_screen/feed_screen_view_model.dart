@@ -42,7 +42,12 @@ class FeedScreenViewModel extends BaseViewModel {
     fetchScrollData();
   }
 
-  void fetchFeedData({bool isRefresh = false}) {
+  Future<void> onRefresh() async {
+    fetchFeedData(isRefresh: true);
+    await Future.delayed(const Duration(milliseconds: 600));
+  }
+
+  void fetchFeedData({bool isRefresh = false, VoidCallback? onDone}) {
     if (isRefresh || postList.isEmpty) {
       isLoading = true;
     }
@@ -71,6 +76,7 @@ class FeedScreenViewModel extends BaseViewModel {
           });
           isLoading = false;
           notifyListeners();
+          onDone?.call();
         },
         url: Urls.aFetchHomePageData,
         param: {

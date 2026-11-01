@@ -247,7 +247,12 @@ class ExploreScreenViewModel extends BaseViewModel {
   }
 
   void onReverseBtnTap() async {
-    bool isSubscription = combinedList[currentCombinedIndex - 1].id == -1;
+    if (currentCombinedIndex <= 0 || combinedList.isEmpty) return;
+
+    final prevIndex = currentCombinedIndex - 1;
+    bool isSubscription = prevIndex >= 0 &&
+        prevIndex < combinedList.length &&
+        combinedList[prevIndex].id == -1;
 
     if (isSubscription) {
       return cardController.undo();

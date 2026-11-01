@@ -103,16 +103,24 @@ class CreatePostScreenViewModel extends BaseViewModel {
         imagesFile.add(value);
         if (kIsWeb) {
           videoPlayerController = VideoPlayerController.networkUrl(Uri.parse(value.path))
-            ..initialize().then((value) {
+            ..initialize().then((_) {
               notifyListeners();
             });
           thumbnail = value.path;
+          thumbnailFile = value;
         } else {
           videoPlayerController = VideoPlayerController.file(File(value.path))
-            ..initialize().then((value) {
+            ..initialize().then((_) {
               notifyListeners();
             });
-          thumbnail = (await CommonFun.getFileThumbnail(value.path)).path;
+          try {
+            final thumb = await CommonFun.getFileThumbnail(value.path);
+            thumbnail = thumb.path;
+            thumbnailFile = XFile(thumb.path);
+          } catch (_) {
+            thumbnail = value.path;
+            thumbnailFile = value;
+          }
         }
         notifyListeners();
       }
@@ -184,8 +192,8 @@ class CreatePostScreenViewModel extends BaseViewModel {
     Map<String, List<XFile?>>? filesMap = {};
 
     if (imagesFile.isNotEmpty) {
-      if (contentType == 1) {
-        filesMap[Urls.aThumbnail] = [XFile(thumbnail!)];
+      if (contentType == 1 && (thumbnailFile != null || (thumbnail != null && thumbnail!.isNotEmpty))) {
+        filesMap[Urls.aThumbnail] = [thumbnailFile ?? XFile(thumbnail!)];
       }
       filesMap[Urls.aContents] = imagesFile;
     }

@@ -106,8 +106,9 @@ class ChatScreenViewModel extends BaseViewModel {
       final convId = conversation.conversationId ?? conversationID;
       if (convId.isEmpty) return;
       if (chatData.isNotEmpty) {
-        final toSave = chatData.take(50).map((e) => e.toJson()).toList();
+        final toSave = chatData.take(60).map((e) => e.toJson()).toList();
         SessionManager.instance.storage.write('chat_$convId', toSave);
+        SessionManager.instance.storage.save();
       }
     } catch (e) {
       Get.log('Error saving cached chat: $e');
@@ -557,6 +558,7 @@ class ChatScreenViewModel extends BaseViewModel {
 
     if (picked == null || picked.path.isEmpty) return;
 
+    final imageBytes = await picked.readAsBytes();
     final imageFile = File(picked.path);
 
     Get.bottomSheet(
@@ -567,8 +569,11 @@ class ChatScreenViewModel extends BaseViewModel {
           CommonUI.lottieLoader();
           isAutoPayEnable
               ? minusCoinApi(() async {
-                  final response = await ApiProvider()
-                      .getStoreFileGivePath(image: imageFile);
+                  final response = await ApiProvider().getStoreFileGivePath(
+                    image: picked,
+                    bytes: imageBytes,
+                    filename: picked.name,
+                  );
                   Get.back(); // close loader
                   if (response.status == true) {
                     Get.back(); // close sheet
@@ -586,8 +591,11 @@ class ChatScreenViewModel extends BaseViewModel {
                     isSelected,
                     type,
                     () async {
-                      final response = await ApiProvider()
-                          .getStoreFileGivePath(image: imageFile);
+                      final response = await ApiProvider().getStoreFileGivePath(
+                        image: picked,
+                        bytes: imageBytes,
+                        filename: picked.name,
+                      );
                       Get.back(); // close loader
                       if (response.status == true) {
                         Get.back(); // close sheet
@@ -622,8 +630,8 @@ class ChatScreenViewModel extends BaseViewModel {
 
     if (picked == null || picked.path.isEmpty) return;
 
-    final videoFile = File(picked.path);
-    final sizeInMb = videoFile.lengthSync() / (1024 * 1024);
+    final videoBytes = await picked.readAsBytes();
+    final sizeInMb = videoBytes.length / (1024 * 1024);
 
     if (sizeInMb > AppRes.maxVideoUploadSize) {
       Get.dialog(VideoUploadDialog(
@@ -647,8 +655,15 @@ class ChatScreenViewModel extends BaseViewModel {
               ? minusCoinApi(() async {
                   // Run both uploads concurrently
                   final [thumbRes, videoRes] = await Future.wait([
-                    ApiProvider().getStoreFileGivePath(image: thumbnail),
-                    ApiProvider().getStoreFileGivePath(image: videoFile),
+                    ApiProvider().getStoreFileGivePath(
+                      image: thumbnail,
+                      filename: 'thumb_${picked.name}.jpg',
+                    ),
+                    ApiProvider().getStoreFileGivePath(
+                      image: picked,
+                      bytes: videoBytes,
+                      filename: picked.name,
+                    ),
                   ]);
 
                   Get.back(); // close loader
@@ -674,8 +689,15 @@ class ChatScreenViewModel extends BaseViewModel {
                     () async {
                       // Run both uploads concurrently
                       final [thumbRes, videoRes] = await Future.wait([
-                        ApiProvider().getStoreFileGivePath(image: thumbnail),
-                        ApiProvider().getStoreFileGivePath(image: videoFile),
+                        ApiProvider().getStoreFileGivePath(
+                          image: thumbnail,
+                          filename: 'thumb_${picked.name}.jpg',
+                        ),
+                        ApiProvider().getStoreFileGivePath(
+                          image: picked,
+                          bytes: videoBytes,
+                          filename: picked.name,
+                        ),
                       ]);
 
                       Get.back(); // close loader
@@ -760,9 +782,13 @@ class ChatScreenViewModel extends BaseViewModel {
             })
             .toList();
 
-        chatData = incoming;
-        _saveCachedChat();
-        _groupMessages(chatData);
+        if (incoming.isNotEmpty) {
+          chatData = incoming;
+          _saveCachedChat();
+          _groupMessages(chatData);
+        } else if (chatData.isEmpty) {
+          _loadCachedChat();
+        }
         startingNumber += 30;
         Get.log('[getChat] 💬 Messages fetched and cached: ${chatData.length}');
         notifyListeners();
@@ -814,6 +840,13 @@ class ChatScreenViewModel extends BaseViewModel {
 
     final String lastMessage =
         CommonFun.getLastMsg(msgType: msgType, msg: textMessage ?? '');
+
+    // Optimistic UI update: show message immediately in chat
+    final newMsgObj = ChatMessage.fromJson(messageData);
+    chatData.insert(0, newMsgObj);
+    _groupMessages(chatData);
+    _saveCachedChat();
+    notifyListeners();
 
     // 1. Store message in Firestore (non-blocking)
     final msgSetFuture = drChatMessages.doc(time.toString()).set(messageData);

@@ -138,9 +138,9 @@ class RandomStreamTopBarArea extends StatelessWidget {
                       ),
                       child: Center(
                         child: Image.asset(
-                          AssetRes.camera2,
-                          height: 15,
-                          width: 15,
+                          AssetRes.icCameraFlip,
+                          height: 18,
+                          width: 18,
                           color: ColorRes.white,
                         ),
                       ),

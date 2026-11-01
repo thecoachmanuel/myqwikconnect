@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:orange_ui/common/top_bar_area.dart';
 import 'package:orange_ui/screen/webview_screen/webview_screen_view_model.dart';
+import 'package:orange_ui/utils/color_res.dart';
 import 'package:stacked/stacked.dart';
 import 'package:webview_flutter_plus/webview_flutter_plus.dart';
 
@@ -14,17 +15,20 @@ class WebViewScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ViewModelBuilder<WebViewScreenViewModel>.reactive(
-      onViewModelReady: (model) => model.init(url),
+      onViewModelReady: (model) => model.init(url, appBarTitle),
       viewModelBuilder: () => WebViewScreenViewModel(),
       builder: (context, model, child) {
         return Scaffold(
+          backgroundColor: ColorRes.white,
           body: Column(
             children: [
               TopBarArea(title2: appBarTitle),
               Expanded(
                 child: SafeArea(
                   top: false,
-                  child: WebViewWidget(controller: model.controller),
+                  child: model.showNativeReader
+                      ? model.buildNativeReaderContent(context)
+                      : WebViewWidget(controller: model.controller),
                 ),
               ),
             ],

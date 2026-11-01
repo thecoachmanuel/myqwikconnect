@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:orange_ui/api_provider/api_provider.dart';
@@ -16,7 +17,21 @@ class SplashScreenViewModel extends BaseViewModel {
     bool isLogin = SessionManager.instance.getBool(key: SessionKeys.isLogin);
     final cachedUser = SessionManager.instance.getUser();
 
-    // 🚀 Instant Launch: If user is logged in, navigate immediately using cached session
+    // 🌐 Web auto-routing: redirect instantly to destination without hanging on splash
+    if (kIsWeb) {
+      if (isLogin && cachedUser != null && cachedUser.id != null) {
+        _hasNavigated = true;
+        AuthScreenViewModel().navigateScreen(userData: cachedUser);
+        _syncInBackground();
+      } else {
+        _hasNavigated = true;
+        _navigate(() => const AuthScreen());
+        _syncInBackground();
+      }
+      return;
+    }
+
+    // 🚀 Instant Launch for mobile: If user is logged in, navigate immediately using cached session
     if (isLogin && cachedUser != null && cachedUser.id != null) {
       Future.delayed(const Duration(milliseconds: 150), () {
         if (!_hasNavigated) {

@@ -20,32 +20,38 @@ class FeedScreen extends StatelessWidget {
           children: [
             model.isLoading
                 ? CommonUI.lottieWidget()
-                : Stack(
-                    children: [
-                      SingleChildScrollView(
-                        controller: model.scrollController,
-                        child: Column(
-                          children: [
-                            FeedStoryBar(model: model),
-                            model.postList.isEmpty
-                                ? const SizedBox()
-                                : ListView.builder(
-                                    primary: false,
-                                    shrinkWrap: true,
-                                    padding: EdgeInsets.zero,
-                                    itemCount: model.postList.length,
-                                    itemBuilder: (context, index) {
-                                      return PostCard(
-                                          post: model.postList[index],
-                                          model: model,
-                                          postIndex: index);
-                                    },
-                                  ),
-                          ],
+                : RefreshIndicator(
+                    color: ColorRes.themeColor,
+                    backgroundColor: ColorRes.white,
+                    onRefresh: model.onRefresh,
+                    child: Stack(
+                      children: [
+                        SingleChildScrollView(
+                          physics: const AlwaysScrollableScrollPhysics(),
+                          controller: model.scrollController,
+                          child: Column(
+                            children: [
+                              FeedStoryBar(model: model),
+                              model.postList.isEmpty
+                                  ? const SizedBox()
+                                  : ListView.builder(
+                                      primary: false,
+                                      shrinkWrap: true,
+                                      padding: EdgeInsets.zero,
+                                      itemCount: model.postList.length,
+                                      itemBuilder: (context, index) {
+                                        return PostCard(
+                                            post: model.postList[index],
+                                            model: model,
+                                            postIndex: index);
+                                      },
+                                    ),
+                            ],
+                          ),
                         ),
-                      ),
-                      model.postList.isEmpty ? CommonUI.noData() : Container()
-                    ],
+                        model.postList.isEmpty ? CommonUI.noData() : Container()
+                      ],
+                    ),
                   ),
             Align(
               alignment: AlignmentDirectional.bottomEnd,

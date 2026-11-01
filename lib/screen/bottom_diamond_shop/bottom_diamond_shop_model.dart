@@ -1,6 +1,7 @@
 import 'package:get/get.dart';
 import 'package:orange_ui/api_provider/api_provider.dart';
 import 'package:orange_ui/common/common_ui.dart';
+import 'package:orange_ui/common/confirmation_dialog.dart';
 import 'package:orange_ui/model/get_diamond_pack.dart';
 import 'package:orange_ui/service/session_manager.dart';
 import 'package:orange_ui/service/subscription/subscription_manager.dart';
@@ -62,7 +63,6 @@ class BottomDiamondShopModel extends BaseViewModel {
     CommonUI.lottieLoader();
     final myUser = SessionManager.instance.getUser();
 
-    // Trigger Paystack payment flow
     try {
       final paystackInit = await ApiProvider().initializePaystack(
         email: (myUser?.identity?.contains('@') == true)
@@ -74,6 +74,8 @@ class BottomDiamondShopModel extends BaseViewModel {
         type: 'diamond',
       );
 
+      Get.back(); // close loader
+
       final authUrl = paystackInit['authorization_url']?.toString();
       final reference = paystackInit['reference']?.toString();
 
@@ -84,33 +86,37 @@ class BottomDiamondShopModel extends BaseViewModel {
         }
       }
 
-      // Verify and credit diamonds
-      final verifyRes = await ApiProvider().verifyPaystack(
-        reference: reference ?? '',
-        diamonds: coinPlan.coin,
-        type: 'diamond',
+      // Show payment verification dialog
+      Get.dialog(
+        ConfirmationDialog(
+          heading: 'Confirm Payment',
+          description:
+              'Complete your payment of ${coinPlan.priceString} on Paystack, then tap Confirm below.',
+          textButton: 'Confirm Payment',
+          onTap: () async {
+            Get.back();
+            CommonUI.lottieLoader();
+            final verifyRes = await ApiProvider().verifyPaystack(
+              reference: reference ?? '',
+              diamonds: coinPlan.coin,
+              type: 'diamond',
+            );
+            Get.back();
+            if (verifyRes.status == true) {
+              CommonUI.snackBar(
+                  message: 'Added ${coinPlan.coin} diamonds to your wallet!');
+              Get.back(result: coinPlan.coin);
+            } else {
+              CommonUI.snackBar(
+                  message: verifyRes.message ?? 'Payment verification failed');
+            }
+          },
+        ),
       );
-
+    } catch (e) {
       Get.back();
-      if (verifyRes.status == true) {
-        CommonUI.snackBar(message: 'Added ${coinPlan.coin} diamonds to your wallet!');
-        Get.back(result: coinPlan.coin);
-        return;
-      }
-    } catch (_) {}
-
-    // Fallback: direct wallet credit
-    ApiProvider().addCoinFromWallet(coinPlan.coin).then((value) {
-      Get.back();
-      if (value.status == true) {
-        CommonUI.snackBar(message: 'Added ${coinPlan.coin} diamonds to wallet!');
-        Get.back(result: coinPlan.coin);
-      } else {
-        CommonUI.snackBar(message: value.message ?? 'Purchase failed');
-      }
-    }).catchError((e) {
-      Get.back();
-    });
+      CommonUI.snackBar(message: 'Payment initialization failed. Please try again.');
+    }
   }
 }
 

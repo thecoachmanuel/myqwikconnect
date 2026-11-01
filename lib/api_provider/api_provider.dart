@@ -685,27 +685,52 @@ class ApiProvider {
     return deleteAccount;
   }
 
-  Future<StoreFileGivePath> getStoreFileGivePath({File? image}) async {
+  Future<StoreFileGivePath> getStoreFileGivePath({
+    dynamic image,
+    Uint8List? bytes,
+    String? filename,
+  }) async {
     var request =
         http.MultipartRequest(Urls.post, Uri.parse(Urls.aStorageFileGivePath));
     request.headers.addAll({
       Urls.apiKeyName: ConstRes.apiKey,
     });
-    if (image != null) {
-      if (kIsWeb) {
-        final bytes = await image.readAsBytes();
-        request.files.add(
-          http.MultipartFile.fromBytes(Urls.aFile, bytes,
-              filename: image.path.split("/").last),
-        );
-      } else {
-        request.files.add(
-          http.MultipartFile(
-              Urls.aFile, image.readAsBytes().asStream(), image.lengthSync(),
-              filename: image.path.split("/").last),
-        );
+
+    Uint8List? fileBytes = bytes;
+    String finalName =
+        filename ?? 'upload_${DateTime.now().millisecondsSinceEpoch}.jpg';
+
+    if (fileBytes == null && image != null) {
+      if (image is XFile) {
+        fileBytes = await image.readAsBytes();
+        finalName = filename ?? image.name;
+      } else if (image is Uint8List) {
+        fileBytes = image;
+      } else if (kIsWeb) {
+        try {
+          if (image is File) {
+            fileBytes = await XFile(image.path).readAsBytes();
+            finalName = filename ?? image.path.split("/").last;
+          }
+        } catch (_) {}
+      } else if (image is File) {
+        try {
+          fileBytes = await image.readAsBytes();
+          finalName = filename ?? image.path.split("/").last;
+        } catch (_) {}
       }
     }
+
+    if (fileBytes != null && fileBytes.isNotEmpty) {
+      request.files.add(
+        http.MultipartFile.fromBytes(
+          Urls.aFile,
+          fileBytes,
+          filename: finalName,
+        ),
+      );
+    }
+
     var response = await request.send();
     var respStr = await response.stream.bytesToString();
 

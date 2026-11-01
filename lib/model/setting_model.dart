@@ -380,6 +380,8 @@ class Appdata {
     this.postDescriptionLimit,
     this.postUploadImageLimit,
     this.streamAndGiftCommission,
+    this.termsofuse,
+    this.privacypolicy,
     this.createdAt,
     this.updatedAt,
   });
@@ -405,6 +407,8 @@ class Appdata {
     postDescriptionLimit = json['post_description_limit'];
     postUploadImageLimit = json['post_upload_image_limit'];
     streamAndGiftCommission = json['stream_and_gift_commission'];
+    termsofuse = json['termsofuse'];
+    privacypolicy = json['privacypolicy'];
     createdAt = json['created_at'];
     updatedAt = json['updated_at'];
   }
@@ -429,6 +433,8 @@ class Appdata {
   int? postDescriptionLimit;
   int? postUploadImageLimit;
   int? streamAndGiftCommission;
+  String? termsofuse;
+  String? privacypolicy;
   String? createdAt;
   String? updatedAt;
 
@@ -454,6 +460,8 @@ class Appdata {
     map['post_description_limit'] = postDescriptionLimit;
     map['post_upload_image_limit'] = postUploadImageLimit;
     map['stream_and_gift_commission'] = streamAndGiftCommission;
+    map['termsofuse'] = termsofuse;
+    map['privacypolicy'] = privacypolicy;
     map['created_at'] = createdAt;
     map['updated_at'] = updatedAt;
     return map;

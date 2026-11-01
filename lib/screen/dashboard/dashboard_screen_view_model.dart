@@ -31,7 +31,7 @@ class DashboardScreenViewModel extends BaseViewModel {
 
   void init() {
     final savedIndex = SessionManager.instance.getInt(key: keyActiveTabIndex);
-    if (savedIndex != null && savedIndex >= 0 && savedIndex <= 4) {
+    if (savedIndex >= 0 && savedIndex <= 4) {
       pageIndex = savedIndex;
     }
     if (!AppPlatform.isWeb) {

@@ -28,11 +28,11 @@ class RelationshipGoal extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Padding(
-              padding: const EdgeInsets.only(bottom: 10.0),
+            const Padding(
+              padding: EdgeInsets.only(bottom: 10.0),
               child: Text(
                 'Select one or more goals that describe what you are looking for',
-                style: const TextStyle(
+                style: TextStyle(
                   fontFamily: FontRes.regular,
                   fontSize: 14,
                   color: ColorRes.dimGrey3,

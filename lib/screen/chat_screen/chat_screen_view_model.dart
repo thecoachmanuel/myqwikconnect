@@ -15,7 +15,6 @@ import 'package:orange_ui/generated/l10n.dart';
 import 'package:orange_ui/model/chat_and_live_stream/chat.dart';
 import 'package:orange_ui/model/setting_model.dart';
 import 'package:orange_ui/model/user/registration_user.dart';
-import 'package:orange_ui/model/wallet/minus_coin_from_wallet.dart';
 import 'package:orange_ui/screen/bottom_diamond_shop/bottom_diamond_shop.dart';
 import 'package:orange_ui/screen/chat_screen/widgets/image_video_send_sheet.dart';
 import 'package:orange_ui/screen/chat_screen/widgets/image_view_page.dart';
@@ -76,8 +75,71 @@ class ChatScreenViewModel extends BaseViewModel {
 
   void init() {
     conversationID = conversation.conversationId ?? '';
+    _loadCachedChat();
     getPrefData();
     scrollToGetChat();
+  }
+
+  void _loadCachedChat() {
+    try {
+      final convId = conversation.conversationId ?? conversationID;
+      if (convId.isEmpty) return;
+      final cached = SessionManager.instance.storage.read('chat_$convId');
+      if (cached != null && cached is List && cached.isNotEmpty && chatData.isEmpty) {
+        final List<ChatMessage> cachedList = [];
+        for (var item in cached) {
+          cachedList.add(ChatMessage.fromJson(item));
+        }
+        if (cachedList.isNotEmpty) {
+          chatData = cachedList;
+          _groupMessages(chatData);
+          notifyListeners();
+        }
+      }
+    } catch (e) {
+      Get.log('Error loading cached chat: $e');
+    }
+  }
+
+  void _saveCachedChat() {
+    try {
+      final convId = conversation.conversationId ?? conversationID;
+      if (convId.isEmpty) return;
+      if (chatData.isNotEmpty) {
+        final toSave = chatData.take(50).map((e) => e.toJson()).toList();
+        SessionManager.instance.storage.write('chat_$convId', toSave);
+      }
+    } catch (e) {
+      Get.log('Error saving cached chat: $e');
+    }
+  }
+
+  void _groupMessages(List<ChatMessage> messages) {
+    final now = DateTime.now();
+    Map<String, List<ChatMessage>> customGrouped = {};
+
+    for (var message in messages) {
+      if (message.time != null) {
+        final time =
+            DateTime.fromMillisecondsSinceEpoch(message.time!.toInt());
+        final formattedDate = DateFormat(AppRes.dMY).format(time);
+
+        String groupKey;
+        if (formattedDate == DateFormat(AppRes.dMY).format(now)) {
+          groupKey = S.current.today;
+        } else if (formattedDate ==
+            DateFormat(AppRes.dMY)
+                .format(now.subtract(const Duration(days: 1)))) {
+          groupKey = S.current.yesterday;
+        } else {
+          groupKey = formattedDate;
+        }
+
+        customGrouped.putIfAbsent(groupKey, () => []).add(message);
+      }
+    }
+
+    grouped = customGrouped;
   }
 
   Future<void> getPrefData() async {
@@ -125,30 +187,34 @@ class ChatScreenViewModel extends BaseViewModel {
   }
 
   void initFireBaseData() {
+    int myId = registrationUserData?.id ?? SessionManager.instance.getUserID();
+    int otherId = conversation.user?.userid ?? -1;
+
     documentReceiver = db
         .collection(FirebaseRes.userChatList)
-        .doc('${conversation.user?.userid}')
+        .doc('$otherId')
         .collection(FirebaseRes.userList)
-        .doc('${registrationUserData?.id}');
+        .doc('$myId');
     documentSender = db
         .collection(FirebaseRes.userChatList)
-        .doc('${registrationUserData?.id}')
+        .doc('$myId')
         .collection(FirebaseRes.userList)
-        .doc('${conversation.user?.userid}');
+        .doc('$otherId');
 
-    if (conversation.conversationId == null) {
+    if (conversation.conversationId == null ||
+        conversation.conversationId!.isEmpty) {
       conversation.setConversationId(
-        CommonFun.getConversationID(
-            myId: registrationUserData?.id,
-            otherUserId: conversation.user?.userid),
+        CommonFun.getConversationID(myId: myId, otherUserId: otherId),
       );
     }
+    conversationID = conversation.conversationId ?? '';
 
     drChatMessages = db
         .collection(FirebaseRes.chat)
         .doc(conversation.conversationId)
         .collection(FirebaseRes.chat);
 
+    _loadCachedChat();
     getChat();
   }
 
@@ -319,10 +385,8 @@ class ChatScreenViewModel extends BaseViewModel {
   void _addOptimisticMessage(ChatMessage msg) {
     if (!chatData.any((m) => m.time == msg.time)) {
       chatData.insert(0, msg);
-      final groupKey = S.current.today;
-      grouped ??= {};
-      grouped!.putIfAbsent(groupKey, () => []);
-      grouped![groupKey]!.insert(0, msg);
+      _groupMessages(chatData);
+      _saveCachedChat();
       notifyListeners();
     }
   }
@@ -654,26 +718,22 @@ class ChatScreenViewModel extends BaseViewModel {
     try {
       Get.log('[getChat] 🔄 Starting getChat()');
 
-      // 1. Fetch deleted message ID
-      final docSnapshot = await documentSender
+      // Fetch deletedId asynchronously without blocking the stream
+      documentSender
           .withConverter(
             fromFirestore: Conversation.fromFirestore,
             toFirestore: (Conversation value, options) => value.toFirestore(),
           )
-          .get();
+          .get()
+          .then((docSnapshot) {
+        deletedId = docSnapshot.data()?.deletedId?.toString() ?? '';
+        Get.log('[getChat] 🗑️ deletedId: $deletedId');
+      }).catchError((_) {});
 
-      deletedId = docSnapshot.data()?.deletedId?.toString() ?? '';
-      Get.log('[getChat] 🗑️ deletedId: $deletedId');
-      notifyListeners();
-
-      // 2. Stream chat messages
+      // Stream chat messages with reliable single-field index query
       Get.log('[getChat] 📡 Setting up chat stream...');
+      chatStream?.cancel();
       chatStream = drChatMessages
-          .where(FirebaseRes.noDeleteIdentity,
-              arrayContains: '${registrationUserData?.id}')
-          .where(FirebaseRes.time,
-              isGreaterThan:
-                  deletedId.isNotEmpty ? double.parse(deletedId) : 0.0)
           .orderBy(FirebaseRes.time, descending: true)
           .limit(startingNumber)
           .withConverter(
@@ -682,37 +742,32 @@ class ChatScreenViewModel extends BaseViewModel {
           )
           .snapshots()
           .listen((snapshot) {
-        chatData = snapshot.docs.map((doc) => doc.data()).toList();
-        Get.log('[getChat] 💬 Messages fetched: ${chatData.length}');
+        final myId =
+            '${registrationUserData?.id ?? SessionManager.instance.getUserID()}';
+        final double delTime =
+            deletedId.isNotEmpty ? (double.tryParse(deletedId) ?? 0.0) : 0.0;
 
-        final now = DateTime.now();
-        Map<String, List<ChatMessage>> customGrouped = {};
+        final incoming = snapshot.docs
+            .map((doc) => doc.data())
+            .where((msg) {
+              if (delTime > 0.0 && (msg.time ?? 0.0) <= delTime) return false;
+              if (msg.notDeletedIdentities != null &&
+                  msg.notDeletedIdentities!.isNotEmpty &&
+                  !msg.notDeletedIdentities!.contains(myId)) {
+                return false;
+              }
+              return true;
+            })
+            .toList();
 
-        for (var message in chatData) {
-          if (message.time != null) {
-            final time =
-                DateTime.fromMillisecondsSinceEpoch(message.time!.toInt());
-            final formattedDate = DateFormat(AppRes.dMY).format(time);
-
-            String groupKey;
-            if (formattedDate == DateFormat(AppRes.dMY).format(now)) {
-              groupKey = S.current.today;
-            } else if (formattedDate ==
-                DateFormat(AppRes.dMY)
-                    .format(now.subtract(const Duration(days: 1)))) {
-              groupKey = S.current.yesterday;
-            } else {
-              groupKey = formattedDate;
-            }
-
-            customGrouped.putIfAbsent(groupKey, () => []).add(message);
-          }
-        }
-
-        grouped = customGrouped;
-        startingNumber += 45;
-        Get.log('[getChat] 🗂️ Grouped messages: ${grouped!.length} groups');
+        chatData = incoming;
+        _saveCachedChat();
+        _groupMessages(chatData);
+        startingNumber += 30;
+        Get.log('[getChat] 💬 Messages fetched and cached: ${chatData.length}');
         notifyListeners();
+      }, onError: (err) {
+        Get.log('[getChat] ❌ Stream error: $err');
       });
     } catch (e) {
       Get.log('[getChat] ❌ Error fetching chat: $e');
@@ -728,8 +783,10 @@ class ChatScreenViewModel extends BaseViewModel {
     int? customTime,
   }) async {
     final int time = customTime ?? DateTime.now().millisecondsSinceEpoch;
+    final int myId =
+        registrationUserData?.id ?? SessionManager.instance.getUserID();
     notDeletedIdentity = [
-      '${registrationUserData?.id}',
+      '$myId',
       '${conversation.user?.userid}'
     ];
 
@@ -798,9 +855,10 @@ class ChatScreenViewModel extends BaseViewModel {
 
     // Run all Firestore updates concurrently
     await Future.wait([msgSetFuture, senderFuture, receiverFuture])
-        .catchError((err) {
+        .then((_) {
+      _saveCachedChat();
+    }).catchError((err) {
       Get.log('Error writing chat to firestore: $err');
-      return <void>[];
     });
 
     if (receiverUserData?.isNotification == 1) {

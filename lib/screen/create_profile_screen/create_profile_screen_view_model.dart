@@ -8,6 +8,7 @@ import 'package:orange_ui/generated/l10n.dart';
 import 'package:orange_ui/model/setting_model.dart';
 import 'package:orange_ui/model/user/registration_user.dart';
 import 'package:orange_ui/screen/countries/select_country_controller.dart';
+import 'package:orange_ui/screen/create_profile_screen/create_profile_screen.dart';
 import 'package:orange_ui/screen/create_profile_screen/view/add_photos.dart';
 import 'package:orange_ui/screen/create_profile_screen/view/choose_religion.dart';
 import 'package:orange_ui/screen/create_profile_screen/view/find_matches.dart';
@@ -351,12 +352,15 @@ class CreateProfileScreenViewModel extends BaseViewModel {
       return CommonUI.snackBar(message: S.current.enterBio);
     }
 
-    final hasCountry = (selectCountryController.selectedCountry.value?.countryName?.trim().isNotEmpty ?? false) ||
-        (userData?.country?.trim().isNotEmpty ?? false);
-    final hasState = (selectCountryController.selectedState.value?.name?.trim().isNotEmpty ?? false) ||
-        (userData?.state?.trim().isNotEmpty ?? false);
-    final hasCity = (selectCountryController.selectedCity.value?.name?.trim().isNotEmpty ?? false) ||
-        (userData?.city?.trim().isNotEmpty ?? false);
+    final hasCountry = (selectCountryController.selectedCountry.value?.countryName != null &&
+            selectCountryController.selectedCountry.value!.countryName!.trim().isNotEmpty) ||
+        (userData?.country != null && userData!.country!.trim().isNotEmpty);
+    final hasState = (selectCountryController.selectedState.value?.name != null &&
+            selectCountryController.selectedState.value!.name!.trim().isNotEmpty) ||
+        (userData?.state != null && userData!.state!.trim().isNotEmpty);
+    final hasCity = (selectCountryController.selectedCity.value?.name != null &&
+            selectCountryController.selectedCity.value!.name!.trim().isNotEmpty) ||
+        (userData?.city != null && userData!.city!.trim().isNotEmpty);
 
     if (!hasCountry) {
       CommonUI.snackBar(message: S.current.pleaseSelectCountry);

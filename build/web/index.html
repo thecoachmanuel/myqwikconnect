@@ -1,13 +1,11 @@
 <!DOCTYPE html>
 <html>
-
 <head>
   <base href="/">
 
   <meta charset="UTF-8">
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
-  <meta name="viewport"
-    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content">
   <meta name="description" content="Orange - Connect, Chat & Dating App">
   <meta name="theme-color" content="#FE1B03">
 
@@ -18,7 +16,7 @@
   <link rel="apple-touch-icon" href="icons/Icon-192.png">
 
   <!-- Favicon -->
-  <link rel="icon" type="image/png" href="favicon.png" />
+  <link rel="icon" type="image/png" href="favicon.png"/>
 
   <title>Orange</title>
   <link rel="manifest" href="manifest.json">
@@ -39,9 +37,7 @@
       box-sizing: border-box;
       -webkit-tap-highlight-color: transparent;
     }
-
-    html,
-    body {
+    html, body {
       margin: 0;
       padding: 0;
       width: 100%;
@@ -57,7 +53,6 @@
       -webkit-user-select: none;
       user-select: none;
     }
-
     #loading-indicator {
       position: fixed;
       top: 0;
@@ -72,7 +67,6 @@
       z-index: 99999;
       transition: opacity 0.3s ease-out;
     }
-
     .spinner {
       width: 44px;
       height: 44px;
@@ -81,26 +75,22 @@
       border-radius: 50%;
       animation: spin 0.8s linear infinite;
     }
-
     @keyframes spin {
-      to {
-        transform: rotate(360deg);
-      }
+      to { transform: rotate(360deg); }
     }
   </style>
 </head>
-
 <body>
   <div id="loading-indicator">
     <div class="spinner"></div>
   </div>
 
   <script>
-    window.addEventListener('flutter-first-frame', function () {
+    window.addEventListener('flutter-first-frame', function() {
       var loader = document.getElementById('loading-indicator');
       if (loader) {
         loader.style.opacity = '0';
-        setTimeout(function () {
+        setTimeout(function() {
           if (loader && loader.parentNode) {
             loader.parentNode.removeChild(loader);
           }
@@ -111,5 +101,4 @@
 
   <script src="flutter_bootstrap.js" async></script>
 </body>
-
 </html>

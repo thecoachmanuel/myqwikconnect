@@ -50,9 +50,12 @@ class MessageScreenViewModel extends BaseViewModel {
   }
 
   void getChatUsers() {
-    isLoading = true;
-    int userId = SessionManager.instance.getUser()?.id ?? -1;
+    int userId = SessionManager.instance.getUser()?.id ?? SessionManager.instance.getUserID();
+    _loadCachedUserList(userId);
+    isLoading = userList.isEmpty;
+
     try {
+      subscription?.cancel();
       subscription = db
           .collection(FirebaseRes.userChatList)
           .doc('$userId')
@@ -72,6 +75,7 @@ class MessageScreenViewModel extends BaseViewModel {
         }
         userList = list;
         isLoading = false;
+        _saveCachedUserList(userId, list);
         notifyListeners();
       }, onError: (err) {
         Get.log('MessageScreen getChatUsers stream error: $err');
@@ -89,6 +93,37 @@ class MessageScreenViewModel extends BaseViewModel {
     } catch (e) {
       isLoading = false;
       notifyListeners();
+    }
+  }
+
+  void _loadCachedUserList(int userId) {
+    try {
+      if (userId <= 0) return;
+      final cached = SessionManager.instance.storage.read('inbox_$userId');
+      if (cached != null && cached is List && cached.isNotEmpty && userList.isEmpty) {
+        final List<Conversation> list = [];
+        for (var item in cached) {
+          list.add(Conversation.fromJson(item));
+        }
+        if (list.isNotEmpty) {
+          userList = list;
+          notifyListeners();
+        }
+      }
+    } catch (e) {
+      Get.log('Error reading cached inbox: $e');
+    }
+  }
+
+  void _saveCachedUserList(int userId, List<Conversation> list) {
+    try {
+      if (userId <= 0) return;
+      if (list.isNotEmpty) {
+        final toSave = list.take(50).map((e) => e.toJson()).toList();
+        SessionManager.instance.storage.write('inbox_$userId', toSave);
+      }
+    } catch (e) {
+      Get.log('Error saving cached inbox: $e');
     }
   }
 

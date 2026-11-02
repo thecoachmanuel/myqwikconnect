@@ -19,12 +19,13 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyCbGuyjzXcnntY33RIzfPLfoHkuv8fXy3c',
-    appId: '1:260849839740:web:79b518c2d71565f1f85c74',
+    apiKey: 'AIzaSyDRVmYrXYD9lGjDJmXMZ9criz4uBPO6cDM',
+    appId: '1:260849839740:web:ddb869372937477ecca3f9',
     messagingSenderId: '260849839740',
     projectId: 'orange-16f8b-72bea',
     authDomain: 'orange-16f8b-72bea.firebaseapp.com',
-    storageBucket: 'orange-16f8b-72bea.appspot.com',
+    storageBucket: 'orange-16f8b-72bea.firebasestorage.app',
+    measurementId: 'G-X4CT0807L2',
   );
 
   static const FirebaseOptions android = FirebaseOptions(

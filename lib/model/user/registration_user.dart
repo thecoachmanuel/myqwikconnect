@@ -16,37 +16,45 @@ class UserModel {
   UserModel({
     bool? status,
     String? message,
+    bool? isNew,
     UserData? data,
   }) {
     _status = status;
     _message = message;
+    _isNew = isNew;
     _data = data;
   }
 
   UserModel.fromJson(dynamic json) {
     _status = json['status'];
     _message = json['message'];
+    _isNew = json['is_new'] ?? json['isNew'];
     _data = json['data'] != null ? UserData.fromJson(json['data']) : null;
   }
 
   bool? _status;
   String? _message;
+  bool? _isNew;
   UserData? _data;
 
   UserModel copyWith({
     bool? status,
     String? message,
+    bool? isNew,
     UserData? data,
   }) =>
       UserModel(
         status: status ?? _status,
         message: message ?? _message,
+        isNew: isNew ?? _isNew,
         data: data ?? _data,
       );
 
   bool? get status => _status;
 
   String? get message => _message;
+
+  bool? get isNew => _isNew;
 
   UserData? get data => _data;
 
@@ -204,6 +212,9 @@ class UserData {
     state = json['state']?.toString();
     city = json['city']?.toString();
     appLanguage = json['app_language']?.toString();
+    isProfileComplete = json['is_profile_complete'] is int
+        ? json['is_profile_complete']
+        : int.tryParse(json['is_profile_complete']?.toString() ?? '');
     if (json['images'] != null && json['images'] is List) {
       images = [];
       for (var v in json['images']) {
@@ -306,6 +317,7 @@ class UserData {
   String? state;
   String? city;
   String? appLanguage;
+  int? isProfileComplete;
 
   Map<String, dynamic> toJson() {
     final map = <String, dynamic>{};

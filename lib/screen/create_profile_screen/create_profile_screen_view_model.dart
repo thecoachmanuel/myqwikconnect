@@ -27,7 +27,9 @@ class CreateProfileScreenViewModel extends BaseViewModel {
   TextEditingController fullnameController = TextEditingController();
   TextEditingController bioController = TextEditingController();
   TextEditingController aboutController = TextEditingController();
-  final selectCountryController = Get.find<SelectCountryController>();
+  final selectCountryController = Get.isRegistered<SelectCountryController>()
+      ? Get.find<SelectCountryController>()
+      : Get.put(SelectCountryController());
 
   DateTime selectedDob =
       DateTime.now().subtract(const Duration(days: 365 * 18));
@@ -70,6 +72,10 @@ class CreateProfileScreenViewModel extends BaseViewModel {
         country: userData.country,
         state: userData.state,
         city: userData.city,
+      );
+    } else {
+      selectCountryController.setLocationFromStrings(
+        country: 'Nigeria',
       );
     }
     notifyListeners();
@@ -230,13 +236,31 @@ class CreateProfileScreenViewModel extends BaseViewModel {
     }
 
     if (selectCountryController.selectedCountry.value == null) {
-      return CommonUI.snackBar(message: S.current.pleaseSelectCountry);
+      if (selectCountryController.allCountries.isNotEmpty) {
+        selectCountryController.selectCountry(
+          country: selectCountryController.allCountries.first,
+        );
+      } else {
+        return CommonUI.snackBar(message: S.current.pleaseSelectCountry);
+      }
     }
     if (selectCountryController.selectedState.value == null) {
-      return CommonUI.snackBar(message: S.current.pleaseSelectState);
+      if (selectCountryController.selectedStatesFromCountry.isNotEmpty) {
+        selectCountryController.selectState(
+          state: selectCountryController.selectedStatesFromCountry.first,
+        );
+      } else {
+        return CommonUI.snackBar(message: S.current.pleaseSelectState);
+      }
     }
     if (selectCountryController.selectedCity.value == null) {
-      return CommonUI.snackBar(message: S.current.pleaseSelectCity);
+      if (selectCountryController.selectedCitiesFromState.isNotEmpty) {
+        selectCountryController.selectCity(
+          city: selectCountryController.selectedCitiesFromState.first,
+        );
+      } else {
+        return CommonUI.snackBar(message: S.current.pleaseSelectCity);
+      }
     }
 
     if (settingData?.appdata?.isDating == 1) {

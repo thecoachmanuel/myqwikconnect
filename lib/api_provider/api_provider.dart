@@ -54,6 +54,9 @@ class ApiProvider {
     map[Urls.deviceType] = AppPlatform.isAndroid ? Urls.aOne : Urls.aTwo;
     map[Urls.loginType] = loginType.toString();
     map[Urls.identity] = email;
+    if (password != null && password.isNotEmpty) {
+      map['password'] = password;
+    }
     if (firebaseUid != null && firebaseUid.isNotEmpty) {
       map['firebase_uid'] = firebaseUid;
     }

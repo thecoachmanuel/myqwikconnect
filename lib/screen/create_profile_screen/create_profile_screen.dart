@@ -17,12 +17,15 @@ import 'package:orange_ui/utils/font_res.dart';
 import 'package:stacked/stacked.dart';
 
 class CreateProfileScreen extends StatelessWidget {
-  const CreateProfileScreen({super.key});
+  final CreateProfileScreenViewModel? model;
+  const CreateProfileScreen({super.key, this.model});
 
   @override
   Widget build(BuildContext context) {
     return ViewModelBuilder<CreateProfileScreenViewModel>.reactive(
-        viewModelBuilder: () => Get.find<CreateProfileScreenViewModel>(),
+        viewModelBuilder: () => model ?? (Get.isRegistered<CreateProfileScreenViewModel>()
+            ? Get.find<CreateProfileScreenViewModel>()
+            : Get.put(CreateProfileScreenViewModel())),
         disposeViewModel: false,
         builder: (context, viewModel, child) {
           return LoginSetupView(

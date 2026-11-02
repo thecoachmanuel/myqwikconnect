@@ -16,12 +16,6 @@ import 'package:orange_ui/screen/auth_screen/widget/forget_password_view.dart';
 import 'package:orange_ui/utils/app_platform.dart';
 import 'package:orange_ui/screen/create_profile_screen/create_profile_screen.dart';
 import 'package:orange_ui/screen/create_profile_screen/create_profile_screen_view_model.dart';
-import 'package:orange_ui/screen/create_profile_screen/view/add_photos.dart';
-import 'package:orange_ui/screen/create_profile_screen/view/choose_religion.dart';
-import 'package:orange_ui/screen/create_profile_screen/view/find_matches.dart';
-import 'package:orange_ui/screen/create_profile_screen/view/relationship_goal.dart';
-import 'package:orange_ui/screen/create_profile_screen/view/select_interest.dart';
-import 'package:orange_ui/screen/create_profile_screen/view/select_languages.dart';
 import 'package:orange_ui/screen/dashboard/dashboard_screen.dart';
 import 'package:orange_ui/screen/restart_app/restart_app.dart';
 import 'package:orange_ui/service/firebase_notification_manager.dart';
@@ -136,6 +130,7 @@ class AuthScreenViewModel extends BaseViewModel {
       required String email,
       required String fullName,
       required int loginType,
+      String? password,
       String? firebaseUid,
       Function(UserData? userData)? onCompletion}) {
     FirebaseNotificationManager.shared.getNotificationToken(
@@ -146,19 +141,21 @@ class AuthScreenViewModel extends BaseViewModel {
                 fullName: fullName,
                 deviceToken: token,
                 loginType: loginType,
+                password: password,
                 firebaseUid: firebaseUid ?? FirebaseAuth.instance.currentUser?.uid)
             .then((value) {
           if (value.status == true) {
             if (Get.isDialogOpen == true) Get.back();
-            if (isRegistration) {
-              onCompletion?.call(value.data);
+            if (isRegistration && onCompletion != null) {
+              onCompletion.call(value.data);
             } else {
               SessionManager.instance
                   .setBool(key: SessionKeys.isLogin, value: true);
               if (value.data != null) {
                 SessionManager.instance.setUser(value.data);
               }
-              navigateScreen(userData: value.data);
+              final bool isNew = isRegistration || (value.isNew == true) || (value.data?.isProfileComplete == 0);
+              navigateScreen(userData: value.data, isRegistration: isNew);
             }
             notifyListeners();
 
@@ -336,60 +333,22 @@ class AuthScreenViewModel extends BaseViewModel {
       return;
     }
 
-    // Only force onboarding step wizards for brand new account registrations
     if (isRegistration) {
-      Appdata? appData = SessionManager.instance.getSettings()?.appdata;
-      final controller = Get.put(CreateProfileScreenViewModel());
+      final controller = Get.isRegistered<CreateProfileScreenViewModel>()
+          ? Get.find<CreateProfileScreenViewModel>()
+          : Get.put(CreateProfileScreenViewModel());
       controller.init(userData);
-      if (appData?.isDating == 1) {
-        if (_isBasicProfileIncomplete(userData)) {
-          Get.off(() => const CreateProfileScreen());
-          return;
-        }
+      Get.offAll(() => CreateProfileScreen(model: controller));
+      return;
+    }
 
-        if (_isMatchPreferenceIncomplete(userData)) {
-          Get.off(() => FindMatches(userData: userData, model: controller));
-          return;
-        }
-
-        if (userData.interests == null || userData.interests!.isEmpty) {
-          Get.off(() => SelectInterest(userData: userData, model: controller));
-          return;
-        }
-
-        if (userData.relationshipGoalIdsList.isEmpty) {
-          Get.off(() => RelationshipGoal(userData: userData, model: controller));
-          return;
-        }
-
-        if (userData.religionKey == null || userData.religionKey!.isEmpty) {
-          Get.off(() => ChooseReligion(userData: userData, model: controller));
-          return;
-        }
-
-        if (userData.languageKeys == null || userData.languageKeys!.isEmpty) {
-          Get.off(() => SelectLanguages(userData: userData, model: controller));
-          return;
-        }
-
-        if ((userData.images ?? []).isEmpty) {
-          Get.off(() => AddPhotos(userData: userData, model: controller));
-          return;
-        }
-      } else {
-        if (_isBasicProfileIncomplete(userData)) {
-          Get.off(() => const CreateProfileScreen());
-          return;
-        }
-        if (userData.interests == null || userData.interests!.isEmpty) {
-          Get.off(() => SelectInterest(userData: userData, model: controller));
-          return;
-        }
-        if ((userData.images ?? []).isEmpty) {
-          Get.off(() => AddPhotos(userData: userData, model: controller));
-          return;
-        }
-      }
+    if (_isBasicProfileIncomplete(userData)) {
+      final controller = Get.isRegistered<CreateProfileScreenViewModel>()
+          ? Get.find<CreateProfileScreenViewModel>()
+          : Get.put(CreateProfileScreenViewModel());
+      controller.init(userData);
+      Get.offAll(() => CreateProfileScreen(model: controller));
+      return;
     }
 
     Get.offAllNamed('/dashboard');
@@ -401,13 +360,8 @@ class AuthScreenViewModel extends BaseViewModel {
         (user.bio?.trim().isEmpty ?? true) ||
         (user.country?.trim().isEmpty ?? true) ||
         (user.state?.trim().isEmpty ?? true) ||
-        (user.city?.trim().isEmpty ?? true);
-  }
-
-  bool _isMatchPreferenceIncomplete(UserData user) {
-    return user.agePreferredMin == null ||
-        user.agePreferredMax == null ||
-        user.distancePreference == null;
+        (user.city?.trim().isEmpty ?? true) ||
+        (user.images == null || user.images!.isEmpty);
   }
 
   Future<void> onContinueTap() async {
@@ -437,55 +391,118 @@ class AuthScreenViewModel extends BaseViewModel {
         return CommonUI.snackBar(message: S.current.passwordMismatch);
       }
     }
+
     CommonUI.lottieLoader();
-    UserCredential? userCredential;
+
+    final inputEmail = emailController.text.trim();
+    final inputPassword = passwordController.text.trim();
+    final inputFullName = fullNameController.text.trim();
+
     if (pageIndex == 0) {
-      final inputEmail = emailController.text.trim().toLowerCase();
-      final inputPass = passwordController.text.trim();
-      if (inputEmail == 'test@orange.com' ||
-          inputEmail == 'demo@orange.com' ||
-          inputEmail == 'admin@orange.com' ||
-          inputEmail == 'test@test.com' ||
-          inputEmail == 'test' ||
-          inputEmail == 'demo' ||
-          inputEmail == 'admin' ||
-          inputPass == '123456') {
-        loginAsDemoUser();
-        return;
+      // ===== LOGIN FLOW =====
+      String? firebaseUid;
+      try {
+        final cred = await FirebaseAuth.instance.signInWithEmailAndPassword(
+          email: inputEmail,
+          password: inputPassword,
+        );
+        firebaseUid = cred.user?.uid;
+      } catch (e) {
+        log('Firebase login notice: $e');
       }
-      userCredential = await signInWithEmailAndPassword();
+
+      // Authenticate with backend database
+      FirebaseNotificationManager.shared.getNotificationToken((token) async {
+        try {
+          final loginRes = await ApiProvider().fakeUserLogin(
+            email: inputEmail,
+            password: inputPassword,
+            deviceToken: token,
+          );
+
+          if (Get.isDialogOpen == true) Get.back();
+
+          if (loginRes.status == true && loginRes.data != null) {
+            SessionManager.instance.setBool(key: SessionKeys.isLogin, value: true);
+            SessionManager.instance.setString(key: SessionKeys.password, value: inputPassword);
+            SessionManager.instance.setUser(loginRes.data);
+            navigateScreen(userData: loginRes.data, isRegistration: false);
+          } else {
+            // If backend user doesn't exist yet but Firebase authenticated: auto-register on backend
+            if (firebaseUid != null && firebaseUid.isNotEmpty) {
+              registration(
+                email: inputEmail,
+                fullName: inputFullName.isNotEmpty ? inputFullName : inputEmail.split('@')[0],
+                loginType: LoginType.email.value,
+                password: inputPassword,
+                firebaseUid: firebaseUid,
+                isRegistration: false,
+              );
+            } else {
+              CommonUI.snackBar(
+                message: loginRes.message ?? 'Invalid email or password. Please try again.',
+              );
+            }
+          }
+        } catch (e) {
+          if (Get.isDialogOpen == true) Get.back();
+          CommonUI.snackBar(message: 'Login failed. Please check connection.');
+        }
+      });
     } else {
-      userCredential = await createUserWithEmailAndPassword();
-    }
-    if (userCredential == null) return;
-    SessionManager.instance.setString(
-        key: SessionKeys.password, value: passwordController.text.trim());
-    if (pageIndex == 1) {
+      // ===== SIGN UP FLOW =====
+      String? firebaseUid;
       try {
-        userCredential.user
-            ?.updateDisplayName(fullNameController.text.trim());
-      } catch (_) {}
-      try {
-        userCredential.user?.sendEmailVerification();
-      } catch (_) {}
-      registration(
-        email: emailController.text.trim(),
-        fullName: fullNameController.text.trim(),
-        loginType: LoginType.email.value,
-        firebaseUid: userCredential.user?.uid,
-        isRegistration: false,
-      );
-    } else {
-      registration(
-        email: emailController.text.trim(),
-        fullName: fullNameController.text.trim().isNotEmpty
-            ? fullNameController.text.trim()
-            : (userCredential.user?.displayName ??
-                emailController.text.trim().split('@')[0]),
-        loginType: LoginType.email.value,
-        firebaseUid: userCredential.user?.uid,
-        isRegistration: false,
-      );
+        final cred = await FirebaseAuth.instance.createUserWithEmailAndPassword(
+          email: inputEmail,
+          password: inputPassword,
+        );
+        try {
+          await cred.user?.updateDisplayName(inputFullName);
+        } catch (_) {}
+        firebaseUid = cred.user?.uid;
+      } on FirebaseAuthException catch (e) {
+        if (e.code == 'email-already-in-use') {
+          if (Get.isDialogOpen == true) Get.back();
+          CommonUI.snackBar(message: 'This email is already registered. Please log in.');
+          pageIndex = 0;
+          pageController.animateToPage(0,
+              duration: const Duration(milliseconds: 250), curve: Curves.easeInOut);
+          notifyListeners();
+          return;
+        }
+        log('Firebase register notice: ${e.code} - ${e.message}');
+      } catch (e) {
+        log('Firebase register error: $e');
+      }
+
+      // Register with backend and immediately launch the onboarding flow
+      FirebaseNotificationManager.shared.getNotificationToken((token) async {
+        try {
+          final regRes = await ApiProvider().registration(
+            email: inputEmail,
+            fullName: inputFullName,
+            password: inputPassword,
+            deviceToken: token,
+            loginType: LoginType.email.value,
+            firebaseUid: firebaseUid,
+          );
+
+          if (Get.isDialogOpen == true) Get.back();
+
+          if (regRes.status == true && regRes.data != null) {
+            SessionManager.instance.setBool(key: SessionKeys.isLogin, value: true);
+            SessionManager.instance.setString(key: SessionKeys.password, value: inputPassword);
+            SessionManager.instance.setUser(regRes.data);
+            navigateScreen(userData: regRes.data, isRegistration: true);
+          } else {
+            CommonUI.snackBar(message: regRes.message ?? 'Registration failed. Please try again.');
+          }
+        } catch (e) {
+          if (Get.isDialogOpen == true) Get.back();
+          CommonUI.snackBar(message: 'Registration failed. Please try again.');
+        }
+      });
     }
   }
 

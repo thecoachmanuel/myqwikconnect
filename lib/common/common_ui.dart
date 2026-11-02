@@ -10,28 +10,59 @@ import 'package:orange_ui/utils/font_res.dart';
 
 class CommonUI {
   static Widget profileImagePlaceHolder(
-      {required String? name,
+      {String? name,
       double heightWidth = 0,
       double? borderRadius,
       Color? color,
       double? fontSize}) {
-    return Container(
-      width: heightWidth,
-      height: heightWidth,
-      decoration: BoxDecoration(
-          color: ColorRes.darkOrange20,
-          borderRadius: BorderRadius.circular(borderRadius ?? 50)),
-      alignment: Alignment.center,
-      child: Text(
-        (name == null || name.isEmpty ? 'Unknown' : name)[0].toUpperCase(),
-        style: TextStyle(
-          fontFamily: FontRes.semiBold,
-          fontSize: (fontSize ?? (heightWidth / 2)).isFinite
-              ? (fontSize ?? (heightWidth / 2))
-              : 14,
-          color: (color ?? ColorRes.themeColor).withValues(alpha: .5),
-        ),
-      ),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        double resolvedWidth = heightWidth > 0 && heightWidth.isFinite
+            ? heightWidth
+            : (constraints.maxWidth.isFinite && constraints.maxWidth > 0
+                ? constraints.maxWidth
+                : double.infinity);
+        double resolvedHeight = heightWidth > 0 && heightWidth.isFinite
+            ? heightWidth
+            : (constraints.maxHeight.isFinite && constraints.maxHeight > 0
+                ? constraints.maxHeight
+                : double.infinity);
+
+        double baseSize = 50.0;
+        if (heightWidth > 0 && heightWidth.isFinite) {
+          baseSize = heightWidth;
+        } else if (constraints.maxHeight.isFinite && constraints.maxHeight > 0) {
+          baseSize = constraints.maxHeight;
+        } else if (constraints.maxWidth.isFinite && constraints.maxWidth > 0) {
+          baseSize = constraints.maxWidth;
+        }
+
+        final double iconSize = (baseSize * 0.5).clamp(16.0, 120.0);
+
+        return Container(
+          width: resolvedWidth,
+          height: resolvedHeight,
+          decoration: BoxDecoration(
+            color: const Color(0xFFF1F3F6),
+            borderRadius: BorderRadius.circular(borderRadius ?? 50),
+          ),
+          alignment: Alignment.center,
+          child: Center(
+            child: Image.asset(
+              AssetRes.icProfileUser,
+              width: iconSize,
+              height: iconSize,
+              fit: BoxFit.contain,
+              color: (color ?? ColorRes.dimGrey3).withValues(alpha: 0.65),
+              errorBuilder: (context, error, stackTrace) => Icon(
+                Icons.person_rounded,
+                size: iconSize,
+                color: (color ?? ColorRes.dimGrey3).withValues(alpha: 0.65),
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 

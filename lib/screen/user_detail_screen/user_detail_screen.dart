@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:orange_ui/common/common_ui.dart';
 import 'package:orange_ui/common/custom_image.dart';
 import 'package:orange_ui/model/user/registration_user.dart';
 import 'package:orange_ui/screen/user_detail_screen/user_detail_screen_view_model.dart';
@@ -70,6 +71,12 @@ class _UserDetailScreenState extends State<UserDetailScreen>
                   image: model.otherUserData?.profileImage,
                   height: double.infinity,
                   width: double.infinity,
+                )
+              else
+                CommonUI.profileImagePlaceHolder(
+                  name: model.otherUserData?.fullname,
+                  heightWidth: double.infinity,
+                  borderRadius: 0,
                 ),
               Column(
                 children: [

@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:orange_ui/common/button/round_icon_button.dart';
 import 'package:orange_ui/generated/l10n.dart';
 import 'package:orange_ui/model/chat_and_live_stream/chat.dart';
+import 'package:orange_ui/service/extention/string_extention.dart';
 import 'package:orange_ui/service/session_manager.dart';
 
 import 'package:orange_ui/utils/app_res.dart';
@@ -40,9 +41,13 @@ class _ImageViewPageState extends State<ImageViewPage> {
               child: InteractiveViewer(
                 transformationController: _transformationController,
                 child: CachedNetworkImage(
-                  imageUrl: '${ConstRes.aImageBaseUrl}${widget.userData?.image}',
+                  imageUrl: (widget.userData?.image ?? '').addBaseURL(),
                   height: Get.height,
                   width: double.infinity,
+                  fit: BoxFit.contain,
+                  errorWidget: (context, url, error) => const Center(
+                    child: Icon(Icons.broken_image_rounded, color: ColorRes.white, size: 48),
+                  ),
                 ),
               ),
             ),

@@ -259,6 +259,7 @@ class ChatMessage {
   double? _time;
   ChatUser? _senderUser;
   List<String>? _notDeletedIdentities;
+  bool isSending = false;
 
   ChatMessage(
       {String? id,
@@ -268,7 +269,8 @@ class ChatMessage {
       String? msgType,
       double? time,
       ChatUser? senderUser,
-      List<String>? notDeletedIdentities}) {
+      List<String>? notDeletedIdentities,
+      this.isSending = false}) {
     _id = id;
     _image = image;
     _video = video;
@@ -302,8 +304,10 @@ class ChatMessage {
     _msgType = map["msgType"]?.toString();
     _time = (map["time"] as num?)?.toDouble() ??
         (map["time"] is String ? double.tryParse(map["time"]) : null);
-    _senderUser = map["senderUser"] != null ? ChatUser.fromJson(map["senderUser"]) : null;
-    if (map['not_deleted_identities'] != null && map['not_deleted_identities'] is Iterable) {
+    _senderUser =
+        map["senderUser"] != null ? ChatUser.fromJson(map["senderUser"]) : null;
+    if (map['not_deleted_identities'] != null &&
+        map['not_deleted_identities'] is Iterable) {
       _notDeletedIdentities = [];
       for (var v in map['not_deleted_identities']) {
         _notDeletedIdentities?.add(v.toString());
@@ -317,7 +321,8 @@ class ChatMessage {
   ) {
     final data = snapshot.data();
     List<String> notDeletedIdentities = [];
-    if (data?['not_deleted_identities'] != null && data!['not_deleted_identities'] is Iterable) {
+    if (data?['not_deleted_identities'] != null &&
+        data!['not_deleted_identities'] is Iterable) {
       for (var v in data['not_deleted_identities']) {
         notDeletedIdentities.add(v.toString());
       }
@@ -331,7 +336,9 @@ class ChatMessage {
           (data?['time'] is String ? double.tryParse(data?['time']) : null),
       msgType: data?['msgType']?.toString(),
       notDeletedIdentities: notDeletedIdentities,
-      senderUser: data?["senderUser"] != null ? ChatUser.fromJson(data!["senderUser"]) : null,
+      senderUser: data?["senderUser"] != null
+          ? ChatUser.fromJson(data!["senderUser"])
+          : null,
     );
   }
 
@@ -351,6 +358,10 @@ class ChatMessage {
 
   String? get video => _video;
 
+  set video(String? value) {
+    _video = value;
+  }
+
   List<String>? get notDeletedIdentities => _notDeletedIdentities;
 
   ChatUser? get senderUser => _senderUser;
@@ -362,6 +373,10 @@ class ChatMessage {
   String? get msg => _msg;
 
   String? get image => _image;
+
+  set image(String? value) {
+    _image = value;
+  }
 
   String? get id => _id;
 }

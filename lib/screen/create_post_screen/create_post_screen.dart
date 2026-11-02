@@ -26,8 +26,7 @@ class CreatePostScreen extends StatelessWidget {
               Expanded(
                 child: SingleChildScrollView(
                   physics: const BouncingScrollPhysics(),
-                  padding: EdgeInsets.only(
-                      bottom: MediaQuery.of(context).viewInsets.bottom + 40),
+                  padding: const EdgeInsets.only(bottom: 24),
                   keyboardDismissBehavior:
                       ScrollViewKeyboardDismissBehavior.onDrag,
                   child: model.pageType == 0

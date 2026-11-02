@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:orange_ui/api_provider/api_provider.dart';
 import 'package:orange_ui/model/social/post/add_comment.dart';
+import 'package:orange_ui/service/extention/string_extention.dart';
 import 'package:orange_ui/utils/color_res.dart';
 import 'package:orange_ui/utils/const_res.dart';
 import 'package:orange_ui/utils/urls.dart';
@@ -31,7 +32,7 @@ class VideoPlayerScreenViewModel extends BaseViewModel {
       videoPlayerController = videoType == VideoType.file
           ? VideoPlayerController.file(File(videoPath!))
           : VideoPlayerController.networkUrl(
-              Uri.parse('${ConstRes.aImageBaseUrl}$videoPath'));
+              Uri.parse((videoPath ?? '').addBaseURL()));
 
       videoPlayerController.initialize().then((_) {
         videoPlayerController.play().then((_) {

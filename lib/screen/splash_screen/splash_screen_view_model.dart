@@ -67,8 +67,8 @@ class SplashScreenViewModel extends BaseViewModel {
       if (response.status == true && response.data != null) {
         SessionManager.instance.setUser(response.data);
       } else if (response.status == false &&
-          (response.message?.toLowerCase().contains('not found') == true ||
-              response.message?.toLowerCase().contains('block') == true)) {
+          response.message?.toLowerCase().contains('block') == true) {
+        // ONLY log out if explicitly blocked by admin
         SessionManager.instance.cleanSession();
         Get.offAllNamed('/auth');
       }

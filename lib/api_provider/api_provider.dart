@@ -364,6 +364,16 @@ class ApiProvider {
     return UserModel.fromJson(jsonDecode(response.body));
   }
 
+  Future<void> markNotificationAsRead() async {
+    try {
+      await http.post(
+        Uri.parse(Urls.aMarkNotificationAsRead),
+        headers: headers,
+        body: {Urls.userId: myUserId.toString()},
+      );
+    } catch (_) {}
+  }
+
   Future<UserModel> onOffAnonymous(int? state) async {
     http.Response response = await http.post(Uri.parse(Urls.aOnOffAnonymous),
         headers: headers,
@@ -856,6 +866,8 @@ class ApiProvider {
     String? conversationId,
     bool isLiveStreaming = false,
     Map<String, dynamic>? liveStreamUserData,
+    int? myUserId,
+    int? targetUserId,
   }) async {
     final bool isIOS = deviceType == 2;
 
@@ -874,6 +886,10 @@ class ApiProvider {
               "body": body,
               "title": title
             },
+      if (myUserId != null) "my_user_id": myUserId,
+      if (targetUserId != null) "target_user_id": targetUserId,
+      if (myUserId != null) "sender_id": myUserId,
+      if (targetUserId != null) "user_id": targetUserId,
     };
 
     // iOS needs explicit notification payload
@@ -889,12 +905,17 @@ class ApiProvider {
       messageData["token"] = token;
     } else if (isLiveStreaming && topic != null && topic.isNotEmpty) {
       messageData["topic"] = topic;
-    } else {
-      log("Notification not sent: Missing token/topic.");
-      return;
     }
 
-    final Map<String, dynamic> inputData = {"message": messageData};
+    final Map<String, dynamic> inputData = {
+      "message": messageData,
+      if (myUserId != null) "my_user_id": myUserId,
+      if (targetUserId != null) "target_user_id": targetUserId,
+      if (myUserId != null) "sender_id": myUserId,
+      if (targetUserId != null) "user_id": targetUserId,
+      "title": title,
+      "body": body,
+    };
 
     log("Sending push notification: $inputData");
 

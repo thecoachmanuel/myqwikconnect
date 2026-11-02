@@ -17,6 +17,7 @@ class SessionManager {
   void setUser(UserData? user) {
     if (user != null) {
       storage.write(SessionKeys.user, user.toJson());
+      storage.write(SessionKeys.isLogin, true);
     }
   }
 
@@ -56,6 +57,11 @@ class SessionManager {
   }
 
   bool getBool({required String key}) {
+    if (key == SessionKeys.isLogin) {
+      final val = storage.read(key);
+      if (val == true) return true;
+      return getUser() != null && (getUser()!.id ?? 0) > 0;
+    }
     return storage.read(key) ?? false;
   }
 

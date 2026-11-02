@@ -22,6 +22,7 @@ import 'package:orange_ui/service/ads_service.dart';
 import 'package:orange_ui/service/firebase_notification_manager.dart';
 import 'package:orange_ui/service/post_upload_service.dart';
 import 'package:orange_ui/service/session_manager.dart';
+import 'package:orange_ui/service/presence_service.dart';
 import 'package:orange_ui/service/subscription/subscription_manager.dart';
 import 'package:orange_ui/service/version/version_service.dart';
 import 'package:orange_ui/utils/app_platform.dart';
@@ -103,6 +104,7 @@ class _MyAppState extends State<MyApp> {
   void initState() {
     consentForm();
     VersionService.instance.init();
+    PresenceService.instance.init();
     super.initState();
   }
 

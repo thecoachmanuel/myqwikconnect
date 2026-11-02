@@ -20,23 +20,26 @@ class CreatePostPage extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Container(
-          constraints: const BoxConstraints(minHeight: 120, maxHeight: 200),
+          constraints: BoxConstraints(
+            minHeight: model.imagesFile.isNotEmpty ? 70 : 110,
+            maxHeight: model.imagesFile.isNotEmpty ? 120 : 180,
+          ),
           color: ColorRes.aquaHaze,
           child: DetectableTextField(
             controller: model.detectableTextFieldController,
             onChanged: model.onChangeDetectableTextField,
             focusNode: model.detectableTextFieldFocusNode,
             maxLines: null,
-            minLines: 4,
+            minLines: model.imagesFile.isNotEmpty ? 2 : 4,
             expands: false,
-            scrollPadding: const EdgeInsets.only(bottom: 100),
+            scrollPadding: EdgeInsets.zero,
             maxLength: ((model.appData?.postDescriptionLimit ?? 0) <= 0) ? null : model.appData?.postDescriptionLimit,
             decoration: InputDecoration(
                 border: InputBorder.none,
                 hintText: S.of(context).writeSomethingHere,
-                hintStyle: const TextStyle(fontSize: 17, fontFamily: FontRes.regular, color: ColorRes.dimGrey2),
-                contentPadding: const EdgeInsets.all(15)),
-            style: const TextStyle(fontSize: 18, color: ColorRes.dimGrey3, fontFamily: FontRes.regular),
+                hintStyle: const TextStyle(fontSize: 16, fontFamily: FontRes.regular, color: ColorRes.dimGrey2),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 15, vertical: 12)),
+            style: const TextStyle(fontSize: 16, color: ColorRes.dimGrey3, fontFamily: FontRes.regular),
           ),
         ),
         const SizedBox(height: 10),

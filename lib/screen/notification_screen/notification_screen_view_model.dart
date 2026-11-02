@@ -6,6 +6,7 @@ import 'package:orange_ui/model/notification/admin_notification.dart';
 import 'package:orange_ui/model/notification/user_notification_model.dart';
 import 'package:orange_ui/model/user/registration_user.dart';
 import 'package:orange_ui/screen/user_detail_screen/user_detail_screen.dart';
+import 'package:orange_ui/service/session_manager.dart';
 import 'package:stacked/stacked.dart';
 
 class NotificationScreenViewModel extends BaseViewModel {
@@ -21,6 +22,8 @@ class NotificationScreenViewModel extends BaseViewModel {
   List<UserNotificationData> userNotification = [];
 
   void init() {
+    SessionManager.instance.notifyCount.value = 0;
+    ApiProvider().markNotificationAsRead();
     getUserNotificationApiCall();
     fetchScrollData();
   }
@@ -70,11 +73,15 @@ class NotificationScreenViewModel extends BaseViewModel {
   void getUserNotificationApiCall() {
     isUserLoading = true;
     ApiProvider().getUserNotification(start).then((value) async {
-      value.data?.forEach((element) {});
       if (start == 0) {
-        userNotification = value.data ?? [];
-      } else {
-        userNotification.addAll(value.data!);
+        userNotification = [];
+      }
+      final existingIds = userNotification.map((n) => n.id).toSet();
+      for (var item in (value.data ?? [])) {
+        if (item.id != null && !existingIds.contains(item.id)) {
+          userNotification.add(item);
+          existingIds.add(item.id);
+        }
       }
       start = userNotification.length;
       isUserLoading = false;
@@ -88,7 +95,15 @@ class NotificationScreenViewModel extends BaseViewModel {
 
   void onTabChange(int index) {
     tabIndex = index;
-    tabIndex == 0 ? getUserNotificationApiCall() : getAdminNotificationApiCall();
+    if (tabIndex == 0) {
+      start = 0;
+      getUserNotificationApiCall();
+    } else {
+      adminStart = 0;
+      getAdminNotificationApiCall();
+    }
+    SessionManager.instance.notifyCount.value = 0;
+    ApiProvider().markNotificationAsRead();
     notifyListeners();
   }
 }

@@ -157,8 +157,43 @@ class BottomNavigationView extends StatelessWidget {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
-                        Image.asset(item.image,
-                            width: 25, height: 25, color: color),
+                        Stack(
+                          clipBehavior: Clip.none,
+                          children: [
+                            Image.asset(item.image,
+                                width: 25, height: 25, color: color),
+                            if (item.image == AssetRes.icMessage &&
+                                model.unreadMessageCount > 0)
+                              Positioned(
+                                top: -4,
+                                right: -7,
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 4, vertical: 1.5),
+                                  decoration: BoxDecoration(
+                                    color: ColorRes.themeColor,
+                                    borderRadius: BorderRadius.circular(10),
+                                    border: Border.all(
+                                        color: ColorRes.white, width: 1.5),
+                                  ),
+                                  constraints: const BoxConstraints(
+                                      minWidth: 16, minHeight: 16),
+                                  alignment: Alignment.center,
+                                  child: Text(
+                                    model.unreadMessageCount > 99
+                                        ? '99+'
+                                        : '${model.unreadMessageCount}',
+                                    style: const TextStyle(
+                                      color: ColorRes.white,
+                                      fontSize: 9.5,
+                                      fontFamily: FontRes.bold,
+                                      height: 1.1,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                          ],
+                        ),
                         const SizedBox(height: 5),
                         Text(
                           item.title,

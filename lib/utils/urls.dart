@@ -18,6 +18,8 @@ class Urls {
   static const String aOnOffNotification =
       '${ConstRes.aBaseUrl}onOffNotification';
   static const String aAddUserReport = '${ConstRes.aBaseUrl}addUserReport';
+  static const String aMarkNotificationAsRead =
+      '${ConstRes.aBaseUrl}markNotificationAsRead';
   static const String aGetAdminNotification =
       '${ConstRes.aBaseUrl}getAdminNotifications';
   static const String aApplyForLive = '${ConstRes.aBaseUrl}applyForLive';

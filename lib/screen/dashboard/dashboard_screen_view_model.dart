@@ -1,10 +1,13 @@
+import 'dart:async';
 import 'package:app_badge_plus/app_badge_plus.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:orange_ui/api_provider/api_provider.dart';
 import 'package:orange_ui/common/common_fun.dart';
 import 'package:orange_ui/common/common_ui.dart';
+import 'package:orange_ui/model/chat_and_live_stream/chat.dart';
 import 'package:orange_ui/model/setting_model.dart';
 import 'package:orange_ui/model/social/post/add_post.dart';
 import 'package:orange_ui/model/user/registration_user.dart';
@@ -19,13 +22,17 @@ import 'package:orange_ui/service/session_manager.dart';
 import 'package:orange_ui/service/share_manager.dart';
 import 'package:orange_ui/service/subscription/subscription_manager.dart';
 import 'package:orange_ui/utils/app_platform.dart';
+import 'package:orange_ui/utils/firebase_res.dart';
 import 'package:orange_ui/utils/urls.dart';
 import 'package:stacked/stacked.dart';
 
-class DashboardScreenViewModel extends BaseViewModel with WidgetsBindingObserver {
+class DashboardScreenViewModel extends BaseViewModel
+    with WidgetsBindingObserver {
   static const String keyActiveTabIndex = 'dashboard_active_tab_index';
   int pageIndex = 0;
   int unreadNotificationCount = 0;
+  int unreadMessageCount = 0;
+  StreamSubscription<QuerySnapshot<Conversation>>? chatBadgeSubscription;
   UserData? userData;
 
   Appdata? settingAppData = SessionManager.instance.getSettings()?.appdata;
@@ -33,7 +40,8 @@ class DashboardScreenViewModel extends BaseViewModel with WidgetsBindingObserver
 
   void init() {
     WidgetsBinding.instance.addObserver(this);
-    final bool isLogin = SessionManager.instance.getBool(key: SessionKeys.isLogin);
+    final bool isLogin =
+        SessionManager.instance.getBool(key: SessionKeys.isLogin);
     final cachedUser = SessionManager.instance.getUser();
     if (!isLogin || cachedUser == null || (cachedUser.id ?? 0) <= 0) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -54,6 +62,32 @@ class DashboardScreenViewModel extends BaseViewModel with WidgetsBindingObserver
     initBranch();
     getProfileApiCall();
     fetchUnreadNotifications();
+
+    final uid = cachedUser.id ?? SessionManager.instance.getUserID();
+    if (uid > 0) {
+      chatBadgeSubscription?.cancel();
+      chatBadgeSubscription = FirebaseFirestore.instance
+          .collection(FirebaseRes.userChatList)
+          .doc('$uid')
+          .collection(FirebaseRes.userList)
+          .withConverter(
+            fromFirestore: Conversation.fromFirestore,
+            toFirestore: (Conversation value, options) => value.toFirestore(),
+          )
+          .snapshots()
+          .listen((snapshot) {
+        int count = 0;
+        for (final doc in snapshot.docs) {
+          final conv = doc.data();
+          if (conv.isDeleted != true && conv.user?.isNewMsg == true) {
+            count++;
+          }
+        }
+        unreadMessageCount = count;
+        notifyListeners();
+      }, onError: (_) {});
+    }
+
     ApiProvider().getSettingData().then((value) {
       if (value.status == true && value.data != null) {
         SessionManager.instance.setSettings(value.data);
@@ -68,9 +102,7 @@ class DashboardScreenViewModel extends BaseViewModel with WidgetsBindingObserver
     notifyListeners();
     final uid = SessionManager.instance.getUserID();
     if (uid <= 0) return;
-    ApiProvider()
-        .getProfile(userID: uid)
-        .then((value) {
+    ApiProvider().getProfile(userID: uid).then((value) {
       if (value.status == true && value.data != null) {
         userData = value.data;
         SessionManager.instance.setUser(value.data);
@@ -95,7 +127,8 @@ class DashboardScreenViewModel extends BaseViewModel with WidgetsBindingObserver
         userData,
         onCompletion: () {
           pageIndex = index;
-          SessionManager.instance.setInt(key: keyActiveTabIndex, value: pageIndex);
+          SessionManager.instance
+              .setInt(key: keyActiveTabIndex, value: pageIndex);
         },
       );
     }
@@ -116,7 +149,10 @@ class DashboardScreenViewModel extends BaseViewModel with WidgetsBindingObserver
                 }
               },
               url: Urls.aFetchPostByPostId,
-              param: {Urls.userId: SessionManager.instance.getUserID().toString(), Urls.aPostId: value});
+              param: {
+                Urls.userId: SessionManager.instance.getUserID().toString(),
+                Urls.aPostId: value
+              });
         case ShareKeys.user:
           Get.to(() => UserDetailScreen(userId: value));
       }
@@ -126,7 +162,8 @@ class DashboardScreenViewModel extends BaseViewModel with WidgetsBindingObserver
   void fetchUnreadNotifications() {
     ApiProvider().getUserNotification(0).then((value) {
       if (value.status == true && value.data != null) {
-        unreadNotificationCount = value.data!.where((n) => n.isRead != 1).length;
+        unreadNotificationCount =
+            value.data!.where((n) => n.isRead != 1).length;
         notifyListeners();
       }
     }).catchError((_) {});
@@ -175,6 +212,7 @@ class DashboardScreenViewModel extends BaseViewModel with WidgetsBindingObserver
 
   @override
   void dispose() {
+    chatBadgeSubscription?.cancel();
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }

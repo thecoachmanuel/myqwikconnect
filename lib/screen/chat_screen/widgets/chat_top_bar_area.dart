@@ -13,12 +13,17 @@ class ChatTopBarArea extends StatelessWidget {
   final Function(String value) onMoreBtnTap;
   final String blockUnblock;
   final VoidCallback onUserTap;
+  final bool isOnline;
+  final String lastSeen;
 
-  const ChatTopBarArea({super.key,
-      required this.conversation,
-      required this.onMoreBtnTap,
-      required this.blockUnblock,
-      required this.onUserTap,
+  const ChatTopBarArea({
+    super.key,
+    required this.conversation,
+    required this.onMoreBtnTap,
+    required this.blockUnblock,
+    required this.onUserTap,
+    this.isOnline = false,
+    this.lastSeen = '',
   });
 
   @override
@@ -33,13 +38,31 @@ class ChatTopBarArea extends StatelessWidget {
               children: [
                 const RoundIconButton(bgColor: ColorRes.transparent),
                 const SizedBox(width: 15),
-                CustomImage(
-                  image: conversation?.user?.image,
-                  fullname: conversation?.user?.username,
-                  height: 37,
-                  width: 37,
-                  radius: 30,
-                  fit: BoxFit.cover,
+                Stack(
+                  children: [
+                    CustomImage(
+                      image: conversation?.user?.image,
+                      fullname: conversation?.user?.username,
+                      height: 38,
+                      width: 38,
+                      radius: 19,
+                      fit: BoxFit.cover,
+                    ),
+                    if (isOnline)
+                      Positioned(
+                        bottom: 0,
+                        right: 0,
+                        child: Container(
+                          width: 11,
+                          height: 11,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF22C55E),
+                            shape: BoxShape.circle,
+                            border: Border.all(color: ColorRes.white, width: 2),
+                          ),
+                        ),
+                      ),
+                  ],
                 ),
                 const SizedBox(width: 10),
                 Expanded(
@@ -80,14 +103,43 @@ class ChatTopBarArea extends StatelessWidget {
                                 child: Image.asset(AssetRes.tickMark, height: 15, width: 15)),
                           ],
                         ),
-                        Text(
-                          conversation?.user?.city != null ? "${conversation?.user?.city}" : '',
-                          style: const TextStyle(
-                            color: ColorRes.darkGrey9,
-                            fontSize: 13,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
+                        Row(
+                          children: [
+                            if (isOnline) ...[
+                              Container(
+                                width: 7,
+                                height: 7,
+                                margin: const EdgeInsets.only(right: 5),
+                                decoration: const BoxDecoration(
+                                  color: Color(0xFF22C55E),
+                                  shape: BoxShape.circle,
+                                ),
+                              ),
+                              const Text(
+                                'Online',
+                                style: TextStyle(
+                                  color: Color(0xFF22C55E),
+                                  fontFamily: FontRes.medium,
+                                  fontSize: 12.5,
+                                ),
+                              ),
+                            ] else ...[
+                              Text(
+                                lastSeen.isNotEmpty
+                                    ? lastSeen
+                                    : (conversation?.user?.city != null
+                                        ? "${conversation?.user?.city}"
+                                        : 'Offline'),
+                                style: const TextStyle(
+                                  color: ColorRes.darkGrey9,
+                                  fontFamily: FontRes.regular,
+                                  fontSize: 12.5,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ],
+                          ],
                         ),
                       ],
                     ),

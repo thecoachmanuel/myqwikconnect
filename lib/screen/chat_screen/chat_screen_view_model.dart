@@ -24,6 +24,7 @@ import 'package:orange_ui/screen/user_detail_screen/user_detail_screen.dart';
 import 'package:orange_ui/screen/user_report_screen/report_sheet.dart';
 import 'package:orange_ui/screen/video_preview_screen/video_preview_screen.dart';
 import 'package:orange_ui/screen/video_preview_screen/video_preview_screen_view_model.dart';
+import 'package:orange_ui/service/presence_service.dart';
 import 'package:orange_ui/service/session_manager.dart';
 import 'package:orange_ui/service/subscription/subscription_manager.dart';
 import 'package:orange_ui/utils/app_res.dart';
@@ -68,6 +69,9 @@ class ChatScreenViewModel extends BaseViewModel {
   bool isBlockOther = false;
   static String conversationID = '';
   int messagePrice = 0;
+  bool isUserOnline = false;
+  String userLastSeen = '';
+  StreamSubscription? presenceSubscription;
 
   Appdata? settingAppData;
 
@@ -169,6 +173,35 @@ class ChatScreenViewModel extends BaseViewModel {
     settingAppData = SessionManager.instance.getSettings()?.appdata;
     messagePrice = settingAppData?.messagePrice ?? 0;
     notifyListeners();
+
+    final targetId = conversation.user?.userid;
+    if (targetId != null && targetId > 0) {
+      presenceSubscription?.cancel();
+      presenceSubscription = FirebaseFirestore.instance
+          .collection('user_presence')
+          .doc('$targetId')
+          .snapshots()
+          .listen((doc) {
+        if (doc.exists && doc.data() != null) {
+          final data = doc.data()!;
+          isUserOnline = data['isOnline'] == true;
+          userLastSeen = PresenceService.formatLastSeen(data['lastSeen']);
+        } else {
+          isUserOnline = false;
+          userLastSeen = 'Offline';
+        }
+        notifyListeners();
+      }, onError: (_) {});
+    }
+
+    ApiProvider().getSettingData().then((value) {
+      if (value.status == true && value.data != null) {
+        SessionManager.instance.setSettings(value.data);
+        settingAppData = value.data?.appdata;
+        messagePrice = settingAppData?.messagePrice ?? 0;
+        notifyListeners();
+      }
+    }).catchError((_) {});
 
     getProfileAPi();
     initFireBaseData();
@@ -559,6 +592,108 @@ class ChatScreenViewModel extends BaseViewModel {
     );
   }
 
+  void _sendOptimisticMedia({
+    required String msgType,
+    required String localPath,
+    String? localVideoPath,
+    String? caption,
+    required Future<Map<String, String?>> Function() uploadCallback,
+  }) {
+    final int time = DateTime.now().millisecondsSinceEpoch;
+    final int myId =
+        registrationUserData?.id ?? SessionManager.instance.getUserID();
+
+    final optimisticMsg = ChatMessage(
+      id: conversation.user?.userid?.toString(),
+      msgType: msgType,
+      msg: caption,
+      image: localPath,
+      video: localVideoPath,
+      time: time.toDouble(),
+      isSending: true,
+      notDeletedIdentities: ['$myId', '${conversation.user?.userid}'],
+      senderUser: ChatUser(
+        username: registrationUserData?.fullname,
+        date: time.toDouble(),
+        isHost: registrationUserData?.isVerified == 2,
+        isNewMsg: true,
+        userid: myId,
+        userIdentity: registrationUserData?.identity,
+        image: registrationUserData?.profileImage,
+        city: registrationUserData?.address,
+        age: registrationUserData?.age.toString(),
+      ),
+    );
+
+    _addOptimisticMessage(optimisticMsg);
+
+    void executeUpload() async {
+      try {
+        final result = await uploadCallback();
+        final remoteImage = result['image'];
+        final remoteVideo = result['video'];
+
+        if (remoteImage != null || remoteVideo != null) {
+          optimisticMsg.image = remoteImage ?? localPath;
+          optimisticMsg.video = remoteVideo ?? localVideoPath;
+          optimisticMsg.isSending = false;
+
+          await firebaseMsgUpdate(
+            msgType: msgType,
+            textMessage: caption,
+            image: remoteImage,
+            video: remoteVideo,
+            customTime: time,
+          );
+        } else {
+          chatData.removeWhere((m) => m.time == time.toDouble());
+          _groupMessages(chatData);
+          notifyListeners();
+          CommonUI.snackBar(message: 'Failed to upload media. Please try again.');
+        }
+      } catch (e) {
+        chatData.removeWhere((m) => m.time == time.toDouble());
+        _groupMessages(chatData);
+        notifyListeners();
+        CommonUI.snackBar(message: 'Failed to upload media. Please try again.');
+      }
+    }
+
+    if (registrationUserData?.isFake == 1 ||
+        isSubscribe.value ||
+        messagePrice <= 0) {
+      executeUpload();
+    } else {
+      final currentWallet = registrationUserData?.wallet ?? walletCoin;
+      if (currentWallet >= messagePrice) {
+        if (isAutoPayEnable) {
+          minusCoinApi(executeUpload);
+        } else {
+          getChatMsgDialog(
+            onContinueTap: (isSelected) {
+              isAutoPayEnable = isSelected;
+              SessionManager.instance
+                  .setBool(key: SessionKeys.isMessageDialog, value: isSelected);
+              Get.back();
+              minusCoinApi(executeUpload);
+            },
+            onCancelTap: () {
+              Get.back();
+              chatData.removeWhere((m) => m.time == time.toDouble());
+              _groupMessages(chatData);
+              notifyListeners();
+            },
+          );
+        }
+      } else {
+        chatData.removeWhere((m) => m.time == time.toDouble());
+        _groupMessages(chatData);
+        notifyListeners();
+        emptyDialog();
+      }
+    }
+  }
+
   Future<void> pickImage(int type) async {
     selectedItem = S.current.image;
 
@@ -578,55 +713,24 @@ class ChatScreenViewModel extends BaseViewModel {
       ImageVideoSendSheet(
         image: imageFile,
         selectedItem: selectedItem,
-        onSendBtnClick: (msg, _) async {
-          CommonUI.lottieLoader();
-          isAutoPayEnable
-              ? minusCoinApi(() async {
-                  final response = await ApiProvider().getStoreFileGivePath(
-                    image: picked,
-                    bytes: imageBytes,
-                    filename: picked.name,
-                  );
-                  Get.back(); // close loader
-                  if (response.status == true) {
-                    Get.back(); // close sheet
-                    firebaseMsgUpdate(
-                      image: response.path,
-                      msgType: FirebaseRes.image,
-                      textMessage: msg,
-                    );
-                  } else {
-                    CommonUI.snackBarWidget(response.message);
-                  }
-                })
-              : getChatMsgDialog(
-                  onContinueTap: (isSelected) => onAutoPaySelected(
-                    isSelected,
-                    type,
-                    () async {
-                      final response = await ApiProvider().getStoreFileGivePath(
-                        image: picked,
-                        bytes: imageBytes,
-                        filename: picked.name,
-                      );
-                      Get.back(); // close loader
-                      if (response.status == true) {
-                        Get.back(); // close sheet
-                        firebaseMsgUpdate(
-                          image: response.path,
-                          msgType: FirebaseRes.image,
-                          textMessage: msg,
-                        );
-                      } else {
-                        CommonUI.snackBarWidget(response.message);
-                      }
-                    },
-                  ),
-                  onCancelTap: () {
-                    Get.back();
-                    Get.back();
-                  },
-                );
+        onSendBtnClick: (msg, _) {
+          Get.back(); // Close sheet immediately
+          _sendOptimisticMedia(
+            msgType: FirebaseRes.image,
+            localPath: picked.path,
+            caption: msg,
+            uploadCallback: () async {
+              final response = await ApiProvider().getStoreFileGivePath(
+                image: picked,
+                bytes: imageBytes,
+                filename: picked.name,
+              );
+              if (response.status == true && response.path != null) {
+                return {'image': response.path};
+              }
+              return {};
+            },
+          );
         },
       ),
       isScrollControlled: true,
@@ -662,79 +766,32 @@ class ChatScreenViewModel extends BaseViewModel {
       ImageVideoSendSheet(
         image: thumbnail,
         selectedItem: selectedItem,
-        onSendBtnClick: (msg, _) async {
-          CommonUI.lottieLoader();
-          isAutoPayEnable
-              ? minusCoinApi(() async {
-                  // Run both uploads concurrently
-                  final [thumbRes, videoRes] = await Future.wait([
-                    ApiProvider().getStoreFileGivePath(
-                      image: thumbnail,
-                      filename: 'thumb_${picked.name}.jpg',
-                    ),
-                    ApiProvider().getStoreFileGivePath(
-                      image: picked,
-                      bytes: videoBytes,
-                      filename: picked.name,
-                    ),
-                  ]);
+        onSendBtnClick: (msg, _) {
+          Get.back(); // Close sheet immediately
+          _sendOptimisticMedia(
+            msgType: FirebaseRes.video,
+            localPath: thumbnail.path,
+            localVideoPath: picked.path,
+            caption: msg,
+            uploadCallback: () async {
+              final [thumbRes, videoRes] = await Future.wait([
+                ApiProvider().getStoreFileGivePath(
+                  image: thumbnail,
+                  filename: 'thumb_${picked.name}.jpg',
+                ),
+                ApiProvider().getStoreFileGivePath(
+                  image: picked,
+                  bytes: videoBytes,
+                  filename: picked.name,
+                ),
+              ]);
 
-                  Get.back(); // close loader
-
-                  if (thumbRes.status == true && videoRes.status == true) {
-                    Get.back(); // close sheet
-                    firebaseMsgUpdate(
-                      textMessage: msg,
-                      video: videoRes.path,
-                      msgType: FirebaseRes.video,
-                      image: thumbRes.path,
-                    );
-                  } else {
-                    CommonUI.snackBarWidget(
-                      thumbRes.message ?? videoRes.message,
-                    );
-                  }
-                })
-              : getChatMsgDialog(
-                  onContinueTap: (isSelected) => onAutoPaySelected(
-                    isSelected,
-                    type,
-                    () async {
-                      // Run both uploads concurrently
-                      final [thumbRes, videoRes] = await Future.wait([
-                        ApiProvider().getStoreFileGivePath(
-                          image: thumbnail,
-                          filename: 'thumb_${picked.name}.jpg',
-                        ),
-                        ApiProvider().getStoreFileGivePath(
-                          image: picked,
-                          bytes: videoBytes,
-                          filename: picked.name,
-                        ),
-                      ]);
-
-                      Get.back(); // close loader
-
-                      if (thumbRes.status == true && videoRes.status == true) {
-                        Get.back(); // close sheet
-                        firebaseMsgUpdate(
-                          textMessage: msg,
-                          video: videoRes.path,
-                          msgType: FirebaseRes.video,
-                          image: thumbRes.path,
-                        );
-                      } else {
-                        CommonUI.snackBarWidget(
-                          thumbRes.message ?? videoRes.message,
-                        );
-                      }
-                    },
-                  ),
-                  onCancelTap: () {
-                    Get.back();
-                    Get.back();
-                  },
-                );
+              if (thumbRes.status == true && videoRes.status == true) {
+                return {'image': thumbRes.path, 'video': videoRes.path};
+              }
+              return {};
+            },
+          );
         },
       ),
       isScrollControlled: true,
@@ -854,9 +911,13 @@ class ChatScreenViewModel extends BaseViewModel {
     final String lastMessage =
         CommonFun.getLastMsg(msgType: msgType, msg: textMessage ?? '');
 
-    // Optimistic UI update: show message immediately in chat
-    final newMsgObj = ChatMessage.fromJson(messageData);
-    chatData.insert(0, newMsgObj);
+    // Optimistic UI update: update existing optimistic message or insert new one
+    final existingIdx = chatData.indexWhere((m) => m.time == time.toDouble());
+    if (existingIdx >= 0) {
+      chatData[existingIdx] = ChatMessage.fromJson(messageData)..isSending = false;
+    } else {
+      chatData.insert(0, ChatMessage.fromJson(messageData));
+    }
     _groupMessages(chatData);
     _saveCachedChat();
     notifyListeners();
@@ -908,18 +969,22 @@ class ChatScreenViewModel extends BaseViewModel {
       Get.log('Error writing chat to firestore: $err');
     });
 
-    if (receiverUserData?.isNotification == 1) {
+    if (receiverUserData?.isNotification != 0) {
       _sendPushNotification(lastMessage);
     }
   }
 
   void _sendPushNotification(String lastMessage) {
+    final myId = registrationUserData?.id ?? SessionManager.instance.getUserID();
+    final receiverId = conversation.user?.userid;
     ApiProvider().pushNotification(
       title: registrationUserData?.fullname ?? '',
       body: lastMessage,
       conversationId: conversation.conversationId ?? '',
       deviceType: receiverUserData?.deviceType,
-      token: '${receiverUserData?.deviceToken}',
+      token: receiverUserData?.deviceToken ?? '',
+      myUserId: myId > 0 ? myId : null,
+      targetUserId: receiverId != null && receiverId > 0 ? receiverId : null,
     );
   }
 

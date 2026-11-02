@@ -37,6 +37,8 @@ class ChatScreen extends StatelessWidget {
                 onMoreBtnTap: model.onMoreBtnTap,
                 blockUnblock: model.blockUnblock,
                 onUserTap: model.onUserTap,
+                isOnline: model.isUserOnline,
+                lastSeen: model.userLastSeen,
               ),
               ChatArea(
                   chatData: model.grouped,

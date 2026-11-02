@@ -102,7 +102,23 @@ class ChatArea extends StatelessWidget {
           mainAxisAlignment:
               isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
           children: [
-            if (isMe) _dateFormater(data?.time),
+            if (isMe) ...[
+              _dateFormater(data?.time),
+              if (data?.isSending == true)
+                const Padding(
+                  padding: EdgeInsets.only(right: 5.0),
+                  child: SizedBox(
+                    width: 11,
+                    height: 11,
+                    child: CircularProgressIndicator(strokeWidth: 1.5, color: ColorRes.grey2),
+                  ),
+                )
+              else
+                const Padding(
+                  padding: EdgeInsets.only(right: 5.0),
+                  child: Icon(Icons.done_all_rounded, size: 14, color: ColorRes.themeColor),
+                ),
+            ],
             Container(
               decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(8),
@@ -205,34 +221,67 @@ class ChatArea extends StatelessWidget {
 
   Widget imageVideoPosterWidget(
       {ChatMessage? data, Function(ChatMessage? data)? onTap}) {
+    final bool isSending = data?.isSending == true;
+    final double mediaWidth = (Get.width * 0.65).clamp(200.0, 260.0);
+    final double mediaHeight = (mediaWidth * 0.85).clamp(170.0, 220.0);
+
     return InkWell(
-      onTap: onTap != null ? () => onTap(data) : null,
+      onTap: (!isSending && onTap != null) ? () => onTap(data) : null,
       child: Container(
-        padding: const EdgeInsets.all(5.0),
-        height: Get.width / 1.7,
-        width: Get.width / 1.7,
+        padding: const EdgeInsets.all(4.0),
+        height: mediaHeight,
+        width: mediaWidth,
         child: ClipRRect(
-          borderRadius: BorderRadius.circular(5),
+          borderRadius: BorderRadius.circular(8),
           child: Stack(
             alignment: Alignment.center,
             children: [
               CustomImage(
                 image: data?.image,
-                height: Get.width / 1.7,
-                width: Get.width / 1.7,
+                height: mediaHeight,
+                width: mediaWidth,
                 fit: BoxFit.cover,
-                radius: 5,
+                radius: 8,
               ),
-              if (data?.msgType == FirebaseRes.video)
+              if (data?.msgType == FirebaseRes.video && !isSending)
                 Container(
-                  height: 31,
-                  width: 31,
+                  height: 38,
+                  width: 38,
                   decoration: BoxDecoration(
-                      color: ColorRes.white.withValues(alpha: 0.30),
-                      shape: BoxShape.circle),
+                    color: ColorRes.black.withValues(alpha: 0.5),
+                    shape: BoxShape.circle,
+                  ),
                   child: Center(
-                      child: Image.asset(AssetRes.playButton,
-                          height: 16, width: 15, color: ColorRes.white)),
+                    child: Image.asset(AssetRes.playButton,
+                        height: 18, width: 17, color: ColorRes.white),
+                  ),
+                ),
+              if (isSending)
+                Container(
+                  color: ColorRes.black.withValues(alpha: 0.45),
+                  alignment: Alignment.center,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const SizedBox(
+                        height: 28,
+                        width: 28,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2.5,
+                          color: ColorRes.white,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        'Sending...',
+                        style: TextStyle(
+                          color: ColorRes.white.withValues(alpha: 0.9),
+                          fontSize: 11,
+                          fontFamily: FontRes.medium,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
             ],
           ),

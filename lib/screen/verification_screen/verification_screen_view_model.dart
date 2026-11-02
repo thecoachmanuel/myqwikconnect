@@ -22,7 +22,7 @@ class VerificationScreenViewModel extends BaseViewModel {
   bool isDocumentType = false;
   bool isSelfie = false;
   bool showDropdown = false;
-  String docType = S.current.drivingLicence;
+  String docType = 'National ID Card';
   XFile? selfieImage;
   XFile? docFile;
   String? documentName;
@@ -35,7 +35,7 @@ class VerificationScreenViewModel extends BaseViewModel {
   }
 
   void onDocChange(String? value) {
-    docType = value ?? '';
+    docType = value ?? 'National ID Card';
     showDropdown = false;
     notifyListeners();
   }
@@ -44,7 +44,10 @@ class VerificationScreenViewModel extends BaseViewModel {
     final XFile? photo = await picker
         .pickImage(
             source: ImageSource.camera,
-            preferredCameraDevice: CameraDevice.front)
+            preferredCameraDevice: CameraDevice.front,
+            imageQuality: 75,
+            maxWidth: 1200,
+            maxHeight: 1200)
         .onError((PlatformException error, stackTrace) {
       CommonUI.snackBarWidget(error.message ?? '');
       return null;
@@ -58,7 +61,11 @@ class VerificationScreenViewModel extends BaseViewModel {
     XFile? photo;
 
     photo = await picker
-        .pickImage(source: ImageSource.gallery)
+        .pickImage(
+            source: ImageSource.gallery,
+            imageQuality: 75,
+            maxWidth: 1200,
+            maxHeight: 1200)
         .onError((PlatformException error, stackTrace) {
       CommonUI.snackBarWidget(error.message ?? '');
       return null;

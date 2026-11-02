@@ -450,6 +450,7 @@ class Appdata {
     streamAndGiftCommission = json['stream_and_gift_commission'];
     termsofuse = json['termsofuse'];
     privacypolicy = json['privacypolicy'];
+    googleMapKey = json['google_map_key'];
     webMobileView = json['web_mobile_view'] != null
         ? (json['web_mobile_view'] is int
             ? json['web_mobile_view']
@@ -481,6 +482,7 @@ class Appdata {
   int? streamAndGiftCommission;
   String? termsofuse;
   String? privacypolicy;
+  String? googleMapKey;
   int? webMobileView;
   String? createdAt;
   String? updatedAt;
@@ -509,6 +511,7 @@ class Appdata {
     map['stream_and_gift_commission'] = streamAndGiftCommission;
     map['termsofuse'] = termsofuse;
     map['privacypolicy'] = privacypolicy;
+    map['google_map_key'] = googleMapKey;
     map['web_mobile_view'] = webMobileView;
     map['created_at'] = createdAt;
     map['updated_at'] = updatedAt;

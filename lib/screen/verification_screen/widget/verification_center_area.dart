@@ -96,7 +96,12 @@ class VerificationCenterArea extends StatelessWidget {
                 ),
               ),
               CustomDropDownBtn<String>(
-                  items: [S.current.drivingLicence, S.current.idCard],
+                  items: [
+                    'National ID Card',
+                    S.current.drivingLicence,
+                    'International Passport',
+                    "Voter's Card",
+                  ],
                   selectedValue: docType,
                   onChanged: model.onDocChange,
                   getTitle: (p0) => p0,

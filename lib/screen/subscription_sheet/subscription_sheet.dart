@@ -185,14 +185,25 @@ class SubscriptionBG extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        Container(
-          height: double.infinity,
-          width: double.infinity,
-          color: ColorRes.white,
-          child: Stack(
-            children: [
+    return Container(
+      margin: const EdgeInsets.only(top: 48),
+      decoration: const ShapeDecoration(
+        color: ColorRes.white,
+        shape: SmoothRectangleBorder(
+          borderRadius: SmoothBorderRadius.vertical(
+            top: SmoothRadius(cornerRadius: 28, cornerSmoothing: 1),
+          ),
+        ),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: Stack(
+        children: [
+          Container(
+            height: double.infinity,
+            width: double.infinity,
+            color: ColorRes.white,
+            child: Stack(
+              children: [
               Positioned(
                 top: -20,
                 right: -20,
@@ -232,9 +243,22 @@ class SubscriptionBG extends StatelessWidget {
             ],
           ),
         ),
-        widget
+        Align(
+          alignment: Alignment.topCenter,
+          child: Container(
+            margin: const EdgeInsets.only(top: 8),
+            width: 38,
+            height: 4.5,
+            decoration: BoxDecoration(
+              color: ColorRes.grey.withValues(alpha: 0.35),
+              borderRadius: BorderRadius.circular(10),
+            ),
+          ),
+        ),
+        widget,
       ],
-    );
+    ),
+  );
   }
 }
 

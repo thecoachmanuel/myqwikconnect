@@ -35,28 +35,49 @@ class MapScreenViewModel extends BaseViewModel {
   List<Widget> widgets = [];
   Map<String, GlobalKey> globalKey = <String, GlobalKey>{};
   UserData? myUserData = SessionManager.instance.getUser();
+  bool isListView = false;
+
+  void toggleView() {
+    isListView = !isListView;
+    notifyListeners();
+  }
 
   void init() {
     selectedDistance = distanceList.first;
     manager = _initClusterManager();
-    if (myUserData != null) {
-      String? lat = myUserData?.latitude;
-      String? lon = myUserData?.longitude;
-      if (lat != null && lon != null) {
-        position = Position(
-            longitude: double.parse(lon),
-            latitude: double.parse(lat),
-            timestamp: DateTime.now(),
-            accuracy: 0.0,
-            altitude: 0.0,
-            altitudeAccuracy: 0.0,
-            heading: 0.0,
-            headingAccuracy: 0.0,
-            speed: 0.0,
-            speedAccuracy: 0.0);
-      }
-    }
+    final lat = double.tryParse(myUserData?.latitude ?? '') ?? center.latitude;
+    final lon = double.tryParse(myUserData?.longitude ?? '') ?? center.longitude;
+    center = LatLng(lat, lon);
+    position = Position(
+        longitude: lon,
+        latitude: lat,
+        timestamp: DateTime.now(),
+        accuracy: 0.0,
+        altitude: 0.0,
+        altitudeAccuracy: 0.0,
+        heading: 0.0,
+        headingAccuracy: 0.0,
+        speed: 0.0,
+        speedAccuracy: 0.0);
+    getUserByCoordinatesApiCall(latitude: lat, longitude: lon, km: selectedDistance);
     notifyListeners();
+  }
+
+  void moveToMyLocation() async {
+    try {
+      final pos = await getUserCurrentLocation();
+      if (pos != null) {
+        position = pos;
+        center = LatLng(pos.latitude, pos.longitude);
+        try {
+          mapController.animateCamera(CameraUpdate.newCameraPosition(
+            CameraPosition(target: center, zoom: getZoomLevel(selectedDistance.toDouble())),
+          ));
+        } catch (_) {}
+        getUserByCoordinatesApiCall(latitude: pos.latitude, longitude: pos.longitude, km: selectedDistance);
+        notifyListeners();
+      }
+    } catch (_) {}
   }
 
   cluster.ClusterManager _initClusterManager() {

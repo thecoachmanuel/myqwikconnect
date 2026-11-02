@@ -23,6 +23,7 @@ import 'package:orange_ui/service/firebase_notification_manager.dart';
 import 'package:orange_ui/service/post_upload_service.dart';
 import 'package:orange_ui/service/session_manager.dart';
 import 'package:orange_ui/service/subscription/subscription_manager.dart';
+import 'package:orange_ui/service/version/version_service.dart';
 import 'package:orange_ui/utils/app_platform.dart';
 import 'package:orange_ui/utils/color_res.dart';
 import 'package:orange_ui/utils/font_res.dart';
@@ -101,6 +102,7 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     consentForm();
+    VersionService.instance.init();
     super.initState();
   }
 
@@ -128,26 +130,40 @@ class _MyAppState extends State<MyApp> {
           return content;
         }
 
-        return Container(
-          color: const Color(0xFF18191A),
-          alignment: Alignment.center,
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 480),
-            child: Container(
-              clipBehavior: Clip.antiAlias,
-              decoration: BoxDecoration(
-                color: ColorRes.white,
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.4),
-                    blurRadius: 30,
-                    spreadRadius: 4,
-                    offset: const Offset(0, 10),
+        return GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: () {
+            if (Get.isDialogOpen == true ||
+                Get.isBottomSheetOpen == true ||
+                Get.isOverlaysOpen == true) {
+              Get.back();
+            }
+          },
+          child: Container(
+            color: const Color(0xFF18191A),
+            alignment: Alignment.center,
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 480),
+              child: GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: () {}, // Prevent taps inside the mobile viewport from closing modal
+                child: Container(
+                  clipBehavior: Clip.antiAlias,
+                  decoration: BoxDecoration(
+                    color: ColorRes.white,
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.4),
+                        blurRadius: 30,
+                        spreadRadius: 4,
+                        offset: const Offset(0, 10),
+                      ),
+                    ],
                   ),
-                ],
+                  child: content,
+                ),
               ),
-              child: content,
             ),
           ),
         );

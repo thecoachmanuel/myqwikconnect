@@ -146,8 +146,13 @@
               }
             }
 
-            // Instant reload with cache bust
-            window.location.replace(window.location.origin + window.location.pathname + '?v=' + currentBuild + (window.location.hash || ''));
+            // Instant reload with cache bust (respecting standalone PWA mode)
+            var isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+            if (isStandalone) {
+              window.location.reload();
+            } else {
+              window.location.replace(window.location.origin + window.location.pathname + '?v=' + currentBuild + (window.location.hash || ''));
+            }
             return;
           }
 

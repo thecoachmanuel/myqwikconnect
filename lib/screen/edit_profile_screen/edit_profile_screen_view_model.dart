@@ -214,6 +214,25 @@ class EditProfileScreenViewModel extends BaseViewModel {
     });
   }
 
+  void pickProfilePicture() async {
+    final XFile? image = await imagePicker.pickImage(
+      source: ImageSource.gallery,
+      imageQuality: AppRes.quality,
+      maxHeight: AppRes.maxHeight,
+      maxWidth: AppRes.maxWidth,
+    );
+
+    if (image == null) return;
+
+    if (imageList.isNotEmpty && imageList.first.id == -1) {
+      imageList[0] = Images(id: -1, image: image.path);
+    } else {
+      imageList.insert(0, Images(id: -1, image: image.path));
+    }
+
+    notifyListeners();
+  }
+
   void selectImages() async {
     final selectedImages = await imagePicker.pickMultiImage(
         imageQuality: AppRes.quality,

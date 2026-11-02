@@ -136,45 +136,49 @@ class PermissionTiles extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: Get.width,
-      margin: const EdgeInsets.only(top: 3, bottom: 3),
-      padding: const EdgeInsets.fromLTRB(14, 14, 8, 18),
+      width: double.infinity,
+      margin: const EdgeInsets.only(top: 4, bottom: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(10),
         color: ColorRes.grey10,
       ),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                title,
-                style: const TextStyle(
-                  fontSize: 15,
-                  color: ColorRes.davyGrey,
-                  fontFamily: FontRes.semiBold,
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 15,
+                    color: ColorRes.davyGrey,
+                    fontFamily: FontRes.semiBold,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 3),
-              SizedBox(
-                width: Get.width - 90,
-                child: Text(
+                const SizedBox(height: 4),
+                Text(
                   subTitle,
                   style: const TextStyle(
                     color: ColorRes.grey20,
+                    fontSize: 12.5,
+                    height: 1.35,
                   ),
+                  softWrap: true,
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
+          const SizedBox(width: 14),
           InkWell(
             borderRadius: BorderRadius.circular(30),
             onTap: onTap,
             child: Container(
-              height: 25,
-              width: 36,
+              height: 26,
+              width: 42,
               padding: const EdgeInsets.symmetric(horizontal: 3.5),
               alignment: enable ? Alignment.centerRight : Alignment.centerLeft,
               decoration: BoxDecoration(

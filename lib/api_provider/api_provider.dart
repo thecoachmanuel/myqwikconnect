@@ -40,9 +40,6 @@ import 'package:orange_ui/utils/urls.dart';
 class ApiProvider {
   Map<String, String> get headers => {
         Urls.apiKeyName: ConstRes.apiKey,
-        'Cache-Control': 'no-cache, no-store, must-revalidate',
-        'Pragma': 'no-cache',
-        'Expires': '0',
       };
   String get myUserId => SessionManager.instance.getUserID().toString();
 

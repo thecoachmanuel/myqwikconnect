@@ -66,6 +66,11 @@ class SplashScreenViewModel extends BaseViewModel {
           .timeout(const Duration(seconds: 4));
       if (response.status == true && response.data != null) {
         SessionManager.instance.setUser(response.data);
+      } else if (response.status == false &&
+          (response.message?.toLowerCase().contains('not found') == true ||
+              response.message?.toLowerCase().contains('block') == true)) {
+        SessionManager.instance.cleanSession();
+        Get.offAllNamed('/auth');
       }
     } catch (_) {}
   }

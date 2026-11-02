@@ -179,6 +179,7 @@ class ApiProvider {
     String? state,
     String? city,
     String? appLanguage,
+    int? isProfileComplete,
   }) async {
     var request = http.MultipartRequest(
       Urls.post,
@@ -188,6 +189,9 @@ class ApiProvider {
       Urls.apiKeyName: ConstRes.apiKey,
     });
     request.fields[Urls.userId] = myUserId.toString();
+    if (isProfileComplete != null) {
+      request.fields['is_profile_complete'] = '$isProfileComplete';
+    }
     if (live != null) {
       request.fields[Urls.live] = live;
     }
@@ -615,41 +619,33 @@ class ApiProvider {
   }
 
   Future<Verification> applyForVerification(
-      File? photo, File? docImage, String fullName, String docType) async {
+      dynamic photo, dynamic docImage, String fullName, String docType) async {
     var request =
         http.MultipartRequest(Urls.post, Uri.parse(Urls.aApplyForVerification));
     request.headers.addAll(headers);
     request.fields[Urls.userId] = myUserId.toString();
     request.fields[Urls.aDocumentType] = docType;
     if (photo != null) {
-      if (kIsWeb) {
-        final bytes = await photo.readAsBytes();
-        request.files.add(
-          http.MultipartFile.fromBytes(Urls.aSelfie, bytes,
-              filename: photo.path.split("/").last),
-        );
-      } else {
-        request.files.add(
-          http.MultipartFile(
-              Urls.aSelfie, photo.readAsBytes().asStream(), photo.lengthSync(),
-              filename: photo.path.split("/").last),
-        );
-      }
+      final List<int> bytes = photo is XFile
+          ? await photo.readAsBytes()
+          : (photo is File ? await photo.readAsBytes() : <int>[]);
+      final String name = photo is XFile
+          ? photo.name
+          : (photo is File ? photo.path.split("/").last : 'selfie.jpg');
+      request.files.add(
+        http.MultipartFile.fromBytes(Urls.aSelfie, bytes, filename: name),
+      );
     }
     if (docImage != null) {
-      if (kIsWeb) {
-        final bytes = await docImage.readAsBytes();
-        request.files.add(
-          http.MultipartFile.fromBytes(Urls.aDocument, bytes,
-              filename: docImage.path.split("/").last),
-        );
-      } else {
-        request.files.add(
-          http.MultipartFile(Urls.aDocument, docImage.readAsBytes().asStream(),
-              docImage.lengthSync(),
-              filename: docImage.path.split("/").last),
-        );
-      }
+      final List<int> bytes = docImage is XFile
+          ? await docImage.readAsBytes()
+          : (docImage is File ? await docImage.readAsBytes() : <int>[]);
+      final String name = docImage is XFile
+          ? docImage.name
+          : (docImage is File ? docImage.path.split("/").last : 'doc.jpg');
+      request.files.add(
+        http.MultipartFile.fromBytes(Urls.aDocument, bytes, filename: name),
+      );
     }
     request.fields[Urls.fullName] = fullName;
 

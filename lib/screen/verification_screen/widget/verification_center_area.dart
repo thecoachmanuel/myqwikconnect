@@ -18,7 +18,7 @@ class VerificationCenterArea extends StatelessWidget {
   final VoidCallback onDocTypeTap;
   final VoidCallback onTakePhotoTap;
   final VoidCallback onDocumentTap;
-  final File? selfieImage;
+  final dynamic selfieImage;
   final UserData? userIdentity;
   final String? imagesName;
   final VoidCallback onSubmitBtnClick;
@@ -218,7 +218,7 @@ class VerificationCenterArea extends StatelessWidget {
                                               height: 150,
                                               fit: BoxFit.cover);
                                         })
-                                      : Image.file(selfieImage!,
+                                      : Image.file(File(selfieImage!.path),
                                           fit: BoxFit.cover,
                                           height: 100,
                                           width: 100, errorBuilder:

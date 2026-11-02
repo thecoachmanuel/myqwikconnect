@@ -146,9 +146,8 @@
               }
             }
 
-            // Instant reload
-            var cleanUrl = window.location.origin + window.location.pathname + (window.location.hash || '');
-            window.location.replace(cleanUrl);
+            // Instant reload with cache bust
+            window.location.replace(window.location.origin + window.location.pathname + '?v=' + currentBuild + (window.location.hash || ''));
             return;
           }
 
@@ -159,9 +158,6 @@
           console.warn('[Orange Update] Version check skipped:', e);
         }
       }
-
-      // Check on initial load
-      checkVersionAndUpdate();
 
       // Check whenever user switches back to tab or resumes installed PWA
       document.addEventListener('visibilitychange', function() {
@@ -201,11 +197,20 @@
         });
       }
 
-      // Dynamically load flutter_bootstrap.js with cache-busting timestamp
-      var script = document.createElement('script');
-      script.src = 'flutter_bootstrap.js?v=' + Date.now();
-      script.async = true;
-      document.body.appendChild(script);
+      // Boot app after verifying version to ensure mobile devices never run stale code
+      async function startApp() {
+        try {
+          await checkVersionAndUpdate();
+        } catch (_) {}
+
+        if (isUpdating) return;
+
+        var script = document.createElement('script');
+        script.src = 'flutter_bootstrap.js?v=' + Date.now();
+        script.async = true;
+        document.body.appendChild(script);
+      }
+      startApp();
     })();
   </script>
 </body>

@@ -79,7 +79,11 @@ class OptionalScreenViewModel extends BaseViewModel {
         apiCall(newStatus).then((value) async {
           if (value.status == true) {
             onSuccess?.call(newStatus);
-            SessionManager.instance.setUser(value.data);
+            if (value.data != null) {
+              userData = value.data;
+              SessionManager.instance.setUser(value.data);
+            }
+            notifyListeners();
           } else {
             // Revert local status on failure
             updateLocalStatus(currentStatus);

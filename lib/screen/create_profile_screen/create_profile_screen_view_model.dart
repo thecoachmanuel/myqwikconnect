@@ -56,6 +56,56 @@ class CreateProfileScreenViewModel extends BaseViewModel {
   RangeValues selectedAgeRange = const RangeValues(AppRes.ageMin, 35);
   double selectedDistance = AppRes.defaultDistancePreference;
   UserData? userData;
+  bool isLoadingSettings = false;
+
+  void ensureInitialized() {
+    if (userData == null) {
+      final cached = SessionManager.instance.getUser();
+      if (cached != null) {
+        init(cached);
+        return;
+      }
+    }
+    ensureSettingsLoaded();
+  }
+
+  Future<void> ensureSettingsLoaded() async {
+    if (interestList.isEmpty || relationshipGoals.isEmpty || religions.isEmpty || languages.isEmpty) {
+      await loadSettingsData();
+    }
+  }
+
+  Future<void> loadSettingsData({bool force = false}) async {
+    if (isLoadingSettings && !force) return;
+
+    if (settingData == null || force) {
+      settingData = SessionManager.instance.getSettings();
+    }
+
+    // Immediately populate with whatever cached or fallback preferences exist so UI is never empty
+    _initializeUserPreferences();
+    notifyListeners();
+
+    try {
+      isLoadingSettings = true;
+      notifyListeners();
+
+      final res = await ApiProvider()
+          .getSettingData()
+          .timeout(const Duration(seconds: 4));
+
+      if (res.status == true && res.data != null) {
+        settingData = res.data;
+        SessionManager.instance.setSettings(res.data);
+        _initializeUserPreferences();
+      }
+    } catch (e) {
+      debugPrint('loadSettingsData error: $e');
+    } finally {
+      isLoadingSettings = false;
+      notifyListeners();
+    }
+  }
 
   void init(UserData userData) async {
     this.userData = userData;
@@ -79,6 +129,9 @@ class CreateProfileScreenViewModel extends BaseViewModel {
       );
     }
     notifyListeners();
+
+    // Trigger background refresh of latest settings from server
+    loadSettingsData();
   }
 
   void onDateOfBirthTap(BuildContext context) {
@@ -326,36 +379,59 @@ class CreateProfileScreenViewModel extends BaseViewModel {
   }
 
   void _initializeUserPreferences() {
-    interestList =
-        settingData?.interests?.where((e) => e.isDeleted == 0).toList() ?? [];
+    // 1. Interests
+    final rawInterests = (settingData?.interests != null && settingData!.interests!.isNotEmpty)
+        ? settingData!.interests!
+        : _getDefaultInterests();
+    interestList = rawInterests
+        .where((e) => e.isDeleted == null || e.isDeleted == 0)
+        .toList();
+
     List<String> savedInterest = userData?.interests?.split(',') ?? [];
-    interestList.toList().forEach((element) {
-      if (savedInterest.contains('${element.id}') &&
+    for (var element in interestList) {
+      if (element.id != null &&
+          savedInterest.contains('${element.id}') &&
           !selectedInterest.any((e) => e.id == element.id)) {
         selectedInterest.add(element);
       }
-    });
+    }
 
-    relationshipGoals = settingData?.relationshipGoals
-            ?.where((e) => e.isDeleted == 0)
-            .toList() ??
-        [];
+    // 2. Relationship Goals
+    final rawGoals = (settingData?.relationshipGoals != null && settingData!.relationshipGoals!.isNotEmpty)
+        ? settingData!.relationshipGoals!
+        : _getDefaultRelationshipGoals();
+    relationshipGoals = rawGoals
+        .where((e) => e.isDeleted == null || e.isDeleted == 0)
+        .toList();
+
     final goalIds = userData?.relationshipGoalIdsList ?? [];
     if (goalIds.isNotEmpty && selectedRelationshipGoals.isEmpty) {
       selectedRelationshipGoals = relationshipGoals
-          .where((element) => goalIds.contains(element.id))
+          .where((element) => element.id != null && goalIds.contains(element.id))
           .toList();
     }
 
-    religions =
-        settingData?.religions?.where((e) => e.isDeleted == 0).toList() ?? [];
+    // 3. Religions
+    final rawReligions = (settingData?.religions != null && settingData!.religions!.isNotEmpty)
+        ? settingData!.religions!
+        : _getDefaultReligions();
+    religions = rawReligions
+        .where((e) => e.isDeleted == null || e.isDeleted == 0)
+        .toList();
+
     if (userData?.religionKey != null && selectedReligion == null) {
       selectedReligion = religions.firstWhereOrNull(
           (element) => element.title?.toLowerCase() == userData?.religionKey?.toLowerCase());
     }
 
-    languages =
-        settingData?.language?.where((e) => e.isDeleted == 0).toList() ?? [];
+    // 4. Languages
+    final rawLanguages = (settingData?.language != null && settingData!.language!.isNotEmpty)
+        ? settingData!.language!
+        : _getDefaultLanguages();
+    languages = rawLanguages
+        .where((e) => e.isDeleted == null || e.isDeleted == 0)
+        .toList();
+
     final savedLangs = (userData?.languageKeys ?? '')
         .split(',')
         .map((e) => e.trim().toLowerCase())
@@ -365,6 +441,62 @@ class CreateProfileScreenViewModel extends BaseViewModel {
           .where((element) => savedLangs.contains(element.title?.removeEmojis.toLowerCase()))
           .toList();
     }
+  }
+
+  List<Interests> _getDefaultInterests() {
+    return [
+      Interests(id: 1, title: 'Photography', isDeleted: 0),
+      Interests(id: 2, title: 'Music & Concerts', isDeleted: 0),
+      Interests(id: 3, title: 'Travel & Explore', isDeleted: 0),
+      Interests(id: 4, title: 'Cooking & Food', isDeleted: 0),
+      Interests(id: 5, title: 'Fitness & Gym', isDeleted: 0),
+      Interests(id: 6, title: 'Movies & Cinema', isDeleted: 0),
+      Interests(id: 7, title: 'Art & Design', isDeleted: 0),
+      Interests(id: 8, title: 'Gaming', isDeleted: 0),
+      Interests(id: 9, title: 'Reading & Books', isDeleted: 0),
+      Interests(id: 10, title: 'Tech & Startups', isDeleted: 0),
+      Interests(id: 11, title: 'Sports & Football', isDeleted: 0),
+      Interests(id: 12, title: 'Fashion & Style', isDeleted: 0),
+      Interests(id: 13, title: 'Dancing & Nightlife', isDeleted: 0),
+      Interests(id: 14, title: 'Pets & Animals', isDeleted: 0),
+      Interests(id: 15, title: 'Nature & Outdoors', isDeleted: 0),
+    ];
+  }
+
+  List<RelationshipGoals> _getDefaultRelationshipGoals() {
+    return [
+      RelationshipGoals(id: 1, title: 'Long-term relationship', description: 'Looking for lasting love', isDeleted: 0),
+      RelationshipGoals(id: 2, title: 'Casual dating', description: 'Keeping it fun and relaxed', isDeleted: 0),
+      RelationshipGoals(id: 3, title: 'New friends', description: 'Meeting cool people', isDeleted: 0),
+      RelationshipGoals(id: 4, title: 'Still figuring it out', description: 'Open to possibilities', isDeleted: 0),
+    ];
+  }
+
+  List<Religions> _getDefaultReligions() {
+    return [
+      Religions(id: 1, title: 'Christian', isDeleted: 0),
+      Religions(id: 2, title: 'Muslim', isDeleted: 0),
+      Religions(id: 3, title: 'Spiritual', isDeleted: 0),
+      Religions(id: 4, title: 'Traditional', isDeleted: 0),
+      Religions(id: 5, title: 'Atheist / Agnostic', isDeleted: 0),
+      Religions(id: 6, title: 'Hindu', isDeleted: 0),
+      Religions(id: 7, title: 'Buddhist', isDeleted: 0),
+      Religions(id: 8, title: 'Other', isDeleted: 0),
+    ];
+  }
+
+  List<Language> _getDefaultLanguages() {
+    return [
+      Language(id: 1, title: 'English', isDeleted: 0),
+      Language(id: 2, title: 'Pidgin English', isDeleted: 0),
+      Language(id: 3, title: 'Yoruba', isDeleted: 0),
+      Language(id: 4, title: 'Igbo', isDeleted: 0),
+      Language(id: 5, title: 'Hausa', isDeleted: 0),
+      Language(id: 6, title: 'French', isDeleted: 0),
+      Language(id: 7, title: 'Spanish', isDeleted: 0),
+      Language(id: 8, title: 'German', isDeleted: 0),
+      Language(id: 9, title: 'Arabic', isDeleted: 0),
+    ];
   }
 
   void tapFinalProfile() {
@@ -454,6 +586,7 @@ class CreateProfileScreenViewModel extends BaseViewModel {
             religionKey: selectedReligion?.title,
             languageKeys:
                 selectedLanguages.map((e) => e.title?.removeEmojis).join(','),
+            isProfileComplete: 1,
             images: image,
             deleteImageIds: deletedImages.map((e) => '${e.id}').toList())
         .then((value) {

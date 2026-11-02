@@ -6,6 +6,8 @@ import 'package:orange_ui/model/user/registration_user.dart';
 import 'package:orange_ui/screen/create_profile_screen/create_profile_screen_view_model.dart';
 import 'package:orange_ui/screen/create_profile_screen/widget/border_text_card.dart';
 import 'package:orange_ui/screen/create_profile_screen/widget/error_text_widget.dart';
+import 'package:orange_ui/utils/color_res.dart';
+import 'package:orange_ui/utils/font_res.dart';
 import 'package:stacked/stacked.dart';
 
 class SelectLanguages extends StatelessWidget {
@@ -18,33 +20,61 @@ class SelectLanguages extends StatelessWidget {
   Widget build(BuildContext context) {
     return ViewModelBuilder<CreateProfileScreenViewModel>.reactive(
       viewModelBuilder: () => model,
+      onViewModelReady: (viewModel) {
+        viewModel.ensureSettingsLoaded();
+      },
       disposeViewModel: false,
       builder: (context, viewModel, child) => LoginSetupView(
         title: S.of(context).selectLanguages,
-        description: 'Select languages you can are familiar with',
+        description: 'Select languages you are familiar with',
         child: Column(
           children: [
             Expanded(
-                child: viewModel.languages.isEmpty
-                    ? ErrorTextWidget(S
-                        .of(context)
-                        .pleaseAddLanguagesInTheAdminPanelToContinue)
-                    : ListView.builder(
-                        itemCount: viewModel.languages.length,
-                        itemBuilder: (context, index) {
-                          bool isSelected = viewModel.selectedLanguages.any(
-                              (element) =>
-                                  element.id == viewModel.languages[index].id);
-                          return BorderTextCard(
-                            text: viewModel.languages[index].title ?? '',
-                            onTap: () => viewModel
-                                .onSelectLanguages(viewModel.languages[index]),
-                            isSelected: isSelected,
-                            padding: const EdgeInsets.symmetric(horizontal: 10),
-                            isCheckBtnVisible: true,
-                            margin: const EdgeInsets.only(bottom: 5),
-                          );
-                        })),
+              child: viewModel.isLoadingSettings && viewModel.languages.isEmpty
+                  ? const Center(child: CircularProgressIndicator(color: ColorRes.themeColor))
+                  : viewModel.languages.isEmpty
+                      ? Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              ErrorTextWidget(S
+                                  .of(context)
+                                  .pleaseAddLanguagesInTheAdminPanelToContinue),
+                              const SizedBox(height: 16),
+                              OutlinedButton.icon(
+                                onPressed: () => viewModel.loadSettingsData(force: true),
+                                icon: const Icon(Icons.refresh, color: ColorRes.themeColor),
+                                label: const Text('Retry',
+                                    style: TextStyle(
+                                        fontFamily: FontRes.semiBold,
+                                        color: ColorRes.themeColor)),
+                                style: OutlinedButton.styleFrom(
+                                  side: const BorderSide(color: ColorRes.themeColor),
+                                  shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(20)),
+                                ),
+                              ),
+                            ],
+                          ),
+                        )
+                      : ListView.builder(
+                          itemCount: viewModel.languages.length,
+                          itemBuilder: (context, index) {
+                            final lang = viewModel.languages[index];
+                            bool isSelected = viewModel.selectedLanguages.any(
+                                (element) =>
+                                    element.id == lang.id ||
+                                    (element.title != null && element.title?.trim().toLowerCase() == lang.title?.trim().toLowerCase()));
+                            return BorderTextCard(
+                              text: lang.title ?? '',
+                              onTap: () => viewModel.onSelectLanguages(lang),
+                              isSelected: isSelected,
+                              padding: const EdgeInsets.symmetric(horizontal: 10),
+                              isCheckBtnVisible: true,
+                              margin: const EdgeInsets.only(bottom: 5),
+                            );
+                          }),
+            ),
             CustomTextButton(
               onTap: () =>
                   viewModel.onContinueTap(CreateProfileContinueTap.language),

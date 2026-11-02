@@ -209,6 +209,16 @@ class Language {
     return map;
   }
 
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is Language &&
+          runtimeType == other.runtimeType &&
+          (id == other.id || (title != null && title == other.title));
+
+  @override
+  int get hashCode => id != null ? id.hashCode : (title?.hashCode ?? 0);
+
   String get titleRemoveEmoji {
     return title?.removeEmojis.trim() ?? '';
   }
@@ -246,6 +256,16 @@ class Religions {
     map['updated_at'] = updatedAt;
     return map;
   }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is Religions &&
+          runtimeType == other.runtimeType &&
+          (id == other.id || (title != null && title == other.title));
+
+  @override
+  int get hashCode => id != null ? id.hashCode : (title?.hashCode ?? 0);
 
   String get titleRemoveEmoji {
     return title?.removeEmojis.trim() ?? '';
@@ -288,6 +308,16 @@ class RelationshipGoals {
     map['updated_at'] = updatedAt;
     return map;
   }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is RelationshipGoals &&
+          runtimeType == other.runtimeType &&
+          (id == other.id || (title != null && title == other.title));
+
+  @override
+  int get hashCode => id != null ? id.hashCode : (title?.hashCode ?? 0);
 }
 
 class Interests {
@@ -322,6 +352,16 @@ class Interests {
     map['updated_at'] = updatedAt;
     return map;
   }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is Interests &&
+          runtimeType == other.runtimeType &&
+          (id == other.id || (title != null && title == other.title));
+
+  @override
+  int get hashCode => id != null ? id.hashCode : (title?.hashCode ?? 0);
 }
 
 class Gifts {

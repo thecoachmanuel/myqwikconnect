@@ -40,6 +40,24 @@ class AuthScreenViewModel extends BaseViewModel {
       });
       return;
     }
+
+    if (kIsWeb) {
+      FirebaseAuth.instance.getRedirectResult().then((credential) {
+        if (credential.user != null) {
+          registration(
+            email: credential.user?.email ?? '',
+            loginType: LoginType.google.value,
+            fullName: credential.user?.displayName ??
+                credential.user?.email?.split('@')[0] ??
+                'User',
+            firebaseUid: credential.user?.uid,
+          );
+        }
+      }).catchError((e) {
+        log('Firebase redirect result note: $e');
+      });
+    }
+
     FirebaseNotificationManager.shared;
     pageController = PageController(initialPage: index);
     openEULASheet();
@@ -103,7 +121,17 @@ class AuthScreenViewModel extends BaseViewModel {
       GoogleAuthProvider googleProvider = GoogleAuthProvider();
       googleProvider.addScope('email');
       googleProvider.addScope('profile');
-      return await FirebaseAuth.instance.signInWithPopup(googleProvider);
+      try {
+        return await FirebaseAuth.instance.signInWithPopup(googleProvider);
+      } catch (e) {
+        final err = e.toString().toLowerCase();
+        if (err.contains('popup') || err.contains('blocked') || err.contains('cancelled') || err.contains('closed')) {
+          log('Popup blocked or closed on mobile browser, falling back to redirect...');
+          await FirebaseAuth.instance.signInWithRedirect(googleProvider);
+          return await FirebaseAuth.instance.getRedirectResult();
+        }
+        rethrow;
+      }
     } else {
       signIn.initialize();
       // Trigger the authentication flow

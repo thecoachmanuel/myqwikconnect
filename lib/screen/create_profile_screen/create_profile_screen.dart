@@ -26,6 +26,9 @@ class CreateProfileScreen extends StatelessWidget {
         viewModelBuilder: () => model ?? (Get.isRegistered<CreateProfileScreenViewModel>()
             ? Get.find<CreateProfileScreenViewModel>()
             : Get.put(CreateProfileScreenViewModel())),
+        onViewModelReady: (viewModel) {
+          viewModel.ensureInitialized();
+        },
         disposeViewModel: false,
         builder: (context, viewModel, child) {
           return LoginSetupView(

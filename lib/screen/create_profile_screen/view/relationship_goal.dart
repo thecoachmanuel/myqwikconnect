@@ -21,6 +21,9 @@ class RelationshipGoal extends StatelessWidget {
   Widget build(BuildContext context) {
     return ViewModelBuilder<CreateProfileScreenViewModel>.reactive(
       viewModelBuilder: () => model,
+      onViewModelReady: (viewModel) {
+        viewModel.ensureSettingsLoaded();
+      },
       disposeViewModel: false,
       builder: (context, viewModel, child) => LoginSetupView(
         title: S.of(context).relationshipGoals,
@@ -40,24 +43,47 @@ class RelationshipGoal extends StatelessWidget {
               ),
             ),
             Expanded(
-              child: viewModel.relationshipGoals.isEmpty
-                  ? ErrorTextWidget(S
-                      .of(context)
-                      .pleaseAddRelationshipGoalsInTheAdminPanelToContinue)
-                  : ListView.builder(
-                      itemCount: viewModel.relationshipGoals.length,
-                      itemBuilder: (context, index) {
-                        RelationshipGoals goal =
-                            viewModel.relationshipGoals[index];
-                        bool isSelected = viewModel.selectedRelationshipGoals
-                            .any((g) => g.id == goal.id);
-                        return RelationshipCard(
-                            onTap: () =>
-                                viewModel.onChangedRelationshipGoal(goal),
-                            isSelected: isSelected,
-                            goal: goal);
-                      },
-                    ),
+              child: viewModel.isLoadingSettings && viewModel.relationshipGoals.isEmpty
+                  ? const Center(child: CircularProgressIndicator(color: ColorRes.themeColor))
+                  : viewModel.relationshipGoals.isEmpty
+                      ? Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              ErrorTextWidget(S
+                                  .of(context)
+                                  .pleaseAddRelationshipGoalsInTheAdminPanelToContinue),
+                              const SizedBox(height: 16),
+                              OutlinedButton.icon(
+                                onPressed: () => viewModel.loadSettingsData(force: true),
+                                icon: const Icon(Icons.refresh, color: ColorRes.themeColor),
+                                label: const Text('Retry',
+                                    style: TextStyle(
+                                        fontFamily: FontRes.semiBold,
+                                        color: ColorRes.themeColor)),
+                                style: OutlinedButton.styleFrom(
+                                  side: const BorderSide(color: ColorRes.themeColor),
+                                  shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(20)),
+                                ),
+                              ),
+                            ],
+                          ),
+                        )
+                      : ListView.builder(
+                          itemCount: viewModel.relationshipGoals.length,
+                          itemBuilder: (context, index) {
+                            RelationshipGoals goal =
+                                viewModel.relationshipGoals[index];
+                            bool isSelected = viewModel.selectedRelationshipGoals
+                                .any((g) => g.id == goal.id || (g.title != null && g.title == goal.title));
+                            return RelationshipCard(
+                                onTap: () =>
+                                    viewModel.onChangedRelationshipGoal(goal),
+                                isSelected: isSelected,
+                                goal: goal);
+                          },
+                        ),
             ),
             CustomTextButton(
                 onTap: () => viewModel

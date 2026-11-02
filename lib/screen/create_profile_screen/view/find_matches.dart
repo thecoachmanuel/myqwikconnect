@@ -20,6 +20,9 @@ class FindMatches extends StatelessWidget {
   Widget build(BuildContext context) {
     return ViewModelBuilder<CreateProfileScreenViewModel>.reactive(
       viewModelBuilder: () => model,
+      onViewModelReady: (viewModel) {
+        viewModel.ensureSettingsLoaded();
+      },
       disposeViewModel: false,
       builder: (context, viewModel, child) => LoginSetupView(
         title: S.of(context).findMatches,

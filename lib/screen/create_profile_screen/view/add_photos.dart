@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:orange_ui/common/app_image_file.dart';
 import 'package:orange_ui/common/button/custom_text_button.dart';
+import 'package:orange_ui/common/common_ui.dart';
 import 'package:orange_ui/common/custom_image.dart';
 import 'package:orange_ui/common/custom_text_field.dart';
 import 'package:orange_ui/common/login_setup_view.dart';
@@ -162,7 +163,11 @@ class _ProfileImageViewState extends State<ProfileImageView> {
         ),
         alignment: Alignment.center,
         child: widget.viewModel.images.isEmpty
-            ? Image.asset(AssetRes.icMedia1, height: 112, width: 112)
+            ? CommonUI.profileImagePlaceHolder(
+                name: widget.viewModel.fullnameController.text,
+                heightWidth: Get.width / 1.3,
+                borderRadius: 20,
+              )
             : ClipSmoothRect(
                 radius:
                     SmoothBorderRadius(cornerRadius: 20, cornerSmoothing: 1),

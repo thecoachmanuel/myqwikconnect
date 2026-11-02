@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
@@ -8,11 +6,15 @@ import 'package:orange_ui/api_provider/api_provider.dart';
 import 'package:orange_ui/common/common_ui.dart';
 import 'package:orange_ui/generated/l10n.dart';
 import 'package:orange_ui/model/user/registration_user.dart';
+import 'package:orange_ui/service/session_manager.dart';
 import 'package:stacked/stacked.dart';
 
 class VerificationScreenViewModel extends BaseViewModel {
   void init() {
-    userData = Get.arguments;
+    userData = Get.arguments ?? SessionManager.instance.getUser();
+    if (fullNameController.text.trim().isEmpty && userData?.fullname != null) {
+      fullNameController.text = userData!.fullname!;
+    }
   }
 
   TextEditingController fullNameController = TextEditingController();
@@ -21,8 +23,8 @@ class VerificationScreenViewModel extends BaseViewModel {
   bool isSelfie = false;
   bool showDropdown = false;
   String docType = S.current.drivingLicence;
-  File? selfieImage;
-  File? docFile;
+  XFile? selfieImage;
+  XFile? docFile;
   String? documentName;
   String? userIdentity;
   final ImagePicker picker = ImagePicker();
@@ -48,7 +50,7 @@ class VerificationScreenViewModel extends BaseViewModel {
       return null;
     });
     if (photo == null || photo.path.isEmpty) return;
-    selfieImage = File(photo.path);
+    selfieImage = photo;
     notifyListeners();
   }
 
@@ -63,7 +65,7 @@ class VerificationScreenViewModel extends BaseViewModel {
     });
 
     if (photo == null || photo.path.isEmpty) return;
-    docFile = File(photo.path);
+    docFile = photo;
     documentName = photo.name;
     notifyListeners();
   }
@@ -83,11 +85,14 @@ class VerificationScreenViewModel extends BaseViewModel {
     CommonUI.lottieLoader();
     ApiProvider()
         .applyForVerification(
-            selfieImage, docFile, fullNameController.text, docType)
+            selfieImage, docFile, fullNameController.text.trim(), docType)
         .then((value) {
       Get.back();
       Get.back(result: 1);
-      CommonUI.snackBarWidget(value.message ?? '');
+      CommonUI.snackBarWidget(value.message ?? 'Verification request submitted');
+    }).catchError((e) {
+      Get.back();
+      CommonUI.snackBarWidget('Verification request failed: $e');
     });
   }
 }

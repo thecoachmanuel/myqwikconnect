@@ -9,14 +9,12 @@ import 'package:orange_ui/api_provider/api_provider.dart';
 import 'package:orange_ui/common/common_ui.dart';
 import 'package:orange_ui/common/eula/eula_sheet.dart';
 import 'package:orange_ui/generated/l10n.dart';
-import 'package:orange_ui/model/setting_model.dart';
 import 'package:orange_ui/model/user/registration_user.dart';
 import 'package:orange_ui/screen/auth_screen/login_screen/login_screen.dart';
 import 'package:orange_ui/screen/auth_screen/widget/forget_password_view.dart';
 import 'package:orange_ui/utils/app_platform.dart';
 import 'package:orange_ui/screen/create_profile_screen/create_profile_screen.dart';
 import 'package:orange_ui/screen/create_profile_screen/create_profile_screen_view_model.dart';
-import 'package:orange_ui/screen/dashboard/dashboard_screen.dart';
 import 'package:orange_ui/screen/restart_app/restart_app.dart';
 import 'package:orange_ui/service/firebase_notification_manager.dart';
 import 'package:orange_ui/service/session_manager.dart';
@@ -182,91 +180,6 @@ class AuthScreenViewModel extends BaseViewModel {
         });
       },
     );
-  }
-
-  void loginAsDemoUser() {
-    try {
-      Get.back();
-    } catch (_) {}
-    if (SessionManager.instance.getSettings() == null) {
-      SessionManager.instance.setSettings(SettingData(
-        appdata: Appdata(
-          appName: 'Orange',
-          isDating: 1,
-          isSocialMedia: 1,
-          messagePrice: 1,
-          reverseSwipePrice: 1,
-          liveWatchingPrice: 1,
-          newUserFreeCoins: 500,
-          coinRate: '10',
-          minThreshold: 100,
-        ),
-        interests: [
-          Interests(id: 1, title: 'Music'),
-          Interests(id: 2, title: 'Travel'),
-          Interests(id: 3, title: 'Photography'),
-          Interests(id: 4, title: 'Fitness'),
-          Interests(id: 5, title: 'Cooking'),
-        ],
-      ));
-    }
-
-    final demoUser = UserData(
-      id: 1,
-      fullname: 'Test User',
-      username: 'test_user',
-      identity: emailController.text.trim().isNotEmpty
-          ? emailController.text.trim()
-          : 'test@orange.com',
-      gender: GenderType.male,
-      dob: '1998-05-15',
-      bio: 'Orange test profile. Ready to connect and explore.',
-      about:
-          'Passionate about photography, travel, music and great conversations.',
-      country: 'United States',
-      state: 'California',
-      city: 'San Francisco',
-      latitude: '37.7749',
-      longitude: '-122.4194',
-      interests: '1,2,3',
-      agePreferredMin: 20,
-      agePreferredMax: 35,
-      distancePreference: 50,
-      relationshipGoalId: 1,
-      religionKey: 'Christian',
-      languageKeys: 'en,es',
-      wallet: 5000,
-      totalCollected: 1200,
-      totalStreams: 10,
-      isVerified: 2,
-      canGoLive: 2,
-      showOnMap: 1,
-      isNotification: 1,
-      images: [
-        Images(id: 1, image: 'assets/images/image1.png'),
-      ],
-    );
-
-    SessionManager.instance.setUser(demoUser);
-    SessionManager.instance.setBool(key: SessionKeys.isLogin, value: true);
-    Get.offAll(() => const DashboardScreen());
-  }
-
-  void fakeLoginUser({required String email, required String password}) {
-    FirebaseNotificationManager.shared.getNotificationToken((token) {
-      ApiProvider()
-          .fakeUserLogin(email: email, password: password, deviceToken: token)
-          .then((value) {
-        Get.back();
-        if (value.status == true) {
-          SessionManager.instance
-              .setBool(key: SessionKeys.isLogin, value: true);
-          navigateScreen(userData: value.data);
-        } else {
-          CommonUI.snackBarWidget(value.message);
-        }
-      });
-    });
   }
 
   void onAppleTap() async {

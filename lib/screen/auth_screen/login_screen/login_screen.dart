@@ -141,8 +141,9 @@ class LoginTopTabBar extends StatelessWidget {
   }
 
   void onTap(int index) {
+    viewModel.pageIndex = index;
+    viewModel.notifyListeners();
     viewModel.pageController.animateToPage(index,
         duration: const Duration(milliseconds: 250), curve: Curves.linear);
-    viewModel.onLoginTap(index);
   }
 }

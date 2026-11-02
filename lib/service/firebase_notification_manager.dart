@@ -87,11 +87,16 @@ class FirebaseNotificationManager {
   }
 
   void getNotificationToken(Function(String token) completion) async {
+    if (kIsWeb) {
+      completion('web_token_${DateTime.now().millisecondsSinceEpoch}');
+      return;
+    }
     try {
-      await FirebaseMessaging.instance.getToken().then((value) {
-        log('DeviceToken : $value');
-        completion(value ?? 'No Token');
-      });
+      final token = await FirebaseMessaging.instance.getToken().timeout(
+        const Duration(seconds: 3),
+        onTimeout: () => null,
+      );
+      completion(token ?? 'No Token');
     } catch (e) {
       completion('No Token');
       log(e.toString());

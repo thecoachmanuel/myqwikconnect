@@ -489,7 +489,16 @@ class AuthScreenViewModel extends BaseViewModel {
   }
 
   String _getFirebaseErrorMessage(FirebaseAuthException e) {
-    switch (e.code.toLowerCase()) {
+    final msg = (e.message ?? '').toLowerCase();
+    final code = e.code.toLowerCase();
+
+    if (code == 'invalid-action-code' ||
+        msg.contains('action is invalid') ||
+        msg.contains('requested action is invalid')) {
+      return 'Google Sign-in setup required: in Firebase Console > Authentication > Sign-in method, ensure Google provider is enabled with a Project Support Email selected, and "myqwikconnect-web.vercel.app" is listed in Authorized Domains.';
+    }
+
+    switch (code) {
       case 'invalid-credential':
       case 'invalid_login_credentials':
       case 'wrong-password':

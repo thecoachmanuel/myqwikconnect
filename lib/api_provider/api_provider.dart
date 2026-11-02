@@ -38,7 +38,12 @@ import 'package:orange_ui/utils/const_res.dart';
 import 'package:orange_ui/utils/urls.dart';
 
 class ApiProvider {
-  Map<String, String> headers = {Urls.apiKeyName: ConstRes.apiKey};
+  Map<String, String> get headers => {
+        Urls.apiKeyName: ConstRes.apiKey,
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0',
+      };
   String get myUserId => SessionManager.instance.getUserID().toString();
 
   Future<UserModel> registration(
@@ -62,7 +67,7 @@ class ApiProvider {
     }
     http.Response response = await http.post(
       Uri.parse(Urls.aRegister),
-      headers: {Urls.apiKeyName: ConstRes.apiKey},
+      headers: headers,
       body: map,
     );
     UserModel user = UserModel.fromJson(jsonDecode(response.body));
@@ -93,7 +98,7 @@ class ApiProvider {
     map[Urls.deviceType] = AppPlatform.isAndroid ? Urls.aOne : Urls.aTwo;
     http.Response response = await http.post(
       Uri.parse(Urls.aFakeUserLogin),
-      headers: {Urls.apiKeyName: ConstRes.apiKey},
+      headers: headers,
       body: map,
     );
     UserModel user = UserModel.fromJson(jsonDecode(response.body));
@@ -119,9 +124,7 @@ class ApiProvider {
       Urls.post,
       Uri.parse(Urls.aApplyForLive),
     );
-    request.headers.addAll({
-      Urls.apiKeyName: ConstRes.apiKey,
-    });
+    request.headers.addAll(headers);
     request.fields[Urls.userId] = myUserId.toString();
     request.fields[Urls.aSocialLink] = socialLinks;
     if (introVideo != null) {
@@ -310,9 +313,7 @@ class ApiProvider {
 
   Future<UserModel> getProfile({int? userID}) async {
     http.Response response =
-        await http.post(Uri.parse(Urls.aGetProfile), headers: {
-      Urls.apiKeyName: ConstRes.apiKey
-    }, body: {
+        await http.post(Uri.parse(Urls.aGetProfile), headers: headers, body: {
       Urls.userId: '${userID ?? myUserId}',
       Urls.myUserId: myUserId.toString(),
     });
@@ -328,9 +329,7 @@ class ApiProvider {
   Future<UserModel> fetchMyUserProfile() async {
     try {
       http.Response response =
-          await http.post(Uri.parse(Urls.aFetchMyUserProfile), headers: {
-        Urls.apiKeyName: ConstRes.apiKey
-      }, body: {
+          await http.post(Uri.parse(Urls.aFetchMyUserProfile), headers: headers, body: {
         Urls.userId: myUserId,
       });
       UserModel profile = UserModel.fromJson(jsonDecode(response.body));
@@ -346,9 +345,7 @@ class ApiProvider {
 
   Future<UserModel> onOffNotification(int state) async {
     http.Response response = await http.post(Uri.parse(Urls.aOnOffNotification),
-        headers: {
-          Urls.apiKeyName: ConstRes.apiKey
-        },
+        headers: headers,
         body: {
           Urls.userId: myUserId.toString(),
           Urls.aState: state.toString()
@@ -358,9 +355,7 @@ class ApiProvider {
 
   Future<UserModel> onOffShowMeOnMap(int state) async {
     http.Response response = await http.post(Uri.parse(Urls.aOnOffShowMeOnMap),
-        headers: {
-          Urls.apiKeyName: ConstRes.apiKey
-        },
+        headers: headers,
         body: {
           Urls.userId: myUserId.toString(),
           Urls.aState: state.toString()
@@ -370,9 +365,7 @@ class ApiProvider {
 
   Future<UserModel> onOffAnonymous(int? state) async {
     http.Response response = await http.post(Uri.parse(Urls.aOnOffAnonymous),
-        headers: {
-          Urls.apiKeyName: ConstRes.apiKey
-        },
+        headers: headers,
         body: {
           Urls.userId: myUserId.toString(),
           Urls.aState: state.toString()
@@ -383,9 +376,7 @@ class ApiProvider {
 
   Future<Report> addReport(String reason, String description, int? id) async {
     http.Response response = await http.post(Uri.parse(Urls.aAddUserReport),
-        headers: {
-          Urls.apiKeyName: ConstRes.apiKey
-        },
+        headers: headers,
         body: {
           Urls.aReason: reason,
           Urls.aDescription: description,
@@ -398,9 +389,7 @@ class ApiProvider {
 
   Future<AdminNotification> adminNotification(int start) async {
     http.Response response = await http
-        .post(Uri.parse(Urls.aGetAdminNotification), headers: {
-      Urls.apiKeyName: ConstRes.apiKey
-    }, body: {
+        .post(Uri.parse(Urls.aGetAdminNotification), headers: headers, body: {
       Urls.aStart: start.toString(),
       Urls.aCount: '${AppRes.paginationLimit}'
     });
@@ -409,9 +398,7 @@ class ApiProvider {
 
   Future<UserNotificationModel> getUserNotification(int start) async {
     http.Response response =
-        await http.post(Uri.parse(Urls.aGetUserNotification), headers: {
-      Urls.apiKeyName: ConstRes.apiKey
-    }, body: {
+        await http.post(Uri.parse(Urls.aGetUserNotification), headers: headers, body: {
       Urls.userId: myUserId.toString(),
       Urls.aStart: start.toString(),
       Urls.aCount: '${AppRes.paginationLimit}',
@@ -424,7 +411,7 @@ class ApiProvider {
     try {
       http.Response response = await http.post(
         Uri.parse(Urls.aGetSettingData),
-        headers: {Urls.apiKeyName: ConstRes.apiKey},
+        headers: headers,
       );
       SettingModel setting = SettingModel.fromJson(jsonDecode(response.body));
       if (setting.status == true) {
@@ -448,7 +435,7 @@ class ApiProvider {
     try {
       final response = await http.post(
         Uri.parse(Urls.aPaystackInitialize),
-        headers: {Urls.apiKeyName: ConstRes.apiKey},
+        headers: headers,
         body: {
           'email': email,
           'amount': amount.toString(),
@@ -488,7 +475,7 @@ class ApiProvider {
     try {
       final response = await http.post(
         Uri.parse(Urls.aPaystackVerify),
-        headers: {Urls.apiKeyName: ConstRes.apiKey},
+        headers: headers,
         body: {
           'reference': reference,
           'user_id': SessionManager.instance.getUserID().toString(),
@@ -511,9 +498,7 @@ class ApiProvider {
   Future<SearchUser> searchUser(
       {required String searchKeyword, required int start}) async {
     http.Response response =
-        await http.post(Uri.parse(Urls.aSearchUsers), headers: {
-      Urls.apiKeyName: ConstRes.apiKey
-    }, body: {
+        await http.post(Uri.parse(Urls.aSearchUsers), headers: headers, body: {
       Urls.userId: "${SessionManager.instance.getUserID()}",
       Urls.aKeyword: searchKeyword,
       Urls.aStart: start.toString(),
@@ -528,9 +513,7 @@ class ApiProvider {
       int? interestId,
       required int start}) async {
     http.Response response =
-        await http.post(Uri.parse(Urls.aSearchUsersForInterest), headers: {
-      Urls.apiKeyName: ConstRes.apiKey
-    }, body: {
+        await http.post(Uri.parse(Urls.aSearchUsersForInterest), headers: headers, body: {
       Urls.userId: "${SessionManager.instance.getUserID()}",
       Urls.aKeyword: searchKeyword,
       Urls.aStart: start.toString(),
@@ -542,9 +525,7 @@ class ApiProvider {
 
   Future<LikeModel> updateLikedProfile(int? profileId) async {
     http.Response response =
-        await http.post(Uri.parse(Urls.aUpdateLikedProfile), headers: {
-      Urls.apiKeyName: ConstRes.apiKey
-    }, body: {
+        await http.post(Uri.parse(Urls.aUpdateLikedProfile), headers: headers, body: {
       Urls.userId: '$profileId',
       Urls.myUserId: myUserId,
     });
@@ -555,9 +536,7 @@ class ApiProvider {
 
   Future<Report> likedProfile(int? profileId) async {
     http.Response response =
-        await http.post(Uri.parse(Urls.aLikedProfile), headers: {
-      Urls.apiKeyName: ConstRes.apiKey
-    }, body: {
+        await http.post(Uri.parse(Urls.aLikedProfile), headers: headers, body: {
       Urls.userId: '$profileId',
       Urls.myUserId: myUserId,
     });
@@ -567,9 +546,7 @@ class ApiProvider {
 
   Future<Report> dislikedProfile(int? profileId) async {
     http.Response response =
-        await http.post(Uri.parse(Urls.aDislikedProfile), headers: {
-      Urls.apiKeyName: ConstRes.apiKey
-    }, body: {
+        await http.post(Uri.parse(Urls.aDislikedProfile), headers: headers, body: {
       Urls.userId: '$profileId',
       Urls.myUserId: myUserId,
     });
@@ -632,9 +609,7 @@ class ApiProvider {
 
   Future<FetchLiveStreamHistory> fetchAllLiveStreamHistory(int starting) async {
     http.Response response =
-        await http.post(Uri.parse(Urls.aFetchAllLiveStreamHistory), headers: {
-      Urls.apiKeyName: ConstRes.apiKey
-    }, body: {
+        await http.post(Uri.parse(Urls.aFetchAllLiveStreamHistory), headers: headers, body: {
       Urls.userId: myUserId.toString(),
       Urls.aStart: '$starting',
       Urls.aCount: '${AppRes.paginationLimit}'
@@ -646,9 +621,7 @@ class ApiProvider {
       File? photo, File? docImage, String fullName, String docType) async {
     var request =
         http.MultipartRequest(Urls.post, Uri.parse(Urls.aApplyForVerification));
-    request.headers.addAll({
-      Urls.apiKeyName: ConstRes.apiKey,
-    });
+    request.headers.addAll(headers);
     request.fields[Urls.userId] = myUserId.toString();
     request.fields[Urls.aDocumentType] = docType;
     if (photo != null) {
@@ -692,7 +665,7 @@ class ApiProvider {
 
   Future<DeleteAccount> deleteAccount(int? deleteId) async {
     http.Response response = await http.post(Uri.parse(Urls.aDeleteMyAccount),
-        headers: {Urls.apiKeyName: ConstRes.apiKey},
+        headers: headers,
         body: {Urls.userId: deleteId.toString()});
     DeleteAccount deleteAccount =
         DeleteAccount.fromJson(jsonDecode(response.body));
@@ -710,9 +683,7 @@ class ApiProvider {
   }) async {
     var request =
         http.MultipartRequest(Urls.post, Uri.parse(Urls.aStorageFileGivePath));
-    request.headers.addAll({
-      Urls.apiKeyName: ConstRes.apiKey,
-    });
+    request.headers.addAll(headers);
 
     Uint8List? fileBytes = bytes;
     String finalName =
@@ -761,9 +732,7 @@ class ApiProvider {
 
   Future<MinusCoinFromWallet> minusCoinFromWallet(int? amount) async {
     http.Response response = await http
-        .post(Uri.parse(Urls.aMinusCoinsFromWallet), headers: {
-      Urls.apiKeyName: ConstRes.apiKey
-    }, body: {
+        .post(Uri.parse(Urls.aMinusCoinsFromWallet), headers: headers, body: {
       Urls.userId: myUserId.toString(),
       Urls.aAmount: amount.toString()
     });
@@ -783,9 +752,7 @@ class ApiProvider {
 
   Future<GetDiamondPack> getDiamondPack() async {
     http.Response response =
-        await http.post(Uri.parse(Urls.aGetDiamondPacks), headers: {
-      Urls.apiKeyName: ConstRes.apiKey
-    }, body: {
+        await http.post(Uri.parse(Urls.aGetDiamondPacks), headers: headers, body: {
       Urls.userId: myUserId.toString(),
       Urls.aStart: '0',
       Urls.aCount: '${AppRes.paginationLimit}'
@@ -798,9 +765,7 @@ class ApiProvider {
       required String startedAt,
       required String amountCollected}) async {
     http.Response response =
-        await http.post(Uri.parse(Urls.aAddLiveStreamHistory), headers: {
-      Urls.apiKeyName: ConstRes.apiKey
-    }, body: {
+        await http.post(Uri.parse(Urls.aAddLiveStreamHistory), headers: headers, body: {
       Urls.userId: myUserId.toString(),
       Urls.aStreamedFor: streamFor,
       Urls.aStartedAt: startedAt,
@@ -811,9 +776,7 @@ class ApiProvider {
 
   Future<UserModel> getRandomProfile({required int gender}) async {
     http.Response response = await http.post(Uri.parse(Urls.aGetRandomProfile),
-        headers: {
-          Urls.apiKeyName: ConstRes.apiKey
-        },
+        headers: headers,
         body: {
           Urls.userId: myUserId.toString(),
           Urls.gender: gender.toString()
@@ -825,7 +788,7 @@ class ApiProvider {
   Future<GetExploreScreen> getExplorePageProfileList() async {
     http.Response response = await http.post(
         Uri.parse(Urls.aGetExplorePageProfileList),
-        headers: {Urls.apiKeyName: ConstRes.apiKey},
+        headers: headers,
         body: {Urls.userId: myUserId.toString()});
     log(response.body);
     return GetExploreScreen.fromJson(jsonDecode(response.body));
@@ -834,7 +797,7 @@ class ApiProvider {
   Future<FetchRedeemRequest> fetchRedeemRequest() async {
     http.Response response = await http.post(
         Uri.parse(Urls.aFetchMyRedeemRequests),
-        headers: {Urls.apiKeyName: ConstRes.apiKey},
+        headers: headers,
         body: {Urls.userId: myUserId.toString()});
     return FetchRedeemRequest.fromJson(jsonDecode(response.body));
   }
@@ -865,9 +828,7 @@ class ApiProvider {
     }
 
     http.Response response = await http.post(Uri.parse(Urls.aUpdateBlockList),
-        headers: {
-          Urls.apiKeyName: ConstRes.apiKey
-        },
+        headers: headers,
         body: {
           Urls.userId: myUserId.toString(),
           Urls.aBlockedUsers: blockProfile
@@ -947,7 +908,7 @@ class ApiProvider {
     try {
       final response = await http.post(
         Uri.parse(Urls.aNotificationUrl),
-        headers: {Urls.apiKeyName: ConstRes.apiKey},
+        headers: headers,
         body: json.encode(inputData),
       );
 
@@ -984,7 +945,7 @@ class ApiProvider {
 
   Future<Report> logoutUser() async {
     http.Response response = await http.post(Uri.parse(Urls.aLogoutUser),
-        headers: {Urls.apiKeyName: ConstRes.apiKey},
+        headers: headers,
         body: {Urls.userId: myUserId.toString()});
     Report report = Report.fromJson(jsonDecode(response.body));
     if (report.status == true) {
@@ -1007,7 +968,7 @@ class ApiProvider {
   Future<SearchUser> fetchSavedProfiles() async {
     http.Response response = await http.post(
         Uri.parse(Urls.aFetchSavedProfiles),
-        headers: {Urls.apiKeyName: ConstRes.apiKey},
+        headers: headers,
         body: {Urls.userId: myUserId.toString()});
     return SearchUser.fromJson(jsonDecode(response.body));
   }
@@ -1015,7 +976,7 @@ class ApiProvider {
   Future<SearchUser> fetchLikedProfiles() async {
     http.Response response = await http.post(
         Uri.parse(Urls.aFetchLikedProfiles),
-        headers: {Urls.apiKeyName: ConstRes.apiKey},
+        headers: headers,
         body: {Urls.userId: myUserId});
     return SearchUser.fromJson(jsonDecode(response.body));
   }
@@ -1023,7 +984,7 @@ class ApiProvider {
   Future<SearchUser> fetchBlockedProfiles() async {
     http.Response response = await http.post(
         Uri.parse(Urls.aFetchBlockedProfiles),
-        headers: {Urls.apiKeyName: ConstRes.apiKey},
+        headers: headers,
         body: {Urls.userId: myUserId.toString()});
     // print(response.body);
     return SearchUser.fromJson(jsonDecode(response.body));
@@ -1063,7 +1024,7 @@ class ApiProvider {
   Future<GetPackage> getPackage() async {
     http.Response response = await http.post(
       Uri.parse(Urls.aGetPackage),
-      headers: {Urls.apiKeyName: ConstRes.apiKey},
+      headers: headers,
     );
     return GetPackage.fromJson(jsonDecode(response.body));
   }

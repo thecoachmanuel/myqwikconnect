@@ -4,7 +4,7 @@
   <base href="/">
 
   <meta charset="UTF-8">
-  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate, max-age=0">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
@@ -24,12 +24,10 @@
   <title>Orange</title>
   <link rel="manifest" href="manifest.json">
 
-  <!-- Performance Preconnect & Preloads -->
+  <!-- Performance Preconnect -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="preconnect" href="https://www.gstatic.com" crossorigin>
-  <link rel="preload" href="flutter_bootstrap.js" as="script">
-  <link rel="preload" href="main.dart.js" as="script">
 
   <script src="https://maps.googleapis.com/maps/api/js?loading=async" async defer></script>
   <!-- Agora Web RTC SDK for video calling/streaming on Web -->
@@ -103,34 +101,111 @@
   </script>
 
   <script>
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.getRegistrations().then(function(registrations) {
-        for (var registration of registrations) {
-          registration.update();
-          if (registration.waiting) {
-            registration.waiting.postMessage({ type: 'SKIP_WAITING' });
-          }
-          registration.addEventListener('updatefound', function() {
-            var newWorker = registration.installing;
-            if (newWorker) {
-              newWorker.addEventListener('statechange', function() {
-                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                  newWorker.postMessage({ type: 'SKIP_WAITING' });
-                }
-              });
-            }
+    (function() {
+      var BUILD_KEY = 'orange_app_build_version';
+      var isUpdating = false;
+
+      async function checkVersionAndUpdate() {
+        if (isUpdating) return;
+        try {
+          var response = await fetch('version.json?t=' + Date.now(), {
+            cache: 'no-store',
+            headers: { 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache' }
           });
+          if (!response.ok) return;
+          var data = await response.json();
+          var currentBuild = String(data.build_number || data.version || '');
+          if (!currentBuild) return;
+
+          var savedBuild = localStorage.getItem(BUILD_KEY);
+          if (savedBuild && savedBuild !== currentBuild) {
+            isUpdating = true;
+            console.log('[Orange Update] New build detected:', currentBuild, '(current:', savedBuild + '). Purging caches...');
+            localStorage.setItem(BUILD_KEY, currentBuild);
+
+            // Purge all Service Worker caches
+            if ('caches' in window) {
+              try {
+                var keys = await caches.keys();
+                await Promise.all(keys.map(function(k) { return caches.delete(k); }));
+              } catch (e) {
+                console.warn('[Orange Update] Cache purge error:', e);
+              }
+            }
+
+            // Unregister all old service workers to guarantee clean boot
+            if ('serviceWorker' in navigator) {
+              try {
+                var registrations = await navigator.serviceWorker.getRegistrations();
+                for (var i = 0; i < registrations.length; i++) {
+                  await registrations[i].unregister();
+                }
+              } catch (e) {
+                console.warn('[Orange Update] SW unregister error:', e);
+              }
+            }
+
+            // Instant reload
+            var cleanUrl = window.location.origin + window.location.pathname + (window.location.hash || '');
+            window.location.replace(cleanUrl);
+            return;
+          }
+
+          if (!savedBuild && currentBuild) {
+            localStorage.setItem(BUILD_KEY, currentBuild);
+          }
+        } catch (e) {
+          console.warn('[Orange Update] Version check skipped:', e);
+        }
+      }
+
+      // Check on initial load
+      checkVersionAndUpdate();
+
+      // Check whenever user switches back to tab or resumes installed PWA
+      document.addEventListener('visibilitychange', function() {
+        if (document.visibilityState === 'visible') {
+          checkVersionAndUpdate();
         }
       });
-      navigator.serviceWorker.addEventListener('controllerchange', function() {
-        console.log('New app version detected, reloading...');
-        window.location.reload();
-      });
-    }
-    var script = document.createElement('script');
-    script.src = 'flutter_bootstrap.js?v=' + Date.now();
-    script.async = true;
-    document.body.appendChild(script);
+      window.addEventListener('focus', checkVersionAndUpdate);
+
+      // Periodic check every 3 minutes
+      setInterval(checkVersionAndUpdate, 180000);
+
+      // Service worker handling
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistrations().then(function(registrations) {
+          for (var i = 0; i < registrations.length; i++) {
+            var registration = registrations[i];
+            registration.update();
+            if (registration.waiting) {
+              registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+            }
+            registration.addEventListener('updatefound', function() {
+              var newWorker = registration.installing;
+              if (newWorker) {
+                newWorker.addEventListener('statechange', function() {
+                  if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                    newWorker.postMessage({ type: 'SKIP_WAITING' });
+                  }
+                });
+              }
+            });
+          }
+        });
+        navigator.serviceWorker.addEventListener('controllerchange', function() {
+          console.log('[Orange Update] Controller changed, refreshing...');
+          window.location.reload();
+        });
+      }
+
+      // Dynamically load flutter_bootstrap.js with cache-busting timestamp
+      var script = document.createElement('script');
+      script.src = 'flutter_bootstrap.js?v=' + Date.now();
+      script.async = true;
+      document.body.appendChild(script);
+    })();
   </script>
 </body>
 </html>

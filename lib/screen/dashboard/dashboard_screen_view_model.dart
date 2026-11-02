@@ -22,7 +22,7 @@ import 'package:orange_ui/utils/app_platform.dart';
 import 'package:orange_ui/utils/urls.dart';
 import 'package:stacked/stacked.dart';
 
-class DashboardScreenViewModel extends BaseViewModel {
+class DashboardScreenViewModel extends BaseViewModel with WidgetsBindingObserver {
   static const String keyActiveTabIndex = 'dashboard_active_tab_index';
   int pageIndex = 0;
   int unreadNotificationCount = 0;
@@ -32,6 +32,7 @@ class DashboardScreenViewModel extends BaseViewModel {
   BannerAd? bannerAd;
 
   void init() {
+    WidgetsBinding.instance.addObserver(this);
     final bool isLogin = SessionManager.instance.getBool(key: SessionKeys.isLogin);
     final cachedUser = SessionManager.instance.getUser();
     if (!isLogin || cachedUser == null || (cachedUser.id ?? 0) <= 0) {
@@ -155,6 +156,27 @@ class DashboardScreenViewModel extends BaseViewModel {
         Get.to(() => const SearchScreen());
       },
     );
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      getProfileApiCall();
+      fetchUnreadNotifications();
+      ApiProvider().getSettingData().then((value) {
+        if (value.status == true && value.data != null) {
+          SessionManager.instance.setSettings(value.data);
+          settingAppData = value.data?.appdata;
+          notifyListeners();
+        }
+      }).catchError((_) {});
+    }
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
   }
 }
 

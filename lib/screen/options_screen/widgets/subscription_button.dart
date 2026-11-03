@@ -3,7 +3,9 @@ import 'package:get/get.dart';
 import 'package:orange_ui/generated/l10n.dart';
 import 'package:orange_ui/model/user/registration_user.dart';
 import 'package:orange_ui/screen/subscription_sheet/subscription_sheet.dart';
+import 'package:orange_ui/screen/subscription_sheet/widget/premium_member_dialog.dart';
 import 'package:orange_ui/service/session_manager.dart';
+import 'package:orange_ui/service/subscription/subscription_manager.dart';
 import 'package:orange_ui/utils/asset_res.dart';
 import 'package:orange_ui/utils/color_res.dart';
 import 'package:orange_ui/utils/font_res.dart';
@@ -19,29 +21,53 @@ class SubscriptionButton extends StatefulWidget {
 class _SubscriptionButtonState extends State<SubscriptionButton> {
   String _text1 = S.current.go;
   String _text2 = ' ${S.current.premium}';
+  bool _isVip = false;
 
   @override
   void initState() {
     super.initState();
+    _checkStatus();
+  }
+
+  void _checkStatus() {
     UserData? userData = SessionManager.instance.getUser();
-    if (userData?.isVerify == true) {
+    bool expired = false;
+    if (userData?.proExpireDate != null && userData!.proExpireDate!.trim().isNotEmpty) {
+      try {
+        expired = DateTime.parse(userData.proExpireDate!).isBefore(DateTime.now());
+      } catch (_) {}
+    }
+
+    _isVip = ((userData?.isPro == 1 || userData?.isVerified == 3) && !expired) || isSubscribe.value;
+
+    if (_isVip) {
       _text1 = '';
       _text2 = S.current.youArePremiumMember;
+    } else {
+      _text1 = S.current.go;
+      _text2 = ' ${S.current.premium}';
     }
+    if (mounted) setState(() {});
   }
 
   @override
   Widget build(BuildContext context) {
     return InkWell(
       onTap: () {
-        Get.bottomSheet(const SubscriptionSheet(), isScrollControlled: true)
-            .then((value) {
-          if (value != null && value == true) {
-            _text1 = '';
-            _text2 = S.current.youArePremiumMember;
-            setState(() {});
-          }
-        });
+        _checkStatus();
+        if (_isVip) {
+          // Display the dedicated VIP Premium Member modal
+          Get.dialog(
+            const PremiumMemberDialog(),
+            barrierDismissible: true,
+          );
+        } else {
+          // Open SubscriptionSheet to buy/upgrade
+          Get.bottomSheet(const SubscriptionSheet(), isScrollControlled: true)
+              .then((value) {
+            _checkStatus();
+          });
+        }
       },
       child: Container(
         height: 49,

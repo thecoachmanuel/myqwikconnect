@@ -23,7 +23,7 @@ class SubscriptionSheetController extends GetxController {
   void onInit() {
     super.onInit();
     final user = SessionManager.instance.getUser();
-    if (user != null && user.isVerified == 3) {
+    if (user != null && (user.isPro == 1 || user.isVerified == 3)) {
       // Check if subscription is expired
       bool expired = false;
       if (user.proExpireDate != null && user.proExpireDate!.trim().isNotEmpty) {

@@ -33,6 +33,7 @@ import 'package:orange_ui/model/verification.dart';
 import 'package:orange_ui/model/wallet/minus_coin_from_wallet.dart';
 import 'package:orange_ui/service/firebase_notification_manager.dart';
 import 'package:orange_ui/service/session_manager.dart';
+import 'package:orange_ui/service/subscription/subscription_manager.dart';
 import 'package:orange_ui/utils/app_res.dart';
 import 'package:orange_ui/utils/const_res.dart';
 import 'package:orange_ui/utils/urls.dart';
@@ -336,6 +337,15 @@ class ApiProvider {
       UserModel profile = UserModel.fromJson(jsonDecode(response.body));
       if (profile.status == true) {
         SessionManager.instance.setUser(profile.data);
+        if (profile.data?.isPro == 1 || profile.data?.isVerified == 3) {
+          bool expired = false;
+          if (profile.data?.proExpireDate != null && profile.data!.proExpireDate!.trim().isNotEmpty) {
+            try {
+              expired = DateTime.parse(profile.data!.proExpireDate!).isBefore(DateTime.now());
+            } catch (_) {}
+          }
+          isSubscribe.value = !expired;
+        }
       }
       return profile;
     } catch (e) {

@@ -113,7 +113,8 @@ class MapScreen extends StatelessWidget {
                   onTap: model.toggleView,
                   child: const Row(
                     children: [
-                      Icon(Icons.map_rounded, size: 16, color: ColorRes.themeColor),
+                      Icon(Icons.map_rounded,
+                          size: 16, color: ColorRes.themeColor),
                       SizedBox(width: 4),
                       Text(
                         'Map View',
@@ -216,7 +217,8 @@ class MapScreen extends StatelessWidget {
                 children: [
                   image.isNotEmpty
                       ? CustomImage(
-                          image: '${ConstRes.aImageBaseUrl}$image',
+                          image: image,
+                          fullname: user.fullname,
                           fit: BoxFit.cover,
                         )
                       : CommonUI.profileImagePlaceHolder(

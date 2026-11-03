@@ -127,10 +127,16 @@ class _MyAppState extends State<MyApp> {
         final isMobileViewEnabled =
             (SessionManager.instance.getSettings()?.appdata?.webMobileView ?? 1) == 1;
 
-        final screenWidth = MediaQuery.of(context).size.width;
-        if (!isMobileViewEnabled || screenWidth <= 520) {
+        final mediaQuery = MediaQuery.of(context);
+        final screenWidth = mediaQuery.size.width;
+        if (!isMobileViewEnabled || screenWidth <= 500) {
           return content;
         }
+
+        const double mobileWidth = 430.0;
+        final clampedMediaQuery = mediaQuery.copyWith(
+          size: Size(mobileWidth, mediaQuery.size.height),
+        );
 
         return GestureDetector(
           behavior: HitTestBehavior.opaque,
@@ -142,10 +148,13 @@ class _MyAppState extends State<MyApp> {
             }
           },
           child: Container(
-            color: const Color(0xFF18191A),
+            color: const Color(0xFF141517),
             alignment: Alignment.center,
             child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 480),
+              constraints: BoxConstraints(
+                maxWidth: mobileWidth,
+                maxHeight: mediaQuery.size.height,
+              ),
               child: GestureDetector(
                 behavior: HitTestBehavior.opaque,
                 onTap: () {}, // Prevent taps inside the mobile viewport from closing modal
@@ -153,17 +162,19 @@ class _MyAppState extends State<MyApp> {
                   clipBehavior: Clip.antiAlias,
                   decoration: BoxDecoration(
                     color: ColorRes.white,
-                    borderRadius: BorderRadius.circular(16),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.4),
-                        blurRadius: 30,
-                        spreadRadius: 4,
-                        offset: const Offset(0, 10),
+                        color: Colors.black.withValues(alpha: 0.35),
+                        blurRadius: 28,
+                        spreadRadius: 2,
+                        offset: const Offset(0, 6),
                       ),
                     ],
                   ),
-                  child: content,
+                  child: MediaQuery(
+                    data: clampedMediaQuery,
+                    child: content,
+                  ),
                 ),
               ),
             ),

@@ -29,12 +29,20 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="preconnect" href="https://www.gstatic.com" crossorigin>
+  <link rel="preload" href="https://fonts.gstatic.com/s/notocoloremoji/v25/0FlNmVPttA2sSVGGJLsDa5u0.ttf" as="font" type="font/ttf" crossorigin>
 
   <script src="https://maps.googleapis.com/maps/api/js?loading=async" async defer></script>
   <!-- Agora Web RTC SDK for video calling/streaming on Web -->
   <script src="https://download.agora.io/sdk/release/iris-web-rtc_n450_w4220_0.8.6.js" async></script>
 
   <style>
+    @font-face {
+      font-family: 'Noto Color Emoji';
+      font-style: normal;
+      font-weight: 400;
+      src: url('https://fonts.gstatic.com/s/notocoloremoji/v25/0FlNmVPttA2sSVGGJLsDa5u0.ttf') format('truetype');
+      font-display: swap;
+    }
     * {
       box-sizing: border-box;
       -webkit-tap-highlight-color: transparent;

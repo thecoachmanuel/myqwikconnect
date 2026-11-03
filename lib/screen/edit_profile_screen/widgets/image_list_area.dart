@@ -40,10 +40,10 @@ class ImageListArea extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 20),
           child: Row(
             children: [
-              SizedBox(
-                width: Get.width - 105,
-                height: 58,
-                child: ListView.builder(
+              Expanded(
+                child: SizedBox(
+                  height: 58,
+                  child: ListView.builder(
                   scrollDirection: Axis.horizontal,
                   itemCount: model.imageList.length,
                   physics: const BouncingScrollPhysics(),
@@ -120,13 +120,8 @@ class ImageListArea extends StatelessWidget {
                     );
                   },
                 ),
-              ),
-              SizedBox(
-                //width: 130,
-                height: 58,
-                child: Row(
-                  children: [
-                    const SizedBox(width: 7),
+              )),
+              const SizedBox(width: 8),
                     InkWell(
                       onTap: model.selectImages,
                       child: Container(
@@ -142,9 +137,6 @@ class ImageListArea extends StatelessWidget {
                         ),
                       ),
                     ),
-                  ],
-                ),
-              ),
             ],
           ),
         ),

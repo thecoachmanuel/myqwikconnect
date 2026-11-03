@@ -22,15 +22,21 @@ class MessageScreen extends StatelessWidget {
         return Column(
           children: [
             model.isLoading && model.userList.isEmpty
-                ? CommonUI.lottieWidget()
+                ? Expanded(
+                    child: Center(
+                      child: CommonUI.lottieWidget(),
+                    ),
+                  )
                 : !model.isLoading && model.userList.isEmpty
-                    ? Center(
-                        child: Text(
-                          S.of(context).noData,
-                          style: const TextStyle(
-                              color: ColorRes.darkGrey9,
-                              fontFamily: FontRes.semiBold,
-                              fontSize: 17),
+                    ? Expanded(
+                        child: Center(
+                          child: Text(
+                            S.of(context).noData,
+                            style: const TextStyle(
+                                color: ColorRes.darkGrey9,
+                                fontFamily: FontRes.semiBold,
+                                fontSize: 17),
+                          ),
                         ),
                       )
                     : Expanded(

@@ -6,7 +6,6 @@ import 'package:orange_ui/generated/l10n.dart';
 import 'package:orange_ui/model/user/registration_user.dart';
 import 'package:orange_ui/screen/edit_profile_screen/edit_profile_screen_view_model.dart';
 import 'package:orange_ui/screen/edit_profile_screen/widgets/image_list_area.dart';
-import 'package:orange_ui/screen/edit_profile_screen/widgets/main_profile_avatar_area.dart';
 import 'package:orange_ui/screen/edit_profile_screen/widgets/text_fields_area.dart';
 import 'package:orange_ui/utils/asset_res.dart';
 import 'package:orange_ui/utils/color_res.dart';
@@ -48,8 +47,7 @@ class EditProfileScreen extends StatelessWidget {
                                     ScrollViewKeyboardDismissBehavior.onDrag,
                                 child: Column(
                                   children: [
-                                    const SizedBox(height: 12),
-                                    MainProfileAvatarArea(model: model),
+                                    const SizedBox(height: 16),
                                     ImageListArea(model: model),
                                     TextFieldsArea(model: model),
                                   ],

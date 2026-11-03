@@ -115,10 +115,13 @@ class ChatArea extends StatelessWidget {
                   ),
                 )
               else
-                const Padding(
-                  padding: EdgeInsets.only(right: 5.0),
+                Padding(
+                  padding: const EdgeInsets.only(right: 5.0),
                   child: Icon(Icons.done_all_rounded,
-                      size: 14, color: ColorRes.themeColor),
+                      size: 14,
+                      color: (data?.isRead == true)
+                          ? ColorRes.themeColor
+                          : ColorRes.grey2),
                 ),
             ],
             Column(

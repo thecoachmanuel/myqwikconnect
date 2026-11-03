@@ -116,31 +116,7 @@ class FeedScreen extends StatelessWidget {
   }
 
   Widget _buildEndOfFeedIndicator() {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-      decoration: BoxDecoration(
-        color: ColorRes.white,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: ColorRes.grey5),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(Icons.check_circle_rounded,
-              color: ColorRes.themeColor.withValues(alpha: 0.7), size: 18),
-          const SizedBox(width: 8),
-          const Text(
-            "You're all caught up!",
-            style: TextStyle(
-              fontFamily: FontRes.medium,
-              fontSize: 13,
-              color: ColorRes.dimGrey3,
-            ),
-          ),
-        ],
-      ),
-    );
+    return const SizedBox.shrink();
   }
 
   Widget _buildUploadProgressCard() {

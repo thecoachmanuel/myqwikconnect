@@ -275,6 +275,8 @@ class ChatMessage {
   ChatUser? _senderUser;
   List<String>? _notDeletedIdentities;
   bool isSending = false;
+  /// True when the recipient has read this message. Stored as 'isRead' in Firestore.
+  bool isRead = false;
 
   ChatMessage(
       {String? id,
@@ -285,7 +287,8 @@ class ChatMessage {
       double? time,
       ChatUser? senderUser,
       List<String>? notDeletedIdentities,
-      this.isSending = false}) {
+      this.isSending = false,
+      this.isRead = false}) {
     _id = id;
     _image = image;
     _video = video;
@@ -304,6 +307,7 @@ class ChatMessage {
       "msg": _msg,
       "msgType": _msgType,
       "time": _time,
+      "isRead": isRead,
       "senderUser": _senderUser?.toJson(),
       "not_deleted_identities": _notDeletedIdentities?.map((v) => v).toList()
     };
@@ -319,6 +323,7 @@ class ChatMessage {
     _msgType = map["msgType"]?.toString();
     _time = (map["time"] as num?)?.toDouble() ??
         (map["time"] is String ? double.tryParse(map["time"]) : null);
+    isRead = map["isRead"] == true;
     _senderUser =
         map["senderUser"] != null ? ChatUser.fromJson(map["senderUser"]) : null;
     if (map['not_deleted_identities'] != null &&
@@ -351,6 +356,7 @@ class ChatMessage {
           (data?['time'] is String ? double.tryParse(data?['time']) : null),
       msgType: data?['msgType']?.toString(),
       notDeletedIdentities: notDeletedIdentities,
+      isRead: data?['isRead'] == true,
       senderUser: data?["senderUser"] != null
           ? ChatUser.fromJson(data!["senderUser"])
           : null,
@@ -365,6 +371,7 @@ class ChatMessage {
       if (msg != null) "msg": _msg,
       if (msgType != null) "msgType": _msgType,
       if (time != null) "time": _time,
+      "isRead": isRead,
       if (senderUser != null) "senderUser": _senderUser,
       if (notDeletedIdentities != null)
         "not_deleted_identities": _notDeletedIdentities?.map((v) => v).toList()

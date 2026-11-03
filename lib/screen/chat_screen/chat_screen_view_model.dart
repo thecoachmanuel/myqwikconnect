@@ -911,6 +911,8 @@ class ChatScreenViewModel extends BaseViewModel {
           chatData = incoming;
           _saveCachedChat();
           _groupMessages(chatData);
+          // Mark any unread messages from the other user as read
+          _markMessagesAsRead(incoming);
         } else if (chatData.isEmpty) {
           _loadCachedChat();
         }
@@ -926,7 +928,29 @@ class ChatScreenViewModel extends BaseViewModel {
   }
 
   //Firebase message update method
-  Future<void> firebaseMsgUpdate({
+  /// Marks messages from the other user as read in Firestore (batch write).
+  void _markMessagesAsRead(List<ChatMessage> messages) {
+    try {
+      final int myId =
+          registrationUserData?.id ?? SessionManager.instance.getUserID();
+      // Find messages sent by the other user that aren't yet marked as read
+      final unread = messages.where((m) =>
+          m.senderUser?.userid != myId && m.isRead == false && m.time != null);
+      if (unread.isEmpty) return;
+      final batch = db.batch();
+      for (final msg in unread) {
+        batch.update(
+          drChatMessages.doc(msg.time!.toInt().toString()),
+          {'isRead': true},
+        );
+      }
+      batch.commit().catchError((e) {
+        Get.log('[markRead] ❌ Error: $e');
+      });
+    } catch (e) {
+      Get.log('[markRead] ❌ Exception: $e');
+    }
+  }  Future<void> firebaseMsgUpdate({
     required String msgType,
     String? textMessage,
     String? image,

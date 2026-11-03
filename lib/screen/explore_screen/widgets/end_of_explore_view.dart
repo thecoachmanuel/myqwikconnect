@@ -65,15 +65,6 @@ class EndOfExploreView extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 24),
-            const Text(
-              "You're All Caught Up!",
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontFamily: FontRes.bold,
-                fontSize: 22,
-                color: ColorRes.davyGrey,
-              ),
-            ),
             const SizedBox(height: 10),
             Text(
               "You've reviewed all available profiles matching your preferences. Try refreshing, widening your distance or age filters, or exploring users live on the map.",

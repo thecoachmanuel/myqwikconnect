@@ -1,4 +1,5 @@
 import 'package:figma_squircle/figma_squircle.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -43,33 +44,75 @@ class AuthScreen extends StatelessWidget {
                       padding: const EdgeInsets.only(top: 8),
                       child: Column(
                         children: [
-                          // Wordmark: "Qwik" ultra-bold white + "Connect" white semi-bold
-                          RichText(
-                            text: const TextSpan(
+                          // Wordmark: Web → "Qwik" orange gradient + "Connect" black
+                          //           Mobile → both white (Qwik ultra-bold)
+                          if (kIsWeb) ...[
+                            Row(
+                              mainAxisSize: MainAxisSize.min,
+                              crossAxisAlignment: CrossAxisAlignment.baseline,
+                              textBaseline: TextBaseline.alphabetic,
                               children: [
-                                TextSpan(
-                                  text: 'Qwik',
-                                  style: TextStyle(
-                                    fontFamily: FontRes.bold,
-                                    fontSize: 42,
-                                    fontWeight: FontWeight.w900,
-                                    letterSpacing: -1.2,
-                                    color: Colors.white,
+                                ShaderMask(
+                                  blendMode: BlendMode.srcIn,
+                                  shaderCallback: (bounds) =>
+                                      const LinearGradient(
+                                    colors: [
+                                      Color(0xFFFF6F43),
+                                      Color(0xFFFF4B1F),
+                                      Color(0xFFFE1B03),
+                                    ],
+                                  ).createShader(bounds),
+                                  child: const Text(
+                                    'Qwik',
+                                    style: TextStyle(
+                                      fontFamily: FontRes.bold,
+                                      fontSize: 46,
+                                      fontWeight: FontWeight.w900,
+                                      letterSpacing: -1.5,
+                                      color: Colors.white,
+                                    ),
                                   ),
                                 ),
-                                TextSpan(
-                                  text: 'Connect',
+                                const Text(
+                                  'Connect',
                                   style: TextStyle(
                                     fontFamily: FontRes.bold,
-                                    fontSize: 42,
+                                    fontSize: 46,
                                     fontWeight: FontWeight.w600,
-                                    letterSpacing: -1.2,
-                                    color: Colors.white,
+                                    letterSpacing: -1.5,
+                                    color: Colors.black,
                                   ),
                                 ),
                               ],
                             ),
-                          ),
+                          ] else ...[
+                            RichText(
+                              text: const TextSpan(
+                                children: [
+                                  TextSpan(
+                                    text: 'Qwik',
+                                    style: TextStyle(
+                                      fontFamily: FontRes.bold,
+                                      fontSize: 42,
+                                      fontWeight: FontWeight.w900,
+                                      letterSpacing: -1.2,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                  TextSpan(
+                                    text: 'Connect',
+                                    style: TextStyle(
+                                      fontFamily: FontRes.bold,
+                                      fontSize: 42,
+                                      fontWeight: FontWeight.w600,
+                                      letterSpacing: -1.2,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
                           const SizedBox(height: 6),
                           // Slogan
                           Text(

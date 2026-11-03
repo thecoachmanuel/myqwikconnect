@@ -1,4 +1,3 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
@@ -7,11 +6,8 @@ import 'package:orange_ui/generated/l10n.dart';
 import 'package:orange_ui/model/chat_and_live_stream/chat.dart';
 import 'package:orange_ui/service/extention/string_extention.dart';
 import 'package:orange_ui/service/session_manager.dart';
-
 import 'package:orange_ui/utils/app_res.dart';
-
 import 'package:orange_ui/utils/color_res.dart';
-import 'package:orange_ui/utils/const_res.dart';
 import 'package:orange_ui/utils/font_res.dart';
 
 class ImageViewPage extends StatefulWidget {
@@ -27,6 +23,13 @@ class ImageViewPage extends StatefulWidget {
 class _ImageViewPageState extends State<ImageViewPage> {
   TapDownDetails _doubleTapDetails = TapDownDetails();
   final _transformationController = TransformationController();
+  bool _hasError = false;
+
+  String get _imageUrl {
+    String raw = (widget.userData?.image ?? '').trim();
+    if (raw.isEmpty) return '';
+    return raw.addBaseURL();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -38,16 +41,14 @@ class _ImageViewPageState extends State<ImageViewPage> {
             GestureDetector(
               onDoubleTapDown: handleDoubleTapDown,
               onDoubleTap: handleDoubleTap,
-              child: InteractiveViewer(
-                transformationController: _transformationController,
-                child: CachedNetworkImage(
-                  imageUrl: (widget.userData?.image ?? '').addBaseURL(),
-                  height: Get.height,
-                  width: double.infinity,
-                  fit: BoxFit.contain,
-                  errorWidget: (context, url, error) => const Center(
-                    child: Icon(Icons.broken_image_rounded, color: ColorRes.white, size: 48),
-                  ),
+              child: SizedBox(
+                width: double.infinity,
+                height: double.infinity,
+                child: InteractiveViewer(
+                  transformationController: _transformationController,
+                  minScale: 0.8,
+                  maxScale: 4.0,
+                  child: _buildImage(),
                 ),
               ),
             ),
@@ -55,6 +56,95 @@ class _ImageViewPageState extends State<ImageViewPage> {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildImage() {
+    final url = _imageUrl;
+    if (url.isEmpty || _hasError) {
+      return Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.broken_image_rounded, color: ColorRes.dimGrey3, size: 54),
+            const SizedBox(height: 12),
+            const Text(
+              'Unable to load image',
+              style: TextStyle(
+                color: ColorRes.dimGrey3,
+                fontFamily: FontRes.semiBold,
+                fontSize: 14,
+              ),
+            ),
+            const SizedBox(height: 12),
+            ElevatedButton.icon(
+              onPressed: () {
+                setState(() {
+                  _hasError = false;
+                });
+              },
+              icon: const Icon(Icons.refresh, size: 16),
+              label: const Text('Retry'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: ColorRes.themeColor,
+                foregroundColor: ColorRes.white,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return Image.network(
+      url,
+      height: Get.height,
+      width: double.infinity,
+      fit: BoxFit.contain,
+      gaplessPlayback: true,
+      loadingBuilder: (context, child, loadingProgress) {
+        if (loadingProgress == null) return child;
+        return const Center(
+          child: CircularProgressIndicator(
+            strokeWidth: 2.5,
+            color: ColorRes.themeColor,
+          ),
+        );
+      },
+      errorBuilder: (context, error, stackTrace) {
+        return Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.broken_image_rounded, color: ColorRes.dimGrey3, size: 54),
+              const SizedBox(height: 12),
+              const Text(
+                'Unable to load image',
+                style: TextStyle(
+                  color: ColorRes.dimGrey3,
+                  fontFamily: FontRes.semiBold,
+                  fontSize: 14,
+                ),
+              ),
+              const SizedBox(height: 12),
+              ElevatedButton.icon(
+                onPressed: () {
+                  setState(() {
+                    _hasError = false;
+                  });
+                },
+                icon: const Icon(Icons.refresh, size: 16),
+                label: const Text('Retry'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: ColorRes.themeColor,
+                  foregroundColor: ColorRes.white,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 
@@ -79,7 +169,11 @@ class _ImageViewPageState extends State<ImageViewPage> {
       padding: const EdgeInsets.fromLTRB(21, 18, 23, 18),
       child: Row(
         children: [
-          const RoundIconButton(),
+          RoundIconButton(
+            onTap: widget.onBack,
+            bgColor: ColorRes.white.withValues(alpha: 0.2),
+            color: ColorRes.white,
+          ),
           const SizedBox(width: 20),
           Column(
             mainAxisSize: MainAxisSize.min,
@@ -100,14 +194,15 @@ class _ImageViewPageState extends State<ImageViewPage> {
                   ),
                 ],
               ),
-              Text(
-                DateFormat('${AppRes.dMY}, ${AppRes.hhMmA}')
-                    .format(DateTime.fromMillisecondsSinceEpoch(widget.userData!.time!.toInt())),
-                style: const TextStyle(
-                  color: ColorRes.white,
-                  fontSize: 11,
+              if (widget.userData?.time != null)
+                Text(
+                  DateFormat('${AppRes.dMY}, ${AppRes.hhMmA}')
+                      .format(DateTime.fromMillisecondsSinceEpoch(widget.userData!.time!.toInt())),
+                  style: const TextStyle(
+                    color: ColorRes.white,
+                    fontSize: 11,
+                  ),
                 ),
-              ),
             ],
           ),
         ],

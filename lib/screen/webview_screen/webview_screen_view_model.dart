@@ -119,36 +119,114 @@ class WebViewScreenViewModel extends BaseViewModel {
             : _defaultTerms);
 
     final cleanSections = _parseHtmlIntoSections(raw);
+    final isPrivacy = title.toLowerCase().contains('privac');
 
     return Container(
-      color: ColorRes.white,
+      color: const Color(0xFFF9FAFB),
       child: ListView.separated(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-        itemCount: cleanSections.length,
-        separatorBuilder: (_, __) => const SizedBox(height: 16),
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 18),
+        itemCount: cleanSections.length + 1, // +1 for hero card
+        separatorBuilder: (_, __) => const SizedBox(height: 12),
         itemBuilder: (context, index) {
-          final sec = cleanSections[index];
+          if (index == 0) {
+            // Modern Orange Hero Card
+            return Container(
+              margin: const EdgeInsets.only(bottom: 8),
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [ColorRes.lightOrange, ColorRes.themeColor],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: ColorRes.themeColor.withValues(alpha: 0.25),
+                    blurRadius: 14,
+                    offset: const Offset(0, 6),
+                  ),
+                ],
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    height: 52,
+                    width: 52,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.2),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      isPrivacy ? Icons.security_rounded : Icons.gavel_rounded,
+                      color: Colors.white,
+                      size: 28,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          title.isNotEmpty ? title : (isPrivacy ? 'Privacy Policy' : 'Terms of Use'),
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontFamily: FontRes.bold,
+                            fontSize: 20,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          isPrivacy
+                              ? 'How Orange protects and manages your data'
+                              : 'Orange platform rules and user agreements',
+                          style: TextStyle(
+                            color: Colors.white.withValues(alpha: 0.9),
+                            fontFamily: FontRes.regular,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }
+
+          final sec = cleanSections[index - 1];
           if (sec.type == _SectionType.heading) {
-            return Padding(
-              padding: const EdgeInsets.only(top: 10, bottom: 4),
+            return Container(
+              margin: const EdgeInsets.only(top: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: ColorRes.grey5.withValues(alpha: 0.6)),
+              ),
               child: Text(
                 sec.text,
                 style: const TextStyle(
                   fontFamily: FontRes.bold,
-                  fontSize: 18,
+                  fontSize: 16,
                   color: ColorRes.davyGrey,
-                  height: 1.4,
+                  height: 1.3,
                 ),
               ),
             );
           } else if (sec.type == _SectionType.bullet) {
-            return Padding(
-              padding: const EdgeInsets.only(left: 8, bottom: 4),
+            return Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+              ),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Container(
-                    margin: const EdgeInsets.only(top: 7, right: 10),
+                    margin: const EdgeInsets.only(top: 6, right: 10),
                     width: 6,
                     height: 6,
                     decoration: const BoxDecoration(
@@ -160,10 +238,10 @@ class WebViewScreenViewModel extends BaseViewModel {
                     child: Text(
                       sec.text,
                       style: const TextStyle(
-                        fontFamily: FontRes.regular,
+                        fontFamily: FontRes.medium,
                         fontSize: 14,
                         color: ColorRes.dimGrey3,
-                        height: 1.6,
+                        height: 1.5,
                       ),
                     ),
                   ),
@@ -171,13 +249,20 @@ class WebViewScreenViewModel extends BaseViewModel {
               ),
             );
           } else {
-            return Text(
-              sec.text,
-              style: const TextStyle(
-                fontFamily: FontRes.regular,
-                fontSize: 14,
-                color: ColorRes.dimGrey3,
-                height: 1.6,
+            return Container(
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Text(
+                sec.text,
+                style: const TextStyle(
+                  fontFamily: FontRes.regular,
+                  fontSize: 14,
+                  color: ColorRes.dimGrey3,
+                  height: 1.6,
+                ),
               ),
             );
           }
@@ -188,9 +273,19 @@ class WebViewScreenViewModel extends BaseViewModel {
 
   List<_ParsedSection> _parseHtmlIntoSections(String html) {
     final List<_ParsedSection> list = [];
-    final text = html
+    String text = html
         .replaceAll(RegExp(r'<\/?div[^>]*>'), '\n')
+        .replaceAll(RegExp(r'<\/?p[^>]*>'), '\n')
+        .replaceAll(RegExp(r'<br\s*\/?>'), '\n')
+        .replaceAll(RegExp(r'<h[1-6][^>]*>'), '\n### ')
+        .replaceAll(RegExp(r'<\/h[1-6]>'), '\n')
+        .replaceAll(RegExp(r'<li>'), '\n• ')
+        .replaceAll(RegExp(r'<\/li>'), '\n')
+        .replaceAll(RegExp(r'<\/?ul[^>]*>'), '\n')
+        .replaceAll(RegExp(r'<\/?ol[^>]*>'), '\n')
         .replaceAll(RegExp(r'<\/?span[^>]*>'), '')
+        .replaceAll(RegExp(r'<\/?strong[^>]*>'), '')
+        .replaceAll(RegExp(r'<\/?b[^>]*>'), '')
         .replaceAll('&nbsp;', ' ')
         .replaceAll('&amp;', '&')
         .replaceAll('&quot;', '"')
@@ -198,27 +293,21 @@ class WebViewScreenViewModel extends BaseViewModel {
 
     final lines = text.split('\n');
     for (var line in lines) {
-      String trimmed = line.trim();
+      String trimmed = line.replaceAll(RegExp(r'<[^>]*>'), '').trim();
       if (trimmed.isEmpty) continue;
 
-      if (trimmed.startsWith('<h3>') || trimmed.startsWith('<h2>') || trimmed.startsWith('<h1>')) {
-        final content = trimmed.replaceAll(RegExp(r'<[^>]*>'), '').trim();
+      if (trimmed.startsWith('###')) {
+        final content = trimmed.replaceAll('###', '').trim();
         if (content.isNotEmpty) {
           list.add(_ParsedSection(_SectionType.heading, content));
         }
-      } else if (trimmed.startsWith('<li>') || trimmed.contains('<li>')) {
-        final items = trimmed.split('<li>');
-        for (var it in items) {
-          final c = it.replaceAll(RegExp(r'<[^>]*>'), '').trim();
-          if (c.isNotEmpty) {
-            list.add(_ParsedSection(_SectionType.bullet, c));
-          }
+      } else if (trimmed.startsWith('•') || trimmed.startsWith('-')) {
+        final content = trimmed.replaceFirst(RegExp(r'^[•\-]\s*'), '').trim();
+        if (content.isNotEmpty) {
+          list.add(_ParsedSection(_SectionType.bullet, content));
         }
       } else {
-        final content = trimmed.replaceAll(RegExp(r'<[^>]*>'), '').trim();
-        if (content.isNotEmpty) {
-          list.add(_ParsedSection(_SectionType.paragraph, content));
-        }
+        list.add(_ParsedSection(_SectionType.paragraph, trimmed));
       }
     }
     return list;

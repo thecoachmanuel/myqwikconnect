@@ -25,27 +25,34 @@ class RandomsSearchScreen extends StatelessWidget {
       builder: (context, model, child) {
         return Scaffold(
           backgroundColor: ColorRes.white,
-          body: Column(
-            children: [
-              RandomSearchTopBarArea(onBackBtnTap: model.onBackBtnTap),
-              const SizedBox(height: 27),
-              ProfilePicArea(profileImage: profileImage, model: model),
-              model.isLoading
-                  ? Text(
-                      S.current.searching,
-                      style: const TextStyle(
-                        fontFamily: FontRes.bold,
-                        fontSize: 22,
-                        color: ColorRes.davyGrey,
-                      ),
-                    )
-                  : const SizedBox(),
-              BottomArea(
-                onCancelTap: model.onCancelTap,
-                onNextTap: model.onNextTap,
-                isLoading: model.isLoading,
+          body: SafeArea(
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 480),
+                child: Column(
+                  children: [
+                    RandomSearchTopBarArea(onBackBtnTap: model.onBackBtnTap),
+                    const SizedBox(height: 20),
+                    ProfilePicArea(profileImage: profileImage, model: model),
+                    model.isLoading
+                        ? Text(
+                            S.current.searching,
+                            style: const TextStyle(
+                              fontFamily: FontRes.bold,
+                              fontSize: 22,
+                              color: ColorRes.davyGrey,
+                            ),
+                          )
+                        : const SizedBox(),
+                    BottomArea(
+                      onCancelTap: model.onCancelTap,
+                      onNextTap: model.onNextTap,
+                      isLoading: model.isLoading,
+                    ),
+                  ],
+                ),
               ),
-            ],
+            ),
           ),
         );
       },

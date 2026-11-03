@@ -6,6 +6,7 @@ import 'package:get/get.dart';
 import 'package:orange_ui/common/button/custom_text_button.dart';
 import 'package:orange_ui/common/button/round_icon_button.dart';
 import 'package:orange_ui/generated/l10n.dart';
+import 'package:orange_ui/model/get_package.dart';
 import 'package:orange_ui/screen/subscription_sheet/subscription_sheet_controller.dart';
 import 'package:orange_ui/screen/subscription_sheet/widget/your_are_pro_member.dart';
 import 'package:orange_ui/service/session_manager.dart';
@@ -120,27 +121,65 @@ class SubscriptionSheet extends StatelessWidget {
                           Obx(
                             () {
                               if (isSubscribe.value) return const SizedBox();
+                              if (controller.packages.isNotEmpty) {
+                                return Column(
+                                  children: List.generate(
+                                    controller.packages.length,
+                                    (index) {
+                                      Package package = controller.packages[index];
+                                      return Obx(() {
+                                        bool isSelected = controller
+                                                .selectedPackage.value?.identifier
+                                                .trim() ==
+                                            package.identifier.trim();
+
+                                        return SubscriptionCard(
+                                          title: package.getDetail.title,
+                                          price: package.storeProduct.priceString,
+                                          isBestChoice: index == 0,
+                                          onTap: () => controller
+                                              .onSubscriptionTap(package),
+                                          isSelected: isSelected,
+                                        );
+                                      });
+                                    },
+                                  ),
+                                );
+                              }
+
+                              // Fallback to Admin Packages (Synced with Admin Dashboard & Paystack)
+                              final list = controller.adminPackages.isNotEmpty
+                                  ? controller.adminPackages
+                                  : [
+                                      GetPackageData(id: 1, playid: 'pkg_1m', months: 1, price: '5000'),
+                                      GetPackageData(id: 2, playid: 'pkg_3m', months: 3, price: '12500'),
+                                      GetPackageData(id: 3, playid: 'pkg_12m', months: 12, price: '42000'),
+                                    ];
+
                               return Column(
                                 children: List.generate(
-                                  controller.packages.length,
+                                  list.length,
                                   (index) {
-                                    Package package =
-                                        controller.packages[index];
-                                    return Obx(() {
-                                      bool isSelected = controller
-                                              .selectedPackage.value?.identifier
-                                              .trim() ==
-                                          package.identifier.trim();
+                                    final pkg = list[index];
+                                    final isSelected = controller.selectedAdminPackage.value?.id == pkg.id ||
+                                        (controller.selectedAdminPackage.value == null && index == 0);
+                                    final months = pkg.months ?? 1;
+                                    final title = months == 1
+                                        ? '1 Month VIP'
+                                        : months == 12
+                                            ? '1 Year VIP Pass'
+                                            : '$months Months VIP';
+                                    final formattedPrice = '₦${pkg.price ?? '5000'}';
 
-                                      return SubscriptionCard(
-                                        title: package.getDetail.title,
-                                        price: package.storeProduct.priceString,
-                                        isBestChoice: index == 0,
-                                        onTap: () => controller
-                                            .onSubscriptionTap(package),
-                                        isSelected: isSelected,
-                                      );
-                                    });
+                                    return SubscriptionCard(
+                                      title: title,
+                                      price: formattedPrice,
+                                      isBestChoice: index == 1 || months == 3,
+                                      isSelected: isSelected,
+                                      onTap: () {
+                                        controller.selectedAdminPackage.value = pkg;
+                                      },
+                                    );
                                   },
                                 ),
                               );

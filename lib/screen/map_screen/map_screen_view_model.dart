@@ -76,6 +76,10 @@ class MapScreenViewModel extends BaseViewModel {
         position = pos;
         center = LatLng(pos.latitude, pos.longitude);
         SessionManager.instance.setLatLng(value: center);
+        ApiProvider().updateProfile(
+          latitude: pos.latitude.toString(),
+          longitude: pos.longitude.toString(),
+        );
         getUserByCoordinatesApiCall(
             latitude: pos.latitude, longitude: pos.longitude, km: selectedDistance);
         try {
@@ -92,6 +96,11 @@ class MapScreenViewModel extends BaseViewModel {
       if (pos != null) {
         position = pos;
         center = LatLng(pos.latitude, pos.longitude);
+        SessionManager.instance.setLatLng(value: center);
+        ApiProvider().updateProfile(
+          latitude: pos.latitude.toString(),
+          longitude: pos.longitude.toString(),
+        );
         try {
           mapController.animateCamera(CameraUpdate.newCameraPosition(
             CameraPosition(target: center, zoom: getZoomLevel(selectedDistance.toDouble())),

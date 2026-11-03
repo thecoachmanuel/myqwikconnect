@@ -21,11 +21,15 @@ class ProfilePicArea extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final double cardWidth = (Get.width * 0.85).clamp(280.0, 420.0);
+    final double avatarSize = (Get.width / 3).clamp(100.0, 140.0);
+    final double cardHeight = (Get.height * 0.58).clamp(380.0, 520.0);
+
     return Expanded(
       child: model.isLoading
           ? Container(
-              width: Get.width,
-              height: Get.height / 2,
+              width: cardWidth,
+              height: cardHeight,
               decoration: const BoxDecoration(
                 image: DecorationImage(
                   fit: BoxFit.cover,
@@ -35,16 +39,16 @@ class ProfilePicArea extends StatelessWidget {
               child: RipplesAnimation(
                 child: CustomImage(
                     image: profileImage,
-                    height: Get.width / 3,
-                    width: Get.width / 3,
+                    height: avatarSize,
+                    width: avatarSize,
                     fit: BoxFit.cover,
                     radius: 360),
               ))
           : model.userData == null
               ? CommonUI.noData()
               : Container(
-                  width: Get.width / 1.2,
-                  height: Get.height / 1.6,
+                  width: cardWidth,
+                  height: cardHeight,
                   decoration:
                       BoxDecoration(borderRadius: BorderRadius.circular(20)),
                   child: Stack(

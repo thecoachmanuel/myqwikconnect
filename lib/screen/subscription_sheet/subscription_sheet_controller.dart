@@ -117,8 +117,10 @@ class SubscriptionSheetController extends GetxController {
               user?.isVerified = 3;
               SessionManager.instance.setUser(user);
               isSubscribe.value = true;
+              ApiProvider().updateProfile(isVerified: 3);
+              SessionManager.instance.updateFirebase();
               CommonUI.snackBar(
-                  message: 'Subscription activated successfully!');
+                  message: 'VIP Subscription activated successfully!');
               Get.back(result: true);
             } else {
               CommonUI.snackBar(

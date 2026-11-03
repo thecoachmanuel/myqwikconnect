@@ -32,6 +32,7 @@ import 'package:orange_ui/utils/app_res.dart';
 import 'package:orange_ui/utils/color_res.dart';
 import 'package:orange_ui/utils/firebase_res.dart';
 import 'package:stacked/stacked.dart';
+import 'package:video_compress/video_compress.dart';
 
 class ChatScreenViewModel extends BaseViewModel {
   var db = FirebaseFirestore.instance;
@@ -743,13 +744,38 @@ class ChatScreenViewModel extends BaseViewModel {
 
     final XFile? picked = await picker.pickVideo(
       source: type == 0 ? ImageSource.gallery : ImageSource.camera,
-      maxDuration: const Duration(seconds: 60),
+      maxDuration: const Duration(seconds: 120),
     );
 
     if (picked == null || picked.path.isEmpty) return;
 
-    final videoBytes = await picked.readAsBytes();
-    final sizeInMb = videoBytes.length / (1024 * 1024);
+    File effectiveVideoFile = File(picked.path);
+    Uint8List effectiveVideoBytes = await picked.readAsBytes();
+    String videoFileName = picked.name;
+
+    // WhatsApp-standard compression for video uploads on mobile
+    if (!kIsWeb) {
+      try {
+        CommonUI.lottieLoader();
+        final MediaInfo? info = await VideoCompress.compressVideo(
+          picked.path,
+          quality: VideoQuality.MediumQuality,
+          deleteOrigin: false,
+          includeAudio: true,
+        );
+        Get.back();
+        if (info != null && info.file != null && info.file!.existsSync()) {
+          effectiveVideoFile = info.file!;
+          effectiveVideoBytes = await info.file!.readAsBytes();
+          videoFileName = info.file!.path.split(Platform.pathSeparator).last;
+        }
+      } catch (e) {
+        Get.back();
+        debugPrint('VideoCompress error: $e');
+      }
+    }
+
+    final sizeInMb = effectiveVideoBytes.length / (1024 * 1024);
 
     if (sizeInMb > AppRes.maxVideoUploadSize) {
       Get.dialog(VideoUploadDialog(
@@ -761,25 +787,30 @@ class ChatScreenViewModel extends BaseViewModel {
       return;
     }
 
-    final thumbnail = await CommonFun.getFileThumbnail(picked.path);
+    File? thumbnail;
+    try {
+      thumbnail = await CommonFun.getFileThumbnail(effectiveVideoFile.path);
+    } catch (_) {}
 
     Get.bottomSheet(
       ImageVideoSendSheet(
-        image: thumbnail,
+        image: thumbnail ?? effectiveVideoFile,
+        videoPath: effectiveVideoFile.path,
+        isVideo: true,
         selectedItem: selectedItem,
         onSendBtnClick: (msg, _) {
           Get.back(); // Close sheet immediately
           _sendOptimisticMedia(
             msgType: FirebaseRes.video,
-            localPath: thumbnail.path,
-            localVideoPath: picked.path,
+            localPath: thumbnail?.path ?? effectiveVideoFile.path,
+            localVideoPath: effectiveVideoFile.path,
             caption: msg,
             uploadCallback: () async {
               // 1. Upload video file first
               final videoRes = await ApiProvider().getStoreFileGivePath(
-                image: picked,
-                bytes: videoBytes,
-                filename: picked.name,
+                image: XFile(effectiveVideoFile.path),
+                bytes: effectiveVideoBytes,
+                filename: videoFileName,
               );
 
               if (videoRes.status != true || (videoRes.path ?? '').isEmpty) {
@@ -791,8 +822,8 @@ class ChatScreenViewModel extends BaseViewModel {
               try {
                 if (!kIsWeb && thumbnail != null && thumbnail.existsSync()) {
                   final thumbRes = await ApiProvider().getStoreFileGivePath(
-                    image: thumbnail,
-                    filename: 'thumb_${picked.name}.jpg',
+                    image: XFile(thumbnail.path),
+                    filename: 'thumb_$videoFileName.jpg',
                   );
                   if (thumbRes.status == true && (thumbRes.path ?? '').isNotEmpty) {
                     thumbUrl = thumbRes.path!;

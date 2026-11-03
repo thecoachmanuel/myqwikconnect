@@ -33,6 +33,7 @@ class DashboardScreenViewModel extends BaseViewModel
   int unreadNotificationCount = 0;
   int unreadMessageCount = 0;
   StreamSubscription<QuerySnapshot<Conversation>>? chatBadgeSubscription;
+  Timer? notificationPollTimer;
   UserData? userData;
 
   Appdata? settingAppData = SessionManager.instance.getSettings()?.appdata;
@@ -62,6 +63,10 @@ class DashboardScreenViewModel extends BaseViewModel
     initBranch();
     getProfileApiCall();
     fetchUnreadNotifications();
+    notificationPollTimer?.cancel();
+    notificationPollTimer = Timer.periodic(const Duration(seconds: 15), (_) {
+      fetchUnreadNotifications();
+    });
 
     final uid = cachedUser.id ?? SessionManager.instance.getUserID();
     if (uid > 0) {
@@ -212,6 +217,7 @@ class DashboardScreenViewModel extends BaseViewModel
 
   @override
   void dispose() {
+    notificationPollTimer?.cancel();
     chatBadgeSubscription?.cancel();
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();

@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <base href="/">
+  <base href="$FLUTTER_BASE_HREF">
 
   <meta charset="UTF-8">
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate, max-age=0">
@@ -88,14 +88,34 @@
       border-radius: 50%;
       animation: spin 0.8s linear infinite;
     }
-    @keyframes spin {
-      to { transform: rotate(360deg); }
+    #update-banner {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 999999;
+      background: linear-gradient(90deg, #FF6F43, #FE1B03);
+      color: white;
+      text-align: center;
+      padding: 12px 16px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+      animation: slideDown 0.3s ease-out;
+    }
+    @keyframes slideDown {
+      from { transform: translateY(-100%); }
+      to   { transform: translateY(0); }
     }
   </style>
 </head>
 <body>
   <div id="loading-indicator">
     <div class="spinner"></div>
+  </div>
+  <div id="update-banner" onclick="window.location.reload(true)">
+    🚀 New update available — tap to refresh!
   </div>
 
   <script>
@@ -132,7 +152,7 @@
           var savedBuild = localStorage.getItem(BUILD_KEY);
           if (savedBuild && savedBuild !== currentBuild) {
             isUpdating = true;
-            console.log('[Orange Update] New build detected:', currentBuild, '(current:', savedBuild + '). Purging caches...');
+            console.log('[QwikConnect] New build detected:', currentBuild, '← was:', savedBuild);
             localStorage.setItem(BUILD_KEY, currentBuild);
 
             // Purge all Service Worker caches
@@ -140,30 +160,28 @@
               try {
                 var keys = await caches.keys();
                 await Promise.all(keys.map(function(k) { return caches.delete(k); }));
-              } catch (e) {
-                console.warn('[Orange Update] Cache purge error:', e);
-              }
+              } catch (e) {}
             }
 
-            // Unregister all old service workers to guarantee clean boot
+            // Unregister old service workers
             if ('serviceWorker' in navigator) {
               try {
                 var registrations = await navigator.serviceWorker.getRegistrations();
                 for (var i = 0; i < registrations.length; i++) {
                   await registrations[i].unregister();
                 }
-              } catch (e) {
-                console.warn('[Orange Update] SW unregister error:', e);
-              }
+              } catch (e) {}
             }
 
-            // Instant reload with cache bust (respecting standalone PWA mode)
-            var isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
-            if (isStandalone) {
-              window.location.reload();
-            } else {
-              window.location.replace(window.location.origin + window.location.pathname + '?v=' + currentBuild + (window.location.hash || ''));
-            }
+            // Show update banner — tap to reload (works in PWA standalone too)
+            var banner = document.getElementById('update-banner');
+            if (banner) { banner.style.display = 'block'; }
+
+            // Auto-reload after 1.5s so most users get it instantly
+            setTimeout(function() {
+              var url = window.location.origin + window.location.pathname + '?v=' + currentBuild;
+              window.location.replace(url);
+            }, 1500);
             return;
           }
 

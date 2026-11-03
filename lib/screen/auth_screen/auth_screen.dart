@@ -44,19 +44,28 @@ class AuthScreen extends StatelessWidget {
                       padding: const EdgeInsets.only(top: 8),
                       child: Column(
                         children: [
-                          // Shared wordmark widget — white, larger than navbar
-                          const QwikConnectLogo(fontSize: 46, isWhite: true),
+                          // Exact Explore screen logo — Qwik Orange Gradient, Connect Black, a little bigger
+                          const QwikConnectLogo(
+                            fontSize: 44,
+                            connectColor: ColorRes.black,
+                          ),
                           const SizedBox(height: 6),
                           // Slogan
                           Text(
                             'Where young professionals meet real connections.',
                             textAlign: TextAlign.center,
                             style: TextStyle(
-                              fontFamily: FontRes.regular,
+                              fontFamily: FontRes.semiBold,
                               fontSize: 13.5,
-                              color: Colors.white.withValues(alpha: 0.88),
+                              color: ColorRes.black.withValues(alpha: 0.85),
                               letterSpacing: 0.2,
                               height: 1.4,
+                              shadows: const [
+                                Shadow(
+                                  color: Colors.white,
+                                  blurRadius: 8,
+                                ),
+                              ],
                             ),
                           ),
                         ],

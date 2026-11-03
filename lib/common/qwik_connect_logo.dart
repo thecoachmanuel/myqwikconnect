@@ -1,95 +1,66 @@
 import 'package:flutter/material.dart';
+import 'package:orange_ui/utils/color_res.dart';
 import 'package:orange_ui/utils/font_res.dart';
 
-/// Reusable QwikConnect wordmark logo.
-///
-/// [fontSize]   – base size; "Qwik" gets full size, "Connect" same size.
-/// [isWhite]    – true  → both words white (for dark/image backgrounds, e.g. Auth screen)
-///              – false → "Qwik" orange gradient, "Connect" dark (for light bg, e.g. Navbar)
+/// Reusable QwikConnect wordmark logo:
+/// "Qwik" is an ultra-bold Orange Gradient (#FF6F43 -> #FF4B1F -> #FE1B03)
+/// "Connect" is a bold solid Black (#000000)
 class QwikConnectLogo extends StatelessWidget {
   final double fontSize;
-  final bool isWhite;
+  final Color connectColor;
+  final List<Shadow>? shadows;
 
   const QwikConnectLogo({
     super.key,
     this.fontSize = 28,
-    this.isWhite = false,
+    this.connectColor = ColorRes.black,
+    this.shadows,
   });
 
   @override
   Widget build(BuildContext context) {
-    if (isWhite) {
-      // Auth screen: both words plain white, Qwik ultra-bold
-      return Text.rich(
-        TextSpan(
-          children: [
-            TextSpan(
-              text: 'Qwik',
-              style: TextStyle(
-                fontFamily: FontRes.bold,
-                fontSize: fontSize,
-                fontWeight: FontWeight.w900,
-                letterSpacing: -1.2,
-                color: Colors.white,
-                height: 1,
-              ),
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.baseline,
+      textBaseline: TextBaseline.alphabetic,
+      children: [
+        ShaderMask(
+          blendMode: BlendMode.srcIn,
+          shaderCallback: (bounds) => const LinearGradient(
+            colors: [
+              Color(0xFFFF6F43),
+              Color(0xFFFF4B1F),
+              Color(0xFFFE1B03),
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ).createShader(bounds),
+          child: Text(
+            'Qwik',
+            style: TextStyle(
+              fontFamily: FontRes.bold,
+              fontSize: fontSize,
+              fontWeight: FontWeight.w900,
+              letterSpacing: -1.2,
+              color: Colors.white,
+              height: 1.0,
+              shadows: shadows,
             ),
-            TextSpan(
-              text: 'Connect',
-              style: TextStyle(
-                fontFamily: FontRes.bold,
-                fontSize: fontSize,
-                fontWeight: FontWeight.w600,
-                letterSpacing: -1.2,
-                color: Colors.white,
-                height: 1,
-              ),
-            ),
-          ],
+          ),
         ),
-      );
-    }
-
-    // Explore / navbar: "Qwik" in orange gradient, "Connect" dark
-    return ShaderMask(
-      blendMode: BlendMode.srcIn,
-      shaderCallback: (bounds) => const LinearGradient(
-        colors: [Color(0xFFFF6F43), Color(0xFFFF4B1F), Color(0xFFFE1B03)],
-        begin: Alignment.centerLeft,
-        end: Alignment.centerRight,
-      ).createShader(
-        // only shade the "Qwik" portion (roughly 40% of the total width)
-        Rect.fromLTWH(0, 0, bounds.width * 0.44, bounds.height),
-      ),
-      child: Text.rich(
-        TextSpan(
-          children: [
-            TextSpan(
-              text: 'Qwik',
-              style: TextStyle(
-                fontFamily: FontRes.bold,
-                fontSize: fontSize,
-                fontWeight: FontWeight.w900,
-                letterSpacing: -1.2,
-                color: const Color(0xFFFF6F43), // caught by ShaderMask
-                height: 1,
-              ),
-            ),
-            TextSpan(
-              text: 'Connect',
-              style: TextStyle(
-                fontFamily: FontRes.bold,
-                fontSize: fontSize,
-                fontWeight: FontWeight.w600,
-                letterSpacing: -1.2,
-                color: const Color(0xFF2D2D2D), // dark, ShaderMask won't reach
-                height: 1,
-              ),
-            ),
-          ],
+        Text(
+          'Connect',
+          style: TextStyle(
+            fontFamily: FontRes.bold,
+            fontSize: fontSize,
+            fontWeight: FontWeight.w700,
+            letterSpacing: -1.2,
+            color: connectColor,
+            height: 1.0,
+            shadows: shadows,
+          ),
         ),
-      ),
+      ],
     );
   }
 }
-

@@ -33,17 +33,22 @@ class OptionalScreenViewModel extends BaseViewModel {
   Rx<PackageInfo?> packageInfo = Rx(null);
 
   void init() async {
-    packageInfo.value = await PackageInfo.fromPlatform();
-
-    log("${packageInfo.value?.version} ${packageInfo.value?.data} ${packageInfo.value?.appName} ${packageInfo.value?.buildNumber}");
+    try {
+      packageInfo.value = await PackageInfo.fromPlatform();
+      log("${packageInfo.value?.version} ${packageInfo.value?.data} ${packageInfo.value?.appName} ${packageInfo.value?.buildNumber}");
+    } catch (e) {
+      log("Error loading package info: $e");
+    }
 
     // Refresh profile and wallet from server
-    ApiProvider().fetchMyUserProfile().then((value) {
-      if (value.status == true && value.data != null) {
-        userData = value.data;
-        notifyListeners();
-      }
-    });
+    try {
+      ApiProvider().fetchMyUserProfile().then((value) {
+        if (value.status == true && value.data != null) {
+          userData = value.data;
+          notifyListeners();
+        }
+      });
+    } catch (_) {}
   }
 
   void onLiveStreamTap() {

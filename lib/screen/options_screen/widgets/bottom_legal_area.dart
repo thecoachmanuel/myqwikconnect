@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:orange_ui/common/qwik_connect_logo.dart';
 import 'package:orange_ui/generated/l10n.dart';
 import 'package:orange_ui/screen/options_screen/options_screen.dart';
 import 'package:orange_ui/screen/options_screen/options_screen_view_model.dart';
 import 'package:orange_ui/screen/options_screen/widgets/text_with_arrow_card.dart';
-import 'package:orange_ui/utils/asset_res.dart';
 import 'package:orange_ui/utils/color_res.dart';
 import 'package:orange_ui/utils/font_res.dart';
 
@@ -58,11 +58,12 @@ class BottomLegalArea extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 20),
-        Center(child: Image.asset(AssetRes.themeLabel, height: 28, width: 93)),
+        // Logo — use widget so it's always correct regardless of asset dimensions
+        const Center(child: QwikConnectLogo(fontSize: 22, connectColor: ColorRes.black)),
         Obx(
           () => Center(
               child: Text(
-                  "${S.current.versionText} ${model.packageInfo.value?.version}",
+                  "${S.current.versionText} ${model.packageInfo.value?.version ?? '1.0.1'}",
                   style:
                       const TextStyle(fontSize: 12, color: ColorRes.grey20))),
         ),

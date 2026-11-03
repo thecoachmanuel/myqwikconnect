@@ -32,7 +32,7 @@ class DashboardTopBar extends StatelessWidget {
         children: [
           InkWell(
             onTap: onTitleTap,
-            child: const QwikConnectLogo(fontSize: 28, isWhite: false),
+            child: const QwikConnectLogo(fontSize: 30, connectColor: ColorRes.black),
           ),
           const Spacer(),
           Row(

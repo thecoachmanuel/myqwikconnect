@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:orange_ui/common/button/round_icon_button.dart';
+import 'package:orange_ui/common/qwik_connect_logo.dart';
 import 'package:orange_ui/generated/l10n.dart';
 import 'package:orange_ui/utils/asset_res.dart';
 import 'package:orange_ui/utils/color_res.dart';
@@ -31,7 +32,7 @@ class DashboardTopBar extends StatelessWidget {
         children: [
           InkWell(
             onTap: onTitleTap,
-            child: Image.asset(AssetRes.themeLabel, height: 42),
+            child: const QwikConnectLogo(fontSize: 28, isWhite: false),
           ),
           const Spacer(),
           Row(

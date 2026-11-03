@@ -160,68 +160,44 @@ class LiveGridScreenViewModel extends BaseViewModel {
   }
 
   void onLiveStreamProfileTap(LiveStreamUser? user) {
+    if (user == null) return;
     CommonFun.isBloc(
       userData,
       onCompletion: () {
+        // If Agora customer credentials are not configured, skip external REST check
+        // and allow user to join directly via Firestore live stream presence
+        final bool hasAgoraCredentials = ConstRes.customerId.trim().isNotEmpty &&
+            ConstRes.customerSecret.trim().isNotEmpty;
+
+        if (!hasAgoraCredentials) {
+          _proceedToJoinLiveStream(user);
+          return;
+        }
+
         String authString = '${ConstRes.customerId}:${ConstRes.customerSecret}';
         String authToken = base64.encode(authString.codeUnits);
         ApiProvider()
             .agoraListStreamingCheck(
-                user?.hostIdentity ?? '', authToken, ConstRes.agoraAppId)
+                user.hostIdentity ?? '', authToken, ConstRes.agoraAppId)
             .then((value) {
           if (value.data?.channelExist == true ||
-              value.data!.broadcasters!.isNotEmpty) {
-            if (userData?.isFake != 1) {
-              if ((settingAppData?.liveWatchingPrice ?? 0) <= 0) {
-                onImageTap(user);
-              } else {
-                if ((settingAppData?.liveWatchingPrice ?? 0) < walletCoin) {
-                  Get.dialog(ReverseSwipeDialog(
-                      onCancelTap: onBackBtnTap,
-                      onContinueTap: (isSelected) {
-                        Get.back();
-                        minusCoinApi().then((value) {
-                          onImageTap(user);
-                        });
-                      },
-                      isCheckBoxVisible: false,
-                      walletCoin: walletCoin,
-                      title1: S.current.liveCap,
-                      title2: S.current.streamCap,
-                      dialogDisc: AppRes.liveStreamDisc(
-                          settingAppData?.liveWatchingPrice ?? 0),
-                      coinPrice: '${settingAppData?.liveWatchingPrice ?? 0}'));
-                } else {
-                  Get.dialog(
-                    EmptyWalletDialog(
-                      onCancelTap: onBackBtnTap,
-                      onContinueTap: () {
-                        Get.back();
-                        Get.bottomSheet(
-                          const BottomDiamondShop(),
-                        );
-                      },
-                      walletCoin: walletCoin,
-                    ),
-                  );
-                }
-              }
-            } else {
-              onImageTap(user);
-            }
+              (value.data?.broadcasters != null &&
+                  value.data!.broadcasters!.isNotEmpty)) {
+            _proceedToJoinLiveStream(user);
           } else {
+            // Only end if explicitly confirmed empty by Agora with valid credentials
             Get.bottomSheet(LiveStreamEndSheet(
-              name: user?.fullName ?? '',
+              name: user.fullName ?? '',
               onExitBtn: () async {
                 Get.back();
                 db
                     .collection(FirebaseRes.liveHostList)
-                    .doc('${user?.userId}')
+                    .doc('${user.userId}')
                     .delete();
                 final batch = db.batch();
                 var collection = db
                     .collection(FirebaseRes.liveHostList)
-                    .doc('${user?.userId}')
+                    .doc('${user.userId}')
                     .collection(FirebaseRes.comments);
                 var snapshots = await collection.get();
                 for (var doc in snapshots.docs) {
@@ -231,9 +207,53 @@ class LiveGridScreenViewModel extends BaseViewModel {
               },
             ));
           }
+        }).catchError((_) {
+          // In case of Agora REST API connection failure or 401, don't block user
+          _proceedToJoinLiveStream(user);
         });
       },
     );
+  }
+
+  void _proceedToJoinLiveStream(LiveStreamUser user) {
+    if (userData?.isFake != 1) {
+      if ((settingAppData?.liveWatchingPrice ?? 0) <= 0) {
+        onImageTap(user);
+      } else {
+        if ((settingAppData?.liveWatchingPrice ?? 0) < walletCoin) {
+          Get.dialog(ReverseSwipeDialog(
+              onCancelTap: onBackBtnTap,
+              onContinueTap: (isSelected) {
+                Get.back();
+                minusCoinApi().then((value) {
+                  onImageTap(user);
+                });
+              },
+              isCheckBoxVisible: false,
+              walletCoin: walletCoin,
+              title1: S.current.liveCap,
+              title2: S.current.streamCap,
+              dialogDisc: AppRes.liveStreamDisc(
+                  settingAppData?.liveWatchingPrice ?? 0),
+              coinPrice: '${settingAppData?.liveWatchingPrice ?? 0}'));
+        } else {
+          Get.dialog(
+            EmptyWalletDialog(
+              onCancelTap: onBackBtnTap,
+              onContinueTap: () {
+                Get.back();
+                Get.bottomSheet(
+                  const BottomDiamondShop(),
+                );
+              },
+              walletCoin: walletCoin,
+            ),
+          );
+        }
+      }
+    } else {
+      onImageTap(user);
+    }
   }
 
   Future<void> getProfileAPi() async {
@@ -257,6 +277,7 @@ class LiveGridScreenViewModel extends BaseViewModel {
   }
 
   void onImageTap(LiveStreamUser? liveStreamUser) {
+    if (liveStreamUser == null) return;
     int price = settingAppData?.liveWatchingPrice ?? 0;
     num finalPriceAfterCommission = price;
     int commissionPercent = settingAppData?.streamAndGiftCommission ?? 0;
@@ -266,11 +287,11 @@ class LiveGridScreenViewModel extends BaseViewModel {
     }
 
     userEmail.add(userData?.identity);
-    final liveStreamUserId = liveStreamUser?.userId;
+    final liveStreamUserId = liveStreamUser.userId;
     if (liveStreamUserId != null) {
-      final newWatchingCount = (liveStreamUser?.watchingCount ?? 0) + 1;
+      final newWatchingCount = (liveStreamUser.watchingCount ?? 0) + 1;
       final newCollectedDiamond =
-          (liveStreamUser?.collectedDiamond ?? 0) + finalPriceAfterCommission;
+          (liveStreamUser.collectedDiamond ?? 0) + finalPriceAfterCommission;
 
       db.collection(FirebaseRes.liveHostList).doc('$liveStreamUserId').update({
         FirebaseRes.watchingCount: newWatchingCount,
@@ -287,7 +308,25 @@ class LiveGridScreenViewModel extends BaseViewModel {
         );
       }).catchError((error) {
         log("Error occurred while updating live stream data: $error");
+        // Ensure user is still navigated into stream even if stat update fails
+        Get.to(() => PersonStreamingScreen(
+              liveStreamUser: liveStreamUser,
+              settingAppData: settingAppData,
+            ))?.then(
+          (value) {
+            getProfileAPi();
+          },
+        );
       });
+    } else {
+      Get.to(() => PersonStreamingScreen(
+            liveStreamUser: liveStreamUser,
+            settingAppData: settingAppData,
+          ))?.then(
+        (value) {
+          getProfileAPi();
+        },
+      );
     }
   }
 

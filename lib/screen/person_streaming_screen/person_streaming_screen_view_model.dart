@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:orange_ui/api_provider/api_provider.dart';
 import 'package:orange_ui/common/common_ui.dart';
+import 'package:orange_ui/common/custom_image.dart';
 import 'package:orange_ui/generated/l10n.dart';
 import 'package:orange_ui/model/chat_and_live_stream/live_stream.dart';
 import 'package:orange_ui/model/setting_model.dart';
@@ -21,6 +22,7 @@ import 'package:orange_ui/utils/app_res.dart';
 import 'package:orange_ui/utils/color_res.dart';
 import 'package:orange_ui/utils/const_res.dart';
 import 'package:orange_ui/utils/firebase_res.dart';
+import 'package:orange_ui/utils/font_res.dart';
 import 'package:stacked/stacked.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 
@@ -309,7 +311,45 @@ class PersonStreamingScreenViewModel extends BaseViewModel {
         ),
       );
     } else {
-      return CommonUI.lottieWidget();
+      return Stack(
+        fit: StackFit.expand,
+        children: [
+          CustomImage(
+            image: liveStreamUser?.userImage,
+            fullname: liveStreamUser?.fullName,
+            fit: BoxFit.cover,
+          ),
+          DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  ColorRes.black.withValues(alpha: 0.5),
+                  ColorRes.black.withValues(alpha: 0.8),
+                ],
+              ),
+            ),
+          ),
+          Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                CommonUI.lottieWidget(),
+                const SizedBox(height: 8),
+                Text(
+                  'Connecting to ${liveStreamUser?.fullName ?? "stream"}...',
+                  style: const TextStyle(
+                    color: ColorRes.white,
+                    fontFamily: FontRes.medium,
+                    fontSize: 14,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      );
     }
   }
 

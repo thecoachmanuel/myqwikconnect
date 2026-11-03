@@ -366,28 +366,32 @@ class _BottomInfoArea extends StatelessWidget {
           ),
           const SizedBox(width: 6),
           // "Join" CTA pill
-          GestureDetector(
-            onTap: onTap,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 7),
-              decoration: BoxDecoration(
-                gradient: StyleRes.linearGradient,
-                borderRadius: BorderRadius.circular(30),
-                boxShadow: [
-                  BoxShadow(
-                    color: ColorRes.themeColor.withValues(alpha: 0.4),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
+          MouseRegion(
+            cursor: SystemMouseCursors.click,
+            child: GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: onTap,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 7),
+                decoration: BoxDecoration(
+                  gradient: StyleRes.linearGradient,
+                  borderRadius: BorderRadius.circular(30),
+                  boxShadow: [
+                    BoxShadow(
+                      color: ColorRes.themeColor.withValues(alpha: 0.4),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: const Text(
+                  'Join',
+                  style: TextStyle(
+                    color: ColorRes.white,
+                    fontSize: 13,
+                    fontFamily: FontRes.bold,
+                    letterSpacing: 0.3,
                   ),
-                ],
-              ),
-              child: const Text(
-                'Join',
-                style: TextStyle(
-                  color: ColorRes.white,
-                  fontSize: 13,
-                  fontFamily: FontRes.bold,
-                  letterSpacing: 0.3,
                 ),
               ),
             ),

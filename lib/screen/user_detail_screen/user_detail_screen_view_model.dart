@@ -113,7 +113,10 @@ class UserDetailScreenViewModel extends BaseViewModel {
   void onJoinBtnTap() {
     // Extract user images and add the current user to the joined users list
     final images = otherUserData?.images;
-    joinedUsers.add(otherUserData?.identity ?? '');
+    final myUser = SessionManager.instance.getUser();
+    if (myUser?.identity != null) {
+      joinedUsers.add(myUser!.identity!);
+    }
 
     // Create a new LiveStreamUser instance
     liveStreamUser = LiveStreamUser(

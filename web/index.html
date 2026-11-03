@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <base href="$FLUTTER_BASE_HREF">
+  <base href="/">
 
   <meta charset="UTF-8">
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate, max-age=0">
@@ -79,6 +79,7 @@
       background-color: #FFFFFF;
       z-index: 99999;
       transition: opacity 0.3s ease-out;
+      pointer-events: none;
     }
     .spinner {
       width: 44px;
@@ -87,6 +88,9 @@
       border-top-color: #FE1B03;
       border-radius: 50%;
       animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
     }
     #update-banner {
       display: none;
@@ -119,7 +123,7 @@
   </div>
 
   <script>
-    window.addEventListener('flutter-first-frame', function() {
+    function removeLoader() {
       var loader = document.getElementById('loading-indicator');
       if (loader) {
         loader.style.opacity = '0';
@@ -129,16 +133,20 @@
           }
         }, 300);
       }
-    });
+    }
+    window.addEventListener('flutter-first-frame', removeLoader);
+    // Safety fallback: ensure spinner never traps the user permanently
+    setTimeout(removeLoader, 4500);
   </script>
+
+  <!-- Load Flutter Bootstrap directly so Flutter always boots immediately -->
+  <script src="flutter_bootstrap.js" async></script>
 
   <script>
     (function() {
       var BUILD_KEY = 'orange_app_build_version';
-      var isUpdating = false;
 
       async function checkVersionAndUpdate() {
-        if (isUpdating) return;
         try {
           var response = await fetch('version.json?t=' + Date.now(), {
             cache: 'no-store',
@@ -151,11 +159,10 @@
 
           var savedBuild = localStorage.getItem(BUILD_KEY);
           if (savedBuild && savedBuild !== currentBuild) {
-            isUpdating = true;
             console.log('[QwikConnect] New build detected:', currentBuild, '← was:', savedBuild);
             localStorage.setItem(BUILD_KEY, currentBuild);
 
-            // Purge all Service Worker caches
+            // Purge Service Worker caches
             if ('caches' in window) {
               try {
                 var keys = await caches.keys();
@@ -163,25 +170,9 @@
               } catch (e) {}
             }
 
-            // Unregister old service workers
-            if ('serviceWorker' in navigator) {
-              try {
-                var registrations = await navigator.serviceWorker.getRegistrations();
-                for (var i = 0; i < registrations.length; i++) {
-                  await registrations[i].unregister();
-                }
-              } catch (e) {}
-            }
-
-            // Show update banner — tap to reload (works in PWA standalone too)
+            // Show update banner so user can tap to get newest features
             var banner = document.getElementById('update-banner');
             if (banner) { banner.style.display = 'block'; }
-
-            // Auto-reload after 1.5s so most users get it instantly
-            setTimeout(function() {
-              var url = window.location.origin + window.location.pathname + '?v=' + currentBuild;
-              window.location.replace(url);
-            }, 1500);
             return;
           }
 
@@ -189,11 +180,11 @@
             localStorage.setItem(BUILD_KEY, currentBuild);
           }
         } catch (e) {
-          console.warn('[Orange Update] Version check skipped:', e);
+          console.warn('[QwikConnect] Version check skipped:', e);
         }
       }
 
-      // Check whenever user switches back to tab or resumes installed PWA
+      // Check on visibility change (user switching back to tab/PWA)
       document.addEventListener('visibilitychange', function() {
         if (document.visibilityState === 'visible') {
           checkVersionAndUpdate();
@@ -201,7 +192,8 @@
       });
       window.addEventListener('focus', checkVersionAndUpdate);
 
-      // Periodic check every 3 minutes
+      // Background check after app loads
+      setTimeout(checkVersionAndUpdate, 2000);
       setInterval(checkVersionAndUpdate, 180000);
 
       // Service worker handling
@@ -213,38 +205,9 @@
             if (registration.waiting) {
               registration.waiting.postMessage({ type: 'SKIP_WAITING' });
             }
-            registration.addEventListener('updatefound', function() {
-              var newWorker = registration.installing;
-              if (newWorker) {
-                newWorker.addEventListener('statechange', function() {
-                  if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                    newWorker.postMessage({ type: 'SKIP_WAITING' });
-                  }
-                });
-              }
-            });
           }
         });
-        navigator.serviceWorker.addEventListener('controllerchange', function() {
-          console.log('[Orange Update] Controller changed, refreshing...');
-          window.location.reload();
-        });
       }
-
-      // Boot app after verifying version to ensure mobile devices never run stale code
-      async function startApp() {
-        try {
-          await checkVersionAndUpdate();
-        } catch (_) {}
-
-        if (isUpdating) return;
-
-        var script = document.createElement('script');
-        script.src = 'flutter_bootstrap.js?v=' + Date.now();
-        script.async = true;
-        document.body.appendChild(script);
-      }
-      startApp();
     })();
   </script>
 

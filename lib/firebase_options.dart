@@ -23,7 +23,7 @@ class DefaultFirebaseOptions {
     appId: '1:260849839740:web:ddb869372937477ecca3f9',
     messagingSenderId: '260849839740',
     projectId: 'orange-16f8b-72bea',
-    authDomain: 'orange-16f8b-72bea.firebaseapp.com',
+    authDomain: 'qwikconnect.com.ng',
     storageBucket: 'orange-16f8b-72bea.firebasestorage.app',
     measurementId: 'G-X4CT0807L2',
   );

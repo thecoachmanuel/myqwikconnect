@@ -56,14 +56,15 @@ class AuthScreen extends StatelessWidget {
                             textAlign: TextAlign.center,
                             style: TextStyle(
                               fontFamily: FontRes.semiBold,
-                              fontSize: 13.5,
-                              color: ColorRes.black.withValues(alpha: 0.85),
-                              letterSpacing: 0.2,
-                              height: 1.4,
+                              fontSize: 16.5,
+                              color: ColorRes.white,
+                              letterSpacing: 0.3,
+                              height: 1.35,
                               shadows: const [
                                 Shadow(
-                                  color: Colors.white,
+                                  color: Colors.black54,
                                   blurRadius: 8,
+                                  offset: Offset(0, 1.5),
                                 ),
                               ],
                             ),

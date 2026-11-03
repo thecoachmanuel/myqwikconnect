@@ -24,7 +24,16 @@ class SubscriptionSheetController extends GetxController {
     super.onInit();
     final user = SessionManager.instance.getUser();
     if (user != null && user.isVerified == 3) {
-      isSubscribe.value = true;
+      // Check if subscription is expired
+      bool expired = false;
+      if (user.proExpireDate != null && user.proExpireDate!.trim().isNotEmpty) {
+        try {
+          expired = DateTime.parse(user.proExpireDate!).isBefore(DateTime.now());
+        } catch (_) {}
+      }
+      if (!expired) {
+        isSubscribe.value = true;
+      }
     }
 
     packages.value = SubscriptionManager.shared.packages;
@@ -111,6 +120,10 @@ class SubscriptionSheetController extends GetxController {
                 purchaseCallBack?.call();
                 UserData? user = SessionManager.instance.getUser();
                 user?.isVerified = 3;
+                user?.isPro = 1;
+                if (verifyRes.data != null) {
+                  user?.proExpireDate = verifyRes.data?.proExpireDate ?? verifyRes.data?.toString();
+                }
                 SessionManager.instance.setUser(user);
                 isSubscribe.value = true;
                 ApiProvider().updateProfile(isVerified: 3);
@@ -155,6 +168,10 @@ class SubscriptionSheetController extends GetxController {
               purchaseCallBack?.call();
               UserData? user = SessionManager.instance.getUser();
               user?.isVerified = 3;
+              user?.isPro = 1;
+              if (verifyRes.data != null) {
+                user?.proExpireDate = verifyRes.data?.proExpireDate;
+              }
               SessionManager.instance.setUser(user);
               isSubscribe.value = true;
               ApiProvider().updateProfile(isVerified: 3);

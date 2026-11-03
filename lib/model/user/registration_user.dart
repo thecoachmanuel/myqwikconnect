@@ -215,6 +215,8 @@ class UserData {
     isProfileComplete = json['is_profile_complete'] is int
         ? json['is_profile_complete']
         : int.tryParse(json['is_profile_complete']?.toString() ?? '');
+    isPro = json['is_pro'] is int ? json['is_pro'] : int.tryParse(json['is_pro']?.toString() ?? '');
+    proExpireDate = json['pro_expire_date']?.toString();
     if (json['images'] != null && json['images'] is List) {
       images = [];
       for (var v in json['images']) {
@@ -318,6 +320,8 @@ class UserData {
   String? city;
   String? appLanguage;
   int? isProfileComplete;
+  int? isPro;
+  String? proExpireDate;
 
   Map<String, dynamic> toJson() {
     final map = <String, dynamic>{};
@@ -377,6 +381,8 @@ class UserData {
     map['state'] = state;
     map['city'] = city;
     map['app_language'] = appLanguage;
+    map['is_pro'] = isPro;
+    map['pro_expire_date'] = proExpireDate;
     if (images != null) {
       map['images'] = images?.map((v) => v.toJson()).toList();
     }

@@ -20,7 +20,9 @@ class SubscribeCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final controller = Get.find<SubscriptionSheetController>();
-    Package package = SubscriptionManager.shared.packages.first;
+    final hasPackage = SubscriptionManager.shared.packages.isNotEmpty;
+    final Package? package =
+        hasPackage ? SubscriptionManager.shared.packages.first : null;
     return Container(
       width: double.infinity,
       margin: const EdgeInsets.symmetric(vertical: 10),
@@ -83,7 +85,7 @@ class SubscribeCard extends StatelessWidget {
                         controller.onMakePurchase(package);
                       },
                       title:
-                          '${S.of(context).upgradeFrom} ${package.storeProduct.priceString}',
+                          '${S.of(context).upgradeFrom} ${package?.storeProduct.priceString ?? ''}',
                       bgColor: ColorRes.white,
                       textColor: ColorRes.themeColor,
                       height: 60),

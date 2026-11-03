@@ -36,6 +36,14 @@ class OptionalScreenViewModel extends BaseViewModel {
     packageInfo.value = await PackageInfo.fromPlatform();
 
     log("${packageInfo.value?.version} ${packageInfo.value?.data} ${packageInfo.value?.appName} ${packageInfo.value?.buildNumber}");
+
+    // Refresh profile and wallet from server
+    ApiProvider().fetchMyUserProfile().then((value) {
+      if (value.status == true && value.data != null) {
+        userData = value.data;
+        notifyListeners();
+      }
+    });
   }
 
   void onLiveStreamTap() {

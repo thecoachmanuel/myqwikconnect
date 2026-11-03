@@ -1073,9 +1073,15 @@ class ChatScreenViewModel extends BaseViewModel {
           onCancelTap: () {
             Get.back();
           },
-          onContinueTap: () {
+          onContinueTap: () async {
             Get.back();
-            Get.bottomSheet(const BottomDiamondShop());
+            await Get.bottomSheet(const BottomDiamondShop());
+            final myUser = SessionManager.instance.getUser();
+            if (myUser != null) {
+              registrationUserData = myUser;
+              walletCoin = myUser.wallet ?? 0;
+              notifyListeners();
+            }
           },
           walletCoin: registrationUserData?.wallet ?? walletCoin),
     );

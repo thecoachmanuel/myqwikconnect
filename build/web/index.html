@@ -33,7 +33,10 @@
 
   <script src="https://maps.googleapis.com/maps/api/js?loading=async" async defer></script>
   <!-- Agora Web RTC SDK for video calling/streaming on Web -->
-  <script src="https://download.agora.io/sdk/release/iris-web-rtc_n450_w4220_0.8.6.js" async></script>
+  <script src="https://download.agora.io/sdk/release/AgoraRTC_N-4.22.0.js"></script>
+  <script src="https://download.agora.io/sdk/release/iris-web-rtc_n450_w4220_0.8.6.js"></script>
+  <!-- Paystack Inline JS for seamless in-app popup payments on Web -->
+  <script src="https://js.paystack.co/v1/inline.js"></script>
 
   <style>
     @font-face {
@@ -225,6 +228,76 @@
       }
       startApp();
     })();
+  </script>
+
+  <script>
+    // Paystack Inline JS Bridge for seamless embedded payment in Orange Web
+    window.addEventListener('orange_open_paystack', function(e) {
+      var data = {};
+      try {
+        data = typeof e.detail === 'string' ? JSON.parse(e.detail) : (e.detail || {});
+      } catch (err) {
+        console.warn('[Orange Paystack] Invalid detail payload:', err);
+      }
+
+      function sendResponse(status, ref, errMsg) {
+        window.dispatchEvent(new CustomEvent('orange_paystack_response', {
+          detail: JSON.stringify({
+            status: status,
+            reference: ref || data.ref || '',
+            message: errMsg || ''
+          })
+        }));
+      }
+
+      if (typeof PaystackPop === 'undefined') {
+        console.warn('[Orange Paystack] PaystackPop script not loaded, retrying load...');
+        var scr = document.createElement('script');
+        scr.src = 'https://js.paystack.co/v1/inline.js';
+        scr.onload = function() {
+          setupAndOpen();
+        };
+        scr.onerror = function() {
+          sendResponse('error', data.ref, 'Failed to load Paystack Inline SDK');
+        };
+        document.head.appendChild(scr);
+        return;
+      }
+
+      setupAndOpen();
+
+      function setupAndOpen() {
+        try {
+          var options = {
+            key: data.key,
+            callback: function(response) {
+              console.log('[Orange Paystack] Payment callback:', response);
+              var ref = (response && (response.reference || response.trxref)) || data.ref || '';
+              sendResponse('success', ref);
+            },
+            onClose: function() {
+              console.log('[Orange Paystack] Popup closed/cancelled by user');
+              sendResponse('cancelled', data.ref);
+            }
+          };
+
+          if (data.access_code && String(data.access_code).trim().length > 0) {
+            options.access_code = data.access_code;
+          } else {
+            options.email = data.email || 'customer@orangeapp.com';
+            options.amount = Number(data.amount) || 10000;
+            options.ref = data.ref || ('ORANGE_' + Date.now());
+            options.currency = data.currency || 'NGN';
+          }
+
+          var handler = PaystackPop.setup(options);
+          handler.openIframe();
+        } catch (err) {
+          console.error('[Orange Paystack Setup Error]', err);
+          sendResponse('error', data.ref, err.toString());
+        }
+      }
+    });
   </script>
 </body>
 </html>

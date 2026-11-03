@@ -7,6 +7,7 @@ import 'package:orange_ui/common/common_ui.dart';
 import 'package:orange_ui/generated/l10n.dart';
 import 'package:orange_ui/model/setting_model.dart';
 import 'package:orange_ui/model/user/registration_user.dart';
+import 'package:orange_ui/screen/explore_screen/widgets/reverse_swipe_dialog.dart';
 import 'package:orange_ui/service/extention/int_extention.dart';
 import 'package:orange_ui/utils/app_res.dart';
 import 'package:orange_ui/utils/color_res.dart';
@@ -65,10 +66,16 @@ import 'package:orange_ui/utils/style_res.dart';class BottomPurchaseShirt extend
                             if (giftList![index].coinPrice! <= (diamond ?? 0).toInt()) {
                               onGiftTap(giftList?[index]);
                             } else {
-                              // Not enough diamonds — prompt user to top up
-                              CommonUI.snackBar(
-                                message:
-                                    '💎 Not enough diamonds! You need ${giftList![index].coinPrice} diamonds to send this gift.',
+                              // Not enough diamonds — prompt user to top up immediately
+                              Get.dialog(
+                                EmptyWalletDialog(
+                                  walletCoin: (diamond ?? 0).toInt(),
+                                  onCancelTap: () => Get.back(),
+                                  onContinueTap: () {
+                                    Get.back();
+                                    onAddDiamonds();
+                                  },
+                                ),
                               );
                             }
                           } else {

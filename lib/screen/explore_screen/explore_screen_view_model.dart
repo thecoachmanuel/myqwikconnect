@@ -295,9 +295,15 @@ class ExploreScreenViewModel extends BaseViewModel {
             Get.dialog(
               EmptyWalletDialog(
                 onCancelTap: () => Get.back(),
-                onContinueTap: () {
+                onContinueTap: () async {
                   Get.back();
-                  Get.bottomSheet(const BottomDiamondShop());
+                  await Get.bottomSheet(const BottomDiamondShop());
+                  final myUser = SessionManager.instance.getUser();
+                  if (myUser != null) {
+                    userData = myUser;
+                    walletCoin = myUser.wallet ?? 0;
+                    notifyListeners();
+                  }
                 },
                 walletCoin: walletCoin,
               ),

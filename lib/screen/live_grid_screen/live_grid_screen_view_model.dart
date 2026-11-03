@@ -220,7 +220,7 @@ class LiveGridScreenViewModel extends BaseViewModel {
       if ((settingAppData?.liveWatchingPrice ?? 0) <= 0) {
         onImageTap(user);
       } else {
-        if ((settingAppData?.liveWatchingPrice ?? 0) < walletCoin) {
+        if ((settingAppData?.liveWatchingPrice ?? 0) <= walletCoin) {
           Get.dialog(ReverseSwipeDialog(
               onCancelTap: onBackBtnTap,
               onContinueTap: (isSelected) {
@@ -240,11 +240,12 @@ class LiveGridScreenViewModel extends BaseViewModel {
           Get.dialog(
             EmptyWalletDialog(
               onCancelTap: onBackBtnTap,
-              onContinueTap: () {
+              onContinueTap: () async {
                 Get.back();
-                Get.bottomSheet(
+                await Get.bottomSheet(
                   const BottomDiamondShop(),
                 );
+                await getProfileAPi();
               },
               walletCoin: walletCoin,
             ),

@@ -5,6 +5,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:orange_ui/model/chat_and_live_stream/chat.dart';
 import 'package:orange_ui/model/setting_model.dart';
 import 'package:orange_ui/model/user/registration_user.dart';
+import 'package:orange_ui/service/subscription/subscription_manager.dart';
 import 'package:orange_ui/utils/firebase_res.dart';
 
 class SessionManager {
@@ -13,11 +14,22 @@ class SessionManager {
   var conversationId = '';
   RxInt notifyCount = 0.obs;
   RxInt isModerator = 0.obs;
+  RxInt walletRx = 0.obs;
 
   void setUser(UserData? user) {
     if (user != null) {
       storage.write(SessionKeys.user, user.toJson());
       storage.write(SessionKeys.isLogin, true);
+      walletRx.value = user.wallet ?? 0;
+      if (user.isPro == 1 || user.isVerified == 3) {
+        bool expired = false;
+        if (user.proExpireDate != null && user.proExpireDate!.trim().isNotEmpty) {
+          try {
+            expired = DateTime.parse(user.proExpireDate!).isBefore(DateTime.now());
+          } catch (_) {}
+        }
+        isSubscribe.value = !expired;
+      }
     }
   }
 

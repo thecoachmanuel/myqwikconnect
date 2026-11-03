@@ -52,67 +52,80 @@ class _SubscriptionButtonState extends State<SubscriptionButton> {
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      onTap: () {
-        _checkStatus();
-        if (_isVip) {
-          // Display the dedicated VIP Premium Member modal
-          Get.dialog(
-            const PremiumMemberDialog(),
-            barrierDismissible: true,
-          );
-        } else {
-          // Open SubscriptionSheet to buy/upgrade
-          Get.bottomSheet(const SubscriptionSheet(), isScrollControlled: true)
-              .then((value) {
-            _checkStatus();
-          });
-        }
-      },
-      child: Container(
-        height: 49,
-        margin: const EdgeInsets.symmetric(vertical: 3),
-        width: MediaQuery.of(context).size.width,
-        decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(10),
-            gradient: StyleRes.linearGradient),
-        child: Row(
-          children: [
-            Container(
-              height: 28,
-              width: 28,
-              alignment: Alignment.center,
-              margin: const EdgeInsets.symmetric(horizontal: 10),
-              decoration: BoxDecoration(
-                  color: ColorRes.themeColor.withValues(alpha: 0.1),
-                  shape: BoxShape.circle),
-              child: Image.asset(
-                AssetRes.icPremiumCrown,
+    return Obx(() {
+      UserData? userData = SessionManager.instance.getUser();
+      bool expired = false;
+      if (userData?.proExpireDate != null && userData!.proExpireDate!.trim().isNotEmpty) {
+        try {
+          expired = DateTime.parse(userData.proExpireDate!).isBefore(DateTime.now());
+        } catch (_) {}
+      }
+
+      final isVip = ((userData?.isPro == 1 || userData?.isVerified == 3) && !expired) || isSubscribe.value;
+      final text1 = isVip ? '' : S.current.go;
+      final text2 = isVip ? S.current.youArePremiumMember : ' ${S.current.premium}';
+
+      return InkWell(
+        onTap: () {
+          if (isVip) {
+            // Display the dedicated VIP Premium Member modal
+            Get.dialog(
+              const PremiumMemberDialog(),
+              barrierDismissible: true,
+            );
+          } else {
+            // Open SubscriptionSheet to buy/upgrade
+            Get.bottomSheet(const SubscriptionSheet(), isScrollControlled: true)
+                .then((value) {
+              _checkStatus();
+            });
+          }
+        },
+        child: Container(
+          height: 49,
+          margin: const EdgeInsets.symmetric(vertical: 3),
+          width: MediaQuery.of(context).size.width,
+          decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(10),
+              gradient: StyleRes.linearGradient),
+          child: Row(
+            children: [
+              Container(
                 height: 28,
                 width: 28,
+                alignment: Alignment.center,
+                margin: const EdgeInsets.symmetric(horizontal: 10),
+                decoration: BoxDecoration(
+                    color: ColorRes.themeColor.withValues(alpha: 0.1),
+                    shape: BoxShape.circle),
+                child: Image.asset(
+                  AssetRes.icPremiumCrown,
+                  height: 28,
+                  width: 28,
+                ),
               ),
-            ),
-            RichText(
-              text: TextSpan(
-                text: _text1,
-                style: const TextStyle(
-                    color: ColorRes.white,
-                    fontFamily: FontRes.regular,
-                    fontSize: 15),
-                children: [
-                  TextSpan(
-                    text: _text2.toUpperCase(),
-                    style: const TextStyle(
-                        color: ColorRes.white,
-                        fontFamily: FontRes.bold,
-                        fontSize: 15),
-                  )
-                ],
-              ),
-            )
-          ],
+              RichText(
+                text: TextSpan(
+                  text: text1,
+                  style: const TextStyle(
+                      color: ColorRes.white,
+                      fontFamily: FontRes.regular,
+                      fontSize: 15),
+                  children: [
+                    TextSpan(
+                      text: text2.toUpperCase(),
+                      style: const TextStyle(
+                          color: ColorRes.white,
+                          fontFamily: FontRes.bold,
+                          fontSize: 15),
+                    )
+                  ],
+                ),
+              )
+            ],
+          ),
         ),
-      ),
-    );
+      );
+    });
   }
 }

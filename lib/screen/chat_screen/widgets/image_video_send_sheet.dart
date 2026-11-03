@@ -281,7 +281,6 @@ class _ImageVideoSendSheetState extends State<ImageVideoSendSheet> {
   Widget _buildVideoPreview() {
     if (_isVideoInitialized && _videoPlayerController != null) {
       final duration = _videoPlayerController!.value.duration;
-      final position = _videoPlayerController!.value.position;
 
       return GestureDetector(
         onTap: _togglePlayPause,

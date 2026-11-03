@@ -129,17 +129,18 @@ class PersonStreamingScreenViewModel extends BaseViewModel {
                         const BottomDiamondShop(),
                         backgroundColor: ColorRes.transparent,
                       ).then((value) {
-                        if (Get.isBottomSheetOpen == true) {
-                          //
-                        } else {
-                          updateWatchingCount();
-                          Get.back();
-                        }
-                        if (value != null) {
+                        if (value != null && value > 0) {
                           currentWalletAmount += value;
                           myUserData?.wallet =
                               (myUserData?.wallet ?? 0) + value;
                           notifyListeners();
+                          // User topped up, resume stream countdown smoothly
+                          countDownValue = 0;
+                          this.timer?.cancel();
+                          countDown();
+                        } else {
+                          updateWatchingCount();
+                          Get.back();
                         }
                       });
                     },

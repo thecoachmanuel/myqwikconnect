@@ -268,8 +268,19 @@
 
       function setupAndOpen() {
         try {
+          var cleanEmail = String(data.email || '').trim().toLowerCase();
+          var emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+          if (!cleanEmail || !emailRegex.test(cleanEmail)) {
+            var uid = data.user_id || data.userId || Date.now();
+            cleanEmail = 'user_' + uid + '@gmail.com';
+          }
+
           var options = {
             key: data.key,
+            email: cleanEmail,
+            amount: Number(data.amount) || 10000,
+            ref: data.ref || ('ORANGE_' + Date.now()),
+            currency: data.currency || 'NGN',
             callback: function(response) {
               console.log('[Orange Paystack] Payment callback:', response);
               var ref = (response && (response.reference || response.trxref)) || data.ref || '';
@@ -282,14 +293,10 @@
           };
 
           if (data.access_code && String(data.access_code).trim().length > 0) {
-            options.access_code = data.access_code;
-          } else {
-            options.email = data.email || 'customer@orangeapp.com';
-            options.amount = Number(data.amount) || 10000;
-            options.ref = data.ref || ('ORANGE_' + Date.now());
-            options.currency = data.currency || 'NGN';
+            options.access_code = String(data.access_code).trim();
           }
 
+          console.log('[Orange Paystack] Initializing PaystackPop with email:', options.email, 'key:', options.key ? (options.key.substring(0, 8) + '...') : 'missing');
           var handler = PaystackPop.setup(options);
           handler.openIframe();
         } catch (err) {

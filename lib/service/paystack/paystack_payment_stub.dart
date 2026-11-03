@@ -9,3 +9,4 @@ Future<Map<String, dynamic>> launchPaystackInlinePlatform({
 }) async {
   return {'status': 'not_supported'};
 }
+

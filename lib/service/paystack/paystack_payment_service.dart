@@ -33,13 +33,22 @@ class PaystackPaymentService {
     CommonUI.lottieLoader();
     final myUser = SessionManager.instance.getUser();
 
+    // Ensure a valid, RFC-compliant email address for Paystack
+    String resolvedEmail = email.trim().toLowerCase();
+    final emailRegex = RegExp(r'^[\w\.\-]+@[\w\-]+(\.[\w\-]+)+$');
+    if (resolvedEmail.isEmpty || !emailRegex.hasMatch(resolvedEmail)) {
+      final identity = (myUser?.identity ?? '').trim().toLowerCase();
+      if (identity.isNotEmpty && emailRegex.hasMatch(identity)) {
+        resolvedEmail = identity;
+      } else {
+        final uid = (myUser?.id ?? 0) > 0 ? myUser!.id : DateTime.now().millisecondsSinceEpoch;
+        resolvedEmail = 'user_$uid@gmail.com';
+      }
+    }
+
     try {
       final paystackInit = await ApiProvider().initializePaystack(
-        email: email.isNotEmpty
-            ? email
-            : ((myUser?.identity?.contains('@') == true)
-                ? myUser!.identity!
-                : 'user_${myUser?.id ?? 0}@orangeapp.com'),
+        email: resolvedEmail,
         amount: amount > 0 ? amount : 1500,
         diamonds: diamonds,
         planId: planId,
@@ -53,6 +62,7 @@ class PaystackPaymentService {
       final reference = paystackInit['reference']?.toString();
       final accessCode = paystackInit['access_code']?.toString();
       final publicKey = paystackInit['public_key']?.toString();
+      final returnedEmail = (paystackInit['email']?.toString() ?? resolvedEmail).trim().toLowerCase();
 
       if (paystackInit['status'] == false || authUrl == null || authUrl.isEmpty) {
         final errorMsg = paystackInit['message']?.toString() ??
@@ -66,7 +76,7 @@ class PaystackPaymentService {
         final amountKobo = (amount * 100).round();
         final webResult = await launchPaystackInlinePlatform(
           publicKey: publicKey.trim(),
-          email: email,
+          email: returnedEmail,
           amountKobo: amountKobo,
           reference: reference ?? '',
           accessCode: accessCode,
@@ -168,3 +178,4 @@ class PaystackPaymentService {
     }
   }
 }
+

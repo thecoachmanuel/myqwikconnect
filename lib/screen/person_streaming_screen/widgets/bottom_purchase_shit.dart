@@ -13,14 +13,17 @@ import 'package:orange_ui/utils/app_res.dart';
 import 'package:orange_ui/utils/color_res.dart';
 import 'package:orange_ui/utils/const_res.dart';
 import 'package:orange_ui/utils/font_res.dart';
-import 'package:orange_ui/utils/style_res.dart';class BottomPurchaseShirt extends StatelessWidget {
+import 'package:orange_ui/utils/style_res.dart';
+
+class BottomPurchaseShirt extends StatelessWidget {
   final List<Gifts>? giftList;
   final VoidCallback onAddDiamonds;
   final Function(Gifts? data) onGiftTap;
   final int? diamond;
   final UserData? userData;
 
-  const BottomPurchaseShirt({super.key,
+  const BottomPurchaseShirt(
+      {super.key,
       required this.giftList,
       required this.onAddDiamonds,
       required this.onGiftTap,
@@ -63,7 +66,8 @@ import 'package:orange_ui/utils/style_res.dart';class BottomPurchaseShirt extend
                       return InkWell(
                         onTap: () {
                           if (userData?.isFake != 1) {
-                            if (giftList![index].coinPrice! <= (diamond ?? 0).toInt()) {
+                            if (giftList![index].coinPrice! <=
+                                (diamond ?? 0).toInt()) {
                               onGiftTap(giftList?[index]);
                             } else {
                               // Not enough diamonds — prompt user to top up immediately

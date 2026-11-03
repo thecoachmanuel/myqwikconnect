@@ -428,7 +428,9 @@ class ExploreScreenViewModel extends BaseViewModel {
     } else {
       if (!isLikeAction) {
         ApiProvider().sendLocalizedPushNotification(
-            key: 'hasLikedYourProfile', userData: userData, deviceToken: currentUser.deviceToken);
+            key: 'hasLikedYourProfile',
+            userData: userData,
+            deviceToken: currentUser.deviceToken);
       }
     }
     // Toggle the like status in the list

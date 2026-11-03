@@ -20,25 +20,40 @@ class LiveGridScreen extends StatelessWidget {
       builder: (context, model, child) {
         return Scaffold(
           backgroundColor: ColorRes.white,
-          body: Column(
-            children: [
-              LiveGridTopArea(
-                onBackBtnTap: model.onBackBtnTap,
-                onGoLiveTap: model.goLiveBtnClick,
-                userData: model.userData,
-              ),
-              if (!model.isLoading)
-                CustomGridView(
-                  userData: model.liveStreamUsers,
-                  onImageTap: model.onLiveStreamProfileTap,
-                )
-              else
-                Expanded(
-                  child: CommonUI.lottieWidget(),
-                ),
-              const SizedBox(height: 10),
-              const CustomBannerAds(),
-            ],
+          body: LayoutBuilder(
+            builder: (context, constraints) {
+              // On wider screens centre content in a max-width container
+              final bool isWide = constraints.maxWidth >= 900;
+              final Widget content = Column(
+                children: [
+                  LiveGridTopArea(
+                    onBackBtnTap: model.onBackBtnTap,
+                    onGoLiveTap: model.goLiveBtnClick,
+                    userData: model.userData,
+                  ),
+                  if (!model.isLoading)
+                    CustomGridView(
+                      userData: model.liveStreamUsers,
+                      onImageTap: model.onLiveStreamProfileTap,
+                    )
+                  else
+                    Expanded(
+                      child: CommonUI.lottieWidget(),
+                    ),
+                  const CustomBannerAds(),
+                ],
+              );
+
+              if (isWide) {
+                return Center(
+                  child: SizedBox(
+                    width: 900,
+                    child: content,
+                  ),
+                );
+              }
+              return content;
+            },
           ),
         );
       },

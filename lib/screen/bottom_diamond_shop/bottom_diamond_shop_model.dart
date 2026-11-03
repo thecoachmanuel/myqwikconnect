@@ -96,7 +96,14 @@ class BottomDiamondShopModel extends BaseViewModel {
               Get.back();
               if (verifyRes.status == true) {
                 CommonUI.snackBar(
-                    message: 'Added ${coinPlan.coin} diamonds to your wallet!');
+                    message: '💎 ${coinPlan.coin} diamonds added to your wallet!');
+                // Instantly update local wallet so the count reflects immediately
+                final currentUser = SessionManager.instance.getUser();
+                if (currentUser != null) {
+                  currentUser.wallet = (currentUser.wallet ?? 0) + coinPlan.coin;
+                  SessionManager.instance.setUser(currentUser);
+                }
+                // Also re-fetch from server in background for accuracy
                 ApiProvider().fetchMyUserProfile();
                 Get.back(result: coinPlan.coin);
               } else {
@@ -135,8 +142,14 @@ class BottomDiamondShopModel extends BaseViewModel {
             Get.back();
             if (verifyRes.status == true) {
               CommonUI.snackBar(
-                  message: 'Added ${coinPlan.coin} diamonds to your wallet!');
-              // Re-fetch user profile from server for accurate wallet
+                  message: '💎 ${coinPlan.coin} diamonds added to your wallet!');
+              // Instantly update local wallet so the count reflects immediately
+              final currentUser = SessionManager.instance.getUser();
+              if (currentUser != null) {
+                currentUser.wallet = (currentUser.wallet ?? 0) + coinPlan.coin;
+                SessionManager.instance.setUser(currentUser);
+              }
+              // Also re-fetch from server in background for accuracy
               ApiProvider().fetchMyUserProfile();
               Get.back(result: coinPlan.coin);
             } else {

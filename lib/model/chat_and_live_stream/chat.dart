@@ -142,6 +142,7 @@ class ChatUser {
   bool? _isNewMsg;
   double? _date;
   int? _userid;
+  int? _isVerified;
 
   ChatUser({
     String? age,
@@ -153,6 +154,7 @@ class ChatUser {
     bool? isNewMsg,
     double? date,
     int? userid,
+    int? isVerified,
   }) {
     _age = age;
     _city = city;
@@ -163,6 +165,7 @@ class ChatUser {
     _isNewMsg = isNewMsg;
     _date = date;
     _userid = userid;
+    _isVerified = isVerified;
   }
 
   Map<String, dynamic> toJson() {
@@ -176,6 +179,7 @@ class ChatUser {
       "isNewMsg": _isNewMsg,
       "date": _date,
       "userid": _userid,
+      "isVerified": _isVerified,
     };
   }
 
@@ -193,6 +197,8 @@ class ChatUser {
         (map["date"] is String ? double.tryParse(map["date"]) : null);
     _userid = (map["userid"] as num?)?.toInt() ??
         (map["userid"] is String ? int.tryParse(map["userid"]) : null);
+    _isVerified = (map["isVerified"] as num?)?.toInt() ??
+        (map["isVerified"] is String ? int.tryParse(map["isVerified"]) : null);
   }
 
   int? get userid => _userid;
@@ -210,6 +216,11 @@ class ChatUser {
   }
 
   bool? get isHost => _isHost;
+
+  /// Returns true when user has any level of verification (isVerified >= 2)
+  bool get isVerify => (_isVerified ?? 0) >= 2;
+
+  int? get isVerified => _isVerified;
 
   String? get username => _username;
 
@@ -247,6 +258,10 @@ class ChatUser {
 
   set userid(int? value) {
     _userid = value;
+  }
+
+  set isVerified(int? value) {
+    _isVerified = value;
   }
 }
 

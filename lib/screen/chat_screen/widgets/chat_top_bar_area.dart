@@ -76,7 +76,9 @@ class ChatTopBarArea extends StatelessWidget {
                             Flexible(
                               child: Text(
                                 conversation?.user?.username != null
-                                    ? '${conversation?.user?.username} '.capitalize ?? ''
+                                    ? '${conversation?.user?.username} '
+                                            .capitalize ??
+                                        ''
                                     : ' ',
                                 style: const TextStyle(
                                   color: ColorRes.darkGrey,
@@ -87,11 +89,14 @@ class ChatTopBarArea extends StatelessWidget {
                                 overflow: TextOverflow.ellipsis,
                               ),
                             ),
-                            if (conversation?.user?.isHost == true) ...[
+                            if (conversation?.user?.isHost == true ||
+                                conversation?.user?.isVerify == true) ...[
                               const SizedBox(width: 4),
-                              Image.asset(AssetRes.tickMark, height: 16, width: 16),
+                              Image.asset(AssetRes.tickMark,
+                                  height: 16, width: 16),
                             ],
-                            if (conversation?.user?.age != null && conversation!.user!.age!.isNotEmpty) ...[
+                            if (conversation?.user?.age != null &&
+                                conversation!.user!.age!.isNotEmpty) ...[
                               const SizedBox(width: 6),
                               Text(
                                 conversation!.user!.age!,

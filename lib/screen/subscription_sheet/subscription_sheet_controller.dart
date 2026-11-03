@@ -151,9 +151,9 @@ class SubscriptionSheetController extends GetxController {
 
       Get.dialog(
         ConfirmationDialog(
-          heading: 'Confirm VIP',
+          heading: '✅ Confirm VIP Payment',
           description:
-              'Complete your VIP subscription payment on Paystack, then tap Confirm below.',
+              'After completing your payment on Paystack, tap "Confirm" to activate your VIP subscription instantly.',
           textButton: 'Confirm VIP',
           onTap: () async {
             Get.back();
@@ -177,7 +177,7 @@ class SubscriptionSheetController extends GetxController {
               ApiProvider().updateProfile(isVerified: 3);
               SessionManager.instance.updateFirebase();
               CommonUI.snackBar(
-                  message: 'VIP Subscription activated successfully!');
+                  message: '👑 VIP Subscription activated successfully!');
               Get.back(result: true);
             } else {
               CommonUI.snackBar(

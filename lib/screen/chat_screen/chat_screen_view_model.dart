@@ -87,7 +87,8 @@ class ChatScreenViewModel extends BaseViewModel {
   }
 
   String _getChatStorageKey() {
-    final int myId = registrationUserData?.id ?? SessionManager.instance.getUserID();
+    final int myId =
+        registrationUserData?.id ?? SessionManager.instance.getUserID();
     final convId = conversation.conversationId ?? conversationID;
     return 'chat_${myId}_$convId';
   }
@@ -102,7 +103,10 @@ class ChatScreenViewModel extends BaseViewModel {
         // Fallback to legacy key
         cached = SessionManager.instance.storage.read('chat_$convId');
       }
-      if (cached != null && cached is List && cached.isNotEmpty && chatData.isEmpty) {
+      if (cached != null &&
+          cached is List &&
+          cached.isNotEmpty &&
+          chatData.isEmpty) {
         final List<ChatMessage> cachedList = [];
         for (var item in cached) {
           cachedList.add(ChatMessage.fromJson(item));
@@ -140,8 +144,7 @@ class ChatScreenViewModel extends BaseViewModel {
 
     for (var message in messages) {
       if (message.time != null) {
-        final time =
-            DateTime.fromMillisecondsSinceEpoch(message.time!.toInt());
+        final time = DateTime.fromMillisecondsSinceEpoch(message.time!.toInt());
         final formattedDate = DateFormat(AppRes.dMY).format(time);
 
         String groupKey;
@@ -272,7 +275,8 @@ class ChatScreenViewModel extends BaseViewModel {
     ApiProvider()
         .minusCoinFromWallet(settingAppData?.messagePrice)
         .then((minusCoinFromWallet) {
-      if (minusCoinFromWallet.status == true && minusCoinFromWallet.wallet != null) {
+      if (minusCoinFromWallet.status == true &&
+          minusCoinFromWallet.wallet != null) {
         int wallet = minusCoinFromWallet.wallet!.toInt();
         registrationUserData?.wallet = wallet;
         walletCoin = wallet;
@@ -464,13 +468,14 @@ class ChatScreenViewModel extends BaseViewModel {
       senderUser: ChatUser(
         username: registrationUserData?.fullname,
         date: time.toDouble(),
-        isHost: registrationUserData?.isVerified == 2,
+        isHost: (registrationUserData?.isVerified ?? 0) >= 2,
         isNewMsg: true,
         userid: registrationUserData?.id,
         userIdentity: registrationUserData?.identity,
         image: registrationUserData?.profileImage,
         city: registrationUserData?.address,
         age: registrationUserData?.age.toString(),
+        isVerified: registrationUserData?.isVerified,
       ),
       msgType: FirebaseRes.msg,
       msg: textMessage,
@@ -625,13 +630,14 @@ class ChatScreenViewModel extends BaseViewModel {
       senderUser: ChatUser(
         username: registrationUserData?.fullname,
         date: time.toDouble(),
-        isHost: registrationUserData?.isVerified == 2,
+        isHost: (registrationUserData?.isVerified ?? 0) >= 2,
         isNewMsg: true,
         userid: myId,
         userIdentity: registrationUserData?.identity,
         image: registrationUserData?.profileImage,
         city: registrationUserData?.address,
         age: registrationUserData?.age.toString(),
+        isVerified: registrationUserData?.isVerified,
       ),
     );
 
@@ -659,7 +665,8 @@ class ChatScreenViewModel extends BaseViewModel {
           chatData.removeWhere((m) => m.time == time.toDouble());
           _groupMessages(chatData);
           notifyListeners();
-          CommonUI.snackBar(message: 'Failed to upload media. Please try again.');
+          CommonUI.snackBar(
+              message: 'Failed to upload media. Please try again.');
         }
       } catch (e) {
         chatData.removeWhere((m) => m.time == time.toDouble());
@@ -833,7 +840,8 @@ class ChatScreenViewModel extends BaseViewModel {
                     image: XFile(thumbnail.path),
                     filename: 'thumb_$videoFileName.jpg',
                   );
-                  if (thumbRes.status == true && (thumbRes.path ?? '').isNotEmpty) {
+                  if (thumbRes.status == true &&
+                      (thumbRes.path ?? '').isNotEmpty) {
                     thumbUrl = thumbRes.path!;
                   }
                 }
@@ -888,19 +896,16 @@ class ChatScreenViewModel extends BaseViewModel {
             registrationUserData?.id ?? SessionManager.instance.getUserID();
         final myIdStr = myIdNum.toString();
 
-        final incoming = snapshot.docs
-            .map((doc) => doc.data())
-            .where((msg) {
-              // Only filter out if the message was explicitly deleted by this specific user
-              if (myIdNum > 0 &&
-                  msg.notDeletedIdentities != null &&
-                  msg.notDeletedIdentities!.isNotEmpty &&
-                  !msg.notDeletedIdentities!.contains(myIdStr)) {
-                return false;
-              }
-              return true;
-            })
-            .toList();
+        final incoming = snapshot.docs.map((doc) => doc.data()).where((msg) {
+          // Only filter out if the message was explicitly deleted by this specific user
+          if (myIdNum > 0 &&
+              msg.notDeletedIdentities != null &&
+              msg.notDeletedIdentities!.isNotEmpty &&
+              !msg.notDeletedIdentities!.contains(myIdStr)) {
+            return false;
+          }
+          return true;
+        }).toList();
 
         if (incoming.isNotEmpty) {
           chatData = incoming;
@@ -931,12 +936,9 @@ class ChatScreenViewModel extends BaseViewModel {
     final int time = customTime ?? DateTime.now().millisecondsSinceEpoch;
     final int myId =
         registrationUserData?.id ?? SessionManager.instance.getUserID();
-    notDeletedIdentity = [
-      '$myId',
-      '${conversation.user?.userid}'
-    ];
+    notDeletedIdentity = ['$myId', '${conversation.user?.userid}'];
 
-    final isHost = registrationUserData?.isVerified == 2;
+    final isHost = (registrationUserData?.isVerified ?? 0) >= 2;
     final messageData = ChatMessage(
       notDeletedIdentities: notDeletedIdentity,
       senderUser: ChatUser(
@@ -949,6 +951,7 @@ class ChatScreenViewModel extends BaseViewModel {
         image: registrationUserData?.profileImage,
         city: registrationUserData?.address,
         age: registrationUserData?.age.toString(),
+        isVerified: registrationUserData?.isVerified,
       ),
       msgType: msgType,
       msg: textMessage,
@@ -964,7 +967,8 @@ class ChatScreenViewModel extends BaseViewModel {
     // Optimistic UI update: update existing optimistic message or insert new one
     final existingIdx = chatData.indexWhere((m) => m.time == time.toDouble());
     if (existingIdx >= 0) {
-      chatData[existingIdx] = ChatMessage.fromJson(messageData)..isSending = false;
+      chatData[existingIdx] = ChatMessage.fromJson(messageData)
+        ..isSending = false;
     } else {
       chatData.insert(0, ChatMessage.fromJson(messageData));
     }
@@ -994,6 +998,7 @@ class ChatScreenViewModel extends BaseViewModel {
       image: registrationUserData?.profileImage,
       city: registrationUserData?.address,
       age: registrationUserData?.age.toString(),
+      isVerified: registrationUserData?.isVerified,
     );
 
     final receiverCon = Conversation(
@@ -1012,8 +1017,7 @@ class ChatScreenViewModel extends BaseViewModel {
         documentReceiver.set(receiverCon, SetOptions(merge: true));
 
     // Run all Firestore updates concurrently
-    await Future.wait([msgSetFuture, senderFuture, receiverFuture])
-        .then((_) {
+    await Future.wait([msgSetFuture, senderFuture, receiverFuture]).then((_) {
       _saveCachedChat();
     }).catchError((err) {
       Get.log('Error writing chat to firestore: $err');
@@ -1025,7 +1029,8 @@ class ChatScreenViewModel extends BaseViewModel {
   }
 
   void _sendPushNotification(String lastMessage) {
-    final myId = registrationUserData?.id ?? SessionManager.instance.getUserID();
+    final myId =
+        registrationUserData?.id ?? SessionManager.instance.getUserID();
     final receiverId = conversation.user?.userid;
     ApiProvider().pushNotification(
       title: registrationUserData?.fullname ?? '',

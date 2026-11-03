@@ -59,7 +59,8 @@ class MessageScreen extends StatelessWidget {
                                 time: conversation.time?.toString() ?? '',
                                 image: chatUser?.image ?? '',
                                 newMsg: chatUser?.isNewMsg ?? false,
-                                tickMark: chatUser?.isHost,
+                                tickMark: chatUser?.isHost == true ||
+                                    chatUser?.isVerify == true,
                                 isOnline: model.isUserOnline(chatUser?.userid),
                               ),
                             );

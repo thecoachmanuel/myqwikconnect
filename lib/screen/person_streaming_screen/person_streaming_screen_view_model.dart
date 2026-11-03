@@ -243,7 +243,8 @@ class PersonStreamingScreenViewModel extends BaseViewModel {
         RtcEngineEventHandler(
           // Occurs when the local user joins the channel successfully
           onJoinChannelSuccess: (RtcConnection connection, int elapsed) {
-            debugPrint('Agora audience joined channel: ${connection.channelId}');
+            debugPrint(
+                'Agora audience joined channel: ${connection.channelId}');
             notifyListeners();
           },
           // Occurs when a remote user join the channel
@@ -385,6 +386,8 @@ class PersonStreamingScreenViewModel extends BaseViewModel {
 
     minusCoinApi(price: data?.coinPrice ?? 0);
     Get.back();
+    // Show brief "Gift Sent!" confirmation snackbar
+    CommonUI.snackBar(message: '🎁 Gift sent to ${liveStreamUser?.fullName ?? 'host'}!');
   }
 
   void initFirebase() async {

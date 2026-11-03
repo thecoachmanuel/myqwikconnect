@@ -110,25 +110,60 @@ class ChatArea extends StatelessWidget {
                   child: SizedBox(
                     width: 11,
                     height: 11,
-                    child: CircularProgressIndicator(strokeWidth: 1.5, color: ColorRes.grey2),
+                    child: CircularProgressIndicator(
+                        strokeWidth: 1.5, color: ColorRes.grey2),
                   ),
                 )
               else
                 const Padding(
                   padding: EdgeInsets.only(right: 5.0),
-                  child: Icon(Icons.done_all_rounded, size: 14, color: ColorRes.themeColor),
+                  child: Icon(Icons.done_all_rounded,
+                      size: 14, color: ColorRes.themeColor),
                 ),
             ],
-            Container(
-              decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(8),
-                  color: isMe ? null : ColorRes.grey10,
-                  gradient: !isMe ? null : StyleRes.linearGradient),
-              child: data?.msgType == FirebaseRes.msg
-                  ? _textMessage(data)
-                  : data?.msgType == FirebaseRes.image
-                      ? imageMessage(data, model: model)
-                      : videoMessage(data, model: model),
+            Column(
+              crossAxisAlignment:
+                  isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Verified sender name badge for received messages
+                if (!isMe &&
+                    (data?.senderUser?.isVerify == true ||
+                        data?.senderUser?.isHost == true))
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 2, left: 2),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          data?.senderUser?.username ?? '',
+                          style: const TextStyle(
+                            color: ColorRes.darkGrey9,
+                            fontSize: 11,
+                            fontFamily: FontRes.medium,
+                          ),
+                        ),
+                        const SizedBox(width: 3),
+                        Image.asset(
+                          AssetRes.tickMark,
+                          height: 13,
+                          width: 13,
+                        ),
+                      ],
+                    ),
+                  ),
+                Container(
+                  decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(8),
+                      color: isMe ? null : ColorRes.grey10,
+                      gradient: !isMe ? null : StyleRes.linearGradient),
+                  child: data?.msgType == FirebaseRes.msg
+                      ? _textMessage(data)
+                      : data?.msgType == FirebaseRes.image
+                          ? imageMessage(data, model: model)
+                          : videoMessage(data, model: model),
+                ),
+              ],
             ),
             if (!isMe) _dateFormater(data?.time),
           ],

@@ -35,35 +35,37 @@ class PersonStreamingScreen extends StatelessWidget {
         return PopScope(
           canPop: false,
           child: Scaffold(
-              body: Stack(
-            children: [
-              model.isLoading ? CommonUI.lottieWidget() : model.remoteVideo(),
-              Column(
-                children: [
-                  PersonTopBarArea(
-                    onViewTap: model.onViewTap,
-                    onMoreBtnTap: model.onMoreBtnTap,
-                    onExitTap: model.onExitTap,
-                    liveStreamUser: model.liveStreamUser,
-                    onUserTap: model.onUserTap,
-                  ),
-                  const Spacer(),
-                  CommentListArea(
-                    commentList: model.commentList,
-                    pageContext: context,
-                  ),
-                  BottomTextField(
-                    commentController: model.commentController,
-                    commentFocus: model.commentFocus,
-                    onMsgSend: model.onCommentSend,
-                    onGiftTap: model.onGiftBtnTap,
-                    count: model.countDownValue,
-                  ),
-                  const SizedBox(height: 16),
-                ],
-              ),
-            ],
-          )),
+            // Same full-screen video-overlay layout for all platforms (mobile + PWA desktop)
+            body: Stack(
+              children: [
+                model.isLoading ? CommonUI.lottieWidget() : model.remoteVideo(),
+                Column(
+                  children: [
+                    PersonTopBarArea(
+                      onViewTap: model.onViewTap,
+                      onMoreBtnTap: model.onMoreBtnTap,
+                      onExitTap: model.onExitTap,
+                      liveStreamUser: model.liveStreamUser,
+                      onUserTap: model.onUserTap,
+                    ),
+                    const Spacer(),
+                    CommentListArea(
+                      commentList: model.commentList,
+                      pageContext: context,
+                    ),
+                    BottomTextField(
+                      commentController: model.commentController,
+                      commentFocus: model.commentFocus,
+                      onMsgSend: model.onCommentSend,
+                      onGiftTap: model.onGiftBtnTap,
+                      count: model.countDownValue,
+                    ),
+                    const SizedBox(height: 16),
+                  ],
+                ),
+              ],
+            ),
+          ),
         );
       },
     );

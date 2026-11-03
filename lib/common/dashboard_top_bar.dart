@@ -31,7 +31,7 @@ class DashboardTopBar extends StatelessWidget {
         children: [
           InkWell(
             onTap: onTitleTap,
-            child: Image.asset(AssetRes.themeLabel, height: 30),
+            child: Image.asset(AssetRes.themeLabel, height: 42),
           ),
           const Spacer(),
           Row(

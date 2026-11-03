@@ -38,8 +38,54 @@ class AuthScreen extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.center,
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Image.asset(AssetRes.themeLabelWhite,
-                        height: 50, width: 153, alignment: Alignment.center),
+                    // ── Logo + Slogan block ──────────────────────────────
+                    Padding(
+                      padding: const EdgeInsets.only(top: 8),
+                      child: Column(
+                        children: [
+                          // Wordmark: "Qwik" ultra-bold white + "Connect" white semi-bold
+                          RichText(
+                            text: const TextSpan(
+                              children: [
+                                TextSpan(
+                                  text: 'Qwik',
+                                  style: TextStyle(
+                                    fontFamily: FontRes.bold,
+                                    fontSize: 42,
+                                    fontWeight: FontWeight.w900,
+                                    letterSpacing: -1.2,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                                TextSpan(
+                                  text: 'Connect',
+                                  style: TextStyle(
+                                    fontFamily: FontRes.bold,
+                                    fontSize: 42,
+                                    fontWeight: FontWeight.w600,
+                                    letterSpacing: -1.2,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          // Slogan
+                          Text(
+                            'Where young professionals meet real connections.',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontFamily: FontRes.regular,
+                              fontSize: 13.5,
+                              color: Colors.white.withValues(alpha: 0.88),
+                              letterSpacing: 0.2,
+                              height: 1.4,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                     Container(
                       padding: const EdgeInsets.only(
                           left: 15, right: 15, bottom: 60, top: 25),

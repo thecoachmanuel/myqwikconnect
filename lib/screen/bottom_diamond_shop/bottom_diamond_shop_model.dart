@@ -76,6 +76,39 @@ class BottomDiamondShopModel extends BaseViewModel {
       }
 
       final uri = Uri.tryParse(authUrl);
+
+      // Sandbox reference — show instant native confirmation without opening URL
+      if (reference != null && reference.startsWith('ORANGE_SANDBOX_')) {
+        Get.dialog(
+          ConfirmationDialog(
+            heading: '🧪 Demo Payment',
+            description:
+                'Sandbox mode is active. Tap "Complete" to simulate a successful payment of ${coinPlan.priceString} and receive ${coinPlan.coin} diamonds instantly.',
+            textButton: 'Complete Demo Purchase',
+            onTap: () async {
+              Get.back();
+              CommonUI.lottieLoader();
+              final verifyRes = await ApiProvider().verifyPaystack(
+                reference: reference,
+                diamonds: coinPlan.coin,
+                type: 'diamond',
+              );
+              Get.back();
+              if (verifyRes.status == true) {
+                CommonUI.snackBar(
+                    message: 'Added ${coinPlan.coin} diamonds to your wallet!');
+                ApiProvider().fetchMyUserProfile();
+                Get.back(result: coinPlan.coin);
+              } else {
+                CommonUI.snackBar(
+                    message: verifyRes.message ?? 'Demo payment failed.');
+              }
+            },
+          ),
+        );
+        return;
+      }
+
       if (uri != null && await canLaunchUrl(uri)) {
         if (kIsWeb) {
           await launchUrl(uri, webOnlyWindowName: '_blank');

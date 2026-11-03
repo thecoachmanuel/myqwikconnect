@@ -53,10 +53,12 @@ class CreatePostPage extends StatelessWidget {
                   children: [
                     InkWell(
                         onTap: model.onPhotoTap, child: RowImageText(image: AssetRes.icPhoto, title: S.current.photo)),
-                    Container(height: 20, width: 1, color: ColorRes.lightGrey),
-                    InkWell(
-                        onTap: model.onVideoTap,
-                        child: RowImageText(image: AssetRes.icVideo, title: S.current.videoCap.capitalize ?? ''))
+                    if (model.appData?.feedVideoEnabled == 1) ...[
+                      Container(height: 20, width: 1, color: ColorRes.lightGrey),
+                      InkWell(
+                          onTap: model.onVideoTap,
+                          child: RowImageText(image: AssetRes.icVideo, title: S.current.videoCap.capitalize ?? '')),
+                    ],
                   ],
                 ),
               )

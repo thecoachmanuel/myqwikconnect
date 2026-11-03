@@ -29,31 +29,37 @@ class FeedScreen extends StatelessWidget {
                     onRefresh: model.onRefresh,
                     child: Stack(
                       children: [
-                        SingleChildScrollView(
+                        CustomScrollView(
                           physics: const AlwaysScrollableScrollPhysics(),
                           controller: model.scrollController,
-                          child: Column(
-                            children: [
-                              FeedStoryBar(model: model),
-                              _buildUploadProgressCard(),
-                              model.postList.isEmpty
-                                  ? const SizedBox()
-                                  : ListView.builder(
-                                      primary: false,
-                                      shrinkWrap: true,
-                                      padding: EdgeInsets.zero,
-                                      itemCount: model.postList.length,
-                                      itemBuilder: (context, index) {
+                          slivers: [
+                            SliverToBoxAdapter(child: FeedStoryBar(model: model)),
+                            SliverToBoxAdapter(child: _buildUploadProgressCard()),
+                            model.postList.isEmpty
+                                ? const SliverToBoxAdapter(child: SizedBox.shrink())
+                                : SliverList(
+                                    delegate: SliverChildBuilderDelegate(
+                                      (context, index) {
                                         return PostCard(
-                                            post: model.postList[index],
-                                            model: model,
-                                            postIndex: index);
+                                          post: model.postList[index],
+                                          model: model,
+                                          postIndex: index,
+                                        );
                                       },
+                                      childCount: model.postList.length,
                                     ),
-                            ],
-                          ),
+                                  ),
+                            // Load-more indicator / end-of-feed indicator
+                            SliverToBoxAdapter(
+                              child: model.isFetchingMore
+                                  ? _buildLoadMoreIndicator()
+                                  : !model.hasMore && model.postList.isNotEmpty
+                                      ? _buildEndOfFeedIndicator()
+                                      : const SizedBox(height: 100),
+                            ),
+                          ],
                         ),
-                        model.postList.isEmpty ? CommonUI.noData() : Container()
+                        if (model.postList.isEmpty) CommonUI.noData(),
                       ],
                     ),
                   ),
@@ -77,6 +83,63 @@ class FeedScreen extends StatelessWidget {
           ],
         );
       },
+    );
+  }
+
+  Widget _buildLoadMoreIndicator() {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 20),
+      alignment: Alignment.center,
+      child: const Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          SizedBox(
+            width: 20,
+            height: 20,
+            child: CircularProgressIndicator(
+              strokeWidth: 2.5,
+              valueColor: AlwaysStoppedAnimation(ColorRes.themeColor),
+            ),
+          ),
+          SizedBox(width: 10),
+          Text(
+            'Loading more posts...',
+            style: TextStyle(
+              fontFamily: FontRes.regular,
+              fontSize: 13,
+              color: ColorRes.dimGrey3,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEndOfFeedIndicator() {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      decoration: BoxDecoration(
+        color: ColorRes.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: ColorRes.grey5),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.check_circle_rounded,
+              color: ColorRes.themeColor.withValues(alpha: 0.7), size: 18),
+          const SizedBox(width: 8),
+          const Text(
+            "You're all caught up!",
+            style: TextStyle(
+              fontFamily: FontRes.medium,
+              fontSize: 13,
+              color: ColorRes.dimGrey3,
+            ),
+          ),
+        ],
+      ),
     );
   }
 

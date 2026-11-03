@@ -578,6 +578,14 @@ class ChatScreenViewModel extends BaseViewModel {
       return;
     }
 
+    final isChatVideoEnabled = settingAppData?.chatVideoEnabled == 1;
+
+    if (!isChatVideoEnabled) {
+      // Admin has video disabled by default for chat: directly open image picker
+      pickImage(type);
+      return;
+    }
+
     Get.bottomSheet(
       ItemSelectionDialogAndroid(
         onImageBtnClick: () {

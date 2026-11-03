@@ -89,7 +89,6 @@ class UserCard extends StatelessWidget {
                             child: Row(
                               children: [
                                 Flexible(
-                                  flex: 5,
                                   child: Text(
                                     (name ?? '').capitalize ?? '',
                                     softWrap: false,
@@ -100,24 +99,23 @@ class UserCard extends StatelessWidget {
                                         fontSize: 16),
                                   ),
                                 ),
-                                Flexible(
-                                  child: Text(
-                                    ' ${age ?? ''}',
+                                if (tickMark == true) ...[
+                                  const SizedBox(width: 4),
+                                  Image.asset(
+                                    AssetRes.tickMark,
+                                    height: 16,
+                                    width: 16,
+                                  ),
+                                ],
+                                if (age != null && age!.isNotEmpty) ...[
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    ' $age',
                                     style: const TextStyle(fontSize: 16),
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
                                   ),
-                                ),
-                                const SizedBox(width: 5),
-                                Flexible(
-                                  child: tickMark == true
-                                      ? Image.asset(
-                                          AssetRes.tickMark,
-                                          height: 17.5,
-                                          width: 18.33,
-                                        )
-                                      : const SizedBox(),
-                                ),
+                                ],
                               ],
                             ),
                           ),

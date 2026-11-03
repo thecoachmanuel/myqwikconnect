@@ -58,25 +58,42 @@ class ProfilePicArea extends StatelessWidget {
                         child: (model.userData?.images ?? []).isEmpty
                             ? Stack(
                                 children: [
-                                  Container(
-                                    decoration: BoxDecoration(
-                                        color: ColorRes.themeColor
-                                            .withValues(alpha: 0.2),
-                                        borderRadius:
-                                            BorderRadius.circular(20)),
-                                  ),
-                                  Center(
-                                    child: Container(
-                                        width: Get.width - 100,
-                                        height: Get.height - 256,
-                                        decoration: BoxDecoration(
-                                          shape: BoxShape.circle,
+                                  // Show profileImage if available, else fallback to theme placeholder
+                                  Builder(builder: (_) {
+                                    final img = model.userData?.profileImage;
+                                    final hasImage =
+                                        img != null && img.isNotEmpty;
+                                    if (hasImage) {
+                                      return CustomImage(
+                                        image: img.addBaseURL(),
+                                        width: cardWidth,
+                                        height: cardHeight,
+                                        fit: BoxFit.cover,
+                                        radius: 0,
+                                      );
+                                    }
+                                    return Container(
+                                      decoration: BoxDecoration(
                                           color: ColorRes.themeColor
                                               .withValues(alpha: 0.2),
-                                        ),
-                                        child:
-                                            Image.asset(AssetRes.themeLabel)),
-                                  ),
+                                          borderRadius:
+                                              BorderRadius.circular(20)),
+                                    );
+                                  }),
+                                  if ((model.userData?.profileImage ?? '')
+                                      .isEmpty)
+                                    Center(
+                                      child: Container(
+                                          width: cardWidth,
+                                          height: cardHeight,
+                                          decoration: BoxDecoration(
+                                            shape: BoxShape.circle,
+                                            color: ColorRes.themeColor
+                                                .withValues(alpha: 0.2),
+                                          ),
+                                          child:
+                                              Image.asset(AssetRes.themeLabel)),
+                                    ),
                                 ],
                               )
                             : PageView.builder(
@@ -94,13 +111,8 @@ class ProfilePicArea extends StatelessWidget {
                                       children: [
                                         CustomImage(
                                             image: image.image?.addBaseURL(),
-                                            width: MediaQuery.of(context)
-                                                .size
-                                                .width,
-                                            height: MediaQuery.of(context)
-                                                    .size
-                                                    .height -
-                                                256,
+                                            width: cardWidth,
+                                            height: cardHeight,
                                             radius: 0),
                                         Row(
                                           children: [
@@ -108,7 +120,7 @@ class ProfilePicArea extends StatelessWidget {
                                               child: InkWell(
                                                 onTap: model.onLeftBtnClick,
                                                 child: Container(
-                                                    height: Get.height - 256,
+                                                    height: cardHeight,
                                                     color:
                                                         ColorRes.transparent),
                                               ),
@@ -117,7 +129,7 @@ class ProfilePicArea extends StatelessWidget {
                                               child: InkWell(
                                                 onTap: model.onRightBtnClick,
                                                 child: Container(
-                                                    height: Get.height - 256,
+                                                    height: cardHeight,
                                                     color:
                                                         ColorRes.transparent),
                                               ),
@@ -131,8 +143,8 @@ class ProfilePicArea extends StatelessWidget {
                               ),
                       ),
                       SizedBox(
-                        height: Get.height - 256,
-                        width: Get.width,
+                        height: cardHeight,
+                        width: cardWidth,
                         child: Column(
                           children: [
                             const SizedBox(height: 14),

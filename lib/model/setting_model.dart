@@ -423,6 +423,8 @@ class Appdata {
     this.termsofuse,
     this.privacypolicy,
     this.webMobileView = 1,
+    this.feedVideoEnabled = 0,
+    this.chatVideoEnabled = 0,
     this.createdAt,
     this.updatedAt,
   });
@@ -456,6 +458,16 @@ class Appdata {
             ? json['web_mobile_view']
             : int.tryParse(json['web_mobile_view'].toString()) ?? 1)
         : 1;
+    feedVideoEnabled = json['feed_video_enabled'] != null
+        ? (json['feed_video_enabled'] is int
+            ? json['feed_video_enabled']
+            : int.tryParse(json['feed_video_enabled'].toString()) ?? 0)
+        : 0;
+    chatVideoEnabled = json['chat_video_enabled'] != null
+        ? (json['chat_video_enabled'] is int
+            ? json['chat_video_enabled']
+            : int.tryParse(json['chat_video_enabled'].toString()) ?? 0)
+        : 0;
     createdAt = json['created_at'];
     updatedAt = json['updated_at'];
   }
@@ -484,6 +496,8 @@ class Appdata {
   String? privacypolicy;
   String? googleMapKey;
   int? webMobileView;
+  int? feedVideoEnabled;
+  int? chatVideoEnabled;
   String? createdAt;
   String? updatedAt;
 
@@ -513,6 +527,8 @@ class Appdata {
     map['privacypolicy'] = privacypolicy;
     map['google_map_key'] = googleMapKey;
     map['web_mobile_view'] = webMobileView;
+    map['feed_video_enabled'] = feedVideoEnabled;
+    map['chat_video_enabled'] = chatVideoEnabled;
     map['created_at'] = createdAt;
     map['updated_at'] = updatedAt;
     return map;

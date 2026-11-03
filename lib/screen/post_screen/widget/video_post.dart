@@ -19,9 +19,11 @@ class VideoPost extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final rawThumb = (post?.content ?? []).isNotEmpty
-        ? (post?.content ?? []).first.thumbnail
-        : null;
+    final content = (post?.content ?? []).isNotEmpty ? post!.content!.first : null;
+    final rawThumb = content?.thumbnail;
+    final videoUrl = content?.content ?? '';
+
+    // If thumbnail looks like a video url, don't use it as image thumbnail
     final isVideoThumb = rawThumb != null &&
         (rawThumb.toLowerCase().endsWith('.mp4') ||
             rawThumb.toLowerCase().endsWith('.mov') ||
@@ -30,10 +32,16 @@ class VideoPost extends StatelessWidget {
             rawThumb.toLowerCase().endsWith('.m4v'));
     final thumbnail = isVideoThumb ? null : rawThumb;
 
+    // Determine what preview to show: thumbnail image, or the video URL as image fallback
+    final previewUrl = (thumbnail != null && thumbnail.isNotEmpty)
+        ? thumbnail
+        : null;
+
     return InkWell(
       onTap: () {
+        if (videoUrl.isEmpty) return;
         Get.to(() => VideoPreviewScreen(
-              videoUrl: (post?.content ?? []).first.content,
+              videoUrl: videoUrl,
               type: VideoType.post,
               post: post,
             ));
@@ -48,35 +56,62 @@ class VideoPost extends StatelessWidget {
               height: 240,
               width: double.infinity,
               color: const Color(0xFF1E293B),
-              child: (thumbnail != null && thumbnail.isNotEmpty)
+              child: previewUrl != null
                   ? CustomImage(
-                      image: thumbnail,
+                      image: previewUrl,
                       width: double.infinity,
                       fit: BoxFit.cover,
                     )
-                  : Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.videocam_rounded,
-                            size: 48,
-                            color: Colors.white.withValues(alpha: 0.5),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            'Watch Video',
-                            style: TextStyle(
-                              color: Colors.white.withValues(alpha: 0.7),
-                              fontSize: 14,
-                              fontFamily: FontRes.medium,
+                  : Stack(
+                      fit: StackFit.expand,
+                      children: [
+                        // Dark gradient background that looks like a video frame
+                        Container(
+                          decoration: const BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                              colors: [Color(0xFF1A1A2E), Color(0xFF0F0F1A)],
                             ),
                           ),
-                        ],
-                      ),
+                        ),
+                        Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Container(
+                              width: 64,
+                              height: 64,
+                              decoration: BoxDecoration(
+                                color: ColorRes.themeColor.withValues(alpha: 0.15),
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: ColorRes.themeColor.withValues(alpha: 0.4),
+                                  width: 2,
+                                ),
+                              ),
+                              child: const Icon(
+                                Icons.play_arrow_rounded,
+                                size: 36,
+                                color: ColorRes.themeColor,
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+                            Text(
+                              'Tap to watch video',
+                              style: TextStyle(
+                                color: Colors.white.withValues(alpha: 0.7),
+                                fontSize: 13,
+                                fontFamily: FontRes.medium,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
                     ),
             ),
-            Container(
+            // Play button overlay
+            if (previewUrl != null)
+              Container(
                 height: 53,
                 width: 53,
                 decoration: BoxDecoration(
@@ -84,7 +119,8 @@ class VideoPost extends StatelessWidget {
                     shape: BoxShape.circle),
                 padding: const EdgeInsets.all(15),
                 child: Image.asset(AssetRes.icPlay,
-                    alignment: Alignment.centerRight)),
+                    alignment: Alignment.centerRight),
+              ),
             Positioned(
               bottom: 0,
               left: 0,
@@ -102,7 +138,7 @@ class VideoPost extends StatelessWidget {
                       const SizedBox(width: 10),
                       Text(
                         NumberFormat.compact()
-                            .format((post?.content ?? []).first.viewCount ?? 0),
+                            .format(content?.viewCount ?? 0),
                         style: const TextStyle(
                             fontFamily: FontRes.medium,
                             color: ColorRes.davyGrey,

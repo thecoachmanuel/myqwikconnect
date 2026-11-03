@@ -29,18 +29,20 @@ class FeedScreenViewModel extends BaseViewModel {
   List<Post> postList = [];
   List<UserData> headerStories = [];
   bool isLoading = true;
+  bool isFetchingMore = false;
+  bool hasMore = true;
+  int currentPage = 1;
+  static const int _pageSize = 10;
   ScrollController scrollController = ScrollController();
   MoreBtnValue moreBtnValue = MoreBtnValue.share;
   UserData? myUserData;
-
-  // init Camera description
 
   Appdata? settingAppData;
 
   void init() {
     prefData();
     fetchFeedData();
-    fetchScrollData();
+    _setupScrollListener();
     PostUploadService.instance.newlyCreatedPost.listen((Post? newPost) {
       if (newPost != null) {
         postList.removeWhere((p) => p.id == newPost.id);
@@ -51,20 +53,43 @@ class FeedScreenViewModel extends BaseViewModel {
   }
 
   Future<void> onRefresh() async {
+    currentPage = 1;
+    hasMore = true;
+    postList.clear();
     fetchFeedData(isRefresh: true);
     await Future.delayed(const Duration(milliseconds: 600));
   }
 
   void fetchFeedData({bool isRefresh = false, VoidCallback? onDone}) {
-    if (isRefresh || postList.isEmpty) {
+    if (isRefresh) {
+      currentPage = 1;
+      hasMore = true;
       isLoading = true;
+      postList.clear();
+    } else if (postList.isEmpty) {
+      isLoading = true;
+      currentPage = 1;
     }
+
+    if (!hasMore && !isRefresh && postList.isNotEmpty) return;
+    if (isFetchingMore) return;
+
+    if (postList.isNotEmpty) {
+      isFetchingMore = true;
+      notifyListeners();
+    }
+
     ApiProvider().callPost(
         completion: (response) {
           Feed feed = Feed.fromJson(response);
           final incomingPosts = feed.data?.posts ?? [];
+
+          // Use pagination metadata from Feed model
+          hasMore = feed.data?.hasMore ?? (incomingPosts.length >= _pageSize);
+          final serverPage = feed.data?.currentPage;
+
           if (isRefresh || postList.isEmpty) {
-            postList = incomingPosts;
+            postList = List<Post>.from(incomingPosts);
           } else {
             final existingIds = postList.map((p) => p.id).toSet();
             for (var p in incomingPosts) {
@@ -74,30 +99,57 @@ class FeedScreenViewModel extends BaseViewModel {
               }
             }
           }
-          final rawStories = feed.data?.usersStories ?? [];
-          headerStories = rawStories.where((u) => (u.story?.length ?? 0) > 0).toList();
-          headerStories.sort((a, b) {
-            if (a.isAllStoryShown()) {
-              return 1;
+
+          // Stories only returned on first page
+          if (currentPage == 1 || serverPage == 1) {
+            final rawStories = feed.data?.usersStories ?? [];
+            if (rawStories.isNotEmpty) {
+              headerStories =
+                  rawStories.where((u) => (u.story?.length ?? 0) > 0).toList();
+              headerStories.sort((a, b) {
+                if (a.isAllStoryShown()) return 1;
+                return -1;
+              });
             }
-            return -1;
-          });
+          }
+
+          currentPage++;
           isLoading = false;
+          isFetchingMore = false;
           notifyListeners();
           onDone?.call();
         },
         url: Urls.aFetchHomePageData,
         param: {
           Urls.myUserId: SessionManager.instance.getUserID().toString(),
+          'page': currentPage.toString(),
         });
   }
+
+  void _setupScrollListener() {
+    scrollController.addListener(() {
+      if (!scrollController.hasClients) return;
+      final maxScroll = scrollController.position.maxScrollExtent;
+      final currentScroll = scrollController.offset;
+      // Load next page when within 200px of the bottom
+      if (currentScroll >= maxScroll - 200) {
+        if (!isLoading && !isFetchingMore && hasMore) {
+          fetchFeedData();
+        }
+      }
+    });
+  }
+
+  // Keep legacy method name for backward compat
+  void fetchScrollData() => _setupScrollListener();
 
   void fetchStories({required UserData? userData}) {
     ApiProvider().callPost(
         completion: (response) {
           FetchStories fetchStories = FetchStories.fromJson(response);
           final rawStories = fetchStories.data ?? [];
-          headerStories = rawStories.where((u) => (u.story?.length ?? 0) > 0).toList();
+          headerStories =
+              rawStories.where((u) => (u.story?.length ?? 0) > 0).toList();
           headerStories.sort((a, b) {
             if (a.isAllStoryShown()) {
               return 1;
@@ -131,17 +183,6 @@ class FeedScreenViewModel extends BaseViewModel {
         }
       }
       notifyListeners();
-    });
-  }
-
-  void fetchScrollData() {
-    scrollController.addListener(() {
-      if (scrollController.offset ==
-          scrollController.position.maxScrollExtent) {
-        if (!isLoading) {
-          fetchFeedData();
-        }
-      }
     });
   }
 
@@ -210,7 +251,8 @@ class FeedScreenViewModel extends BaseViewModel {
   }
 
   void sharePost(Post post) async {
-    ShareManager.shared.shareTheContent(key: ShareKeys.post, value: post.id ?? -1);
+    ShareManager.shared
+        .shareTheContent(key: ShareKeys.post, value: post.id ?? -1);
   }
 
   void prefData() async {
@@ -221,8 +263,9 @@ class FeedScreenViewModel extends BaseViewModel {
     getProfile();
   }
 
-  onProfilePictureClick({required List<UserData> userStories,
-    Function(UserData? data)? onCallback,
+  onProfilePictureClick(
+      {required List<UserData> userStories,
+      Function(UserData? data)? onCallback,
       required int userIndex}) {
     Get.bottomSheet<UserData?>(
       StoryViewScreen(stories: userStories, userIndex: userIndex),

@@ -7,6 +7,7 @@ import 'package:orange_ui/model/chat_and_live_stream/chat.dart';
 import 'package:orange_ui/service/extention/string_extention.dart';
 import 'package:orange_ui/service/session_manager.dart';
 import 'package:orange_ui/utils/app_res.dart';
+import 'package:orange_ui/utils/asset_res.dart';
 import 'package:orange_ui/utils/color_res.dart';
 import 'package:orange_ui/utils/font_res.dart';
 
@@ -192,6 +193,14 @@ class _ImageViewPageState extends State<ImageViewPage> {
                       fontFamily: FontRes.bold,
                     ),
                   ),
+                  if (widget.userData?.senderUser?.isHost == true) ...[
+                    const SizedBox(width: 4),
+                    Image.asset(
+                      AssetRes.tickMark,
+                      height: 16,
+                      width: 16,
+                    ),
+                  ],
                 ],
               ),
               if (widget.userData?.time != null)

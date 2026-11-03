@@ -40,9 +40,15 @@ class Data {
   Data({
     List<UserData>? usersStories,
     List<Post>? posts,
+    bool? hasMore,
+    int? totalCount,
+    int? currentPage,
   }) {
     _usersStories = usersStories;
     _posts = posts;
+    _hasMore = hasMore;
+    _totalCount = totalCount;
+    _currentPage = currentPage;
   }
 
   Data.fromJson(dynamic json) {
@@ -58,13 +64,22 @@ class Data {
         _posts?.add(Post.fromJson(v));
       });
     }
+    _hasMore = json['has_more'] as bool?;
+    _totalCount = json['total_count'] as int?;
+    _currentPage = json['current_page'] as int?;
   }
 
   List<UserData>? _usersStories;
   List<Post>? _posts;
+  bool? _hasMore;
+  int? _totalCount;
+  int? _currentPage;
 
   List<UserData>? get usersStories => _usersStories;
   List<Post>? get posts => _posts;
+  bool? get hasMore => _hasMore;
+  int? get totalCount => _totalCount;
+  int? get currentPage => _currentPage;
 
   Map<String, dynamic> toJson() {
     final map = <String, dynamic>{};
@@ -74,6 +89,9 @@ class Data {
     if (_posts != null) {
       map['posts'] = _posts?.map((v) => v.toJson()).toList();
     }
+    map['has_more'] = _hasMore;
+    map['total_count'] = _totalCount;
+    map['current_page'] = _currentPage;
     return map;
   }
 }

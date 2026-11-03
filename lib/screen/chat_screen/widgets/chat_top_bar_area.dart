@@ -73,34 +73,35 @@ class ChatTopBarArea extends StatelessWidget {
                       children: [
                         Row(
                           children: [
-                            Text(
-                              conversation?.user?.username != null
-                                  ? '${conversation?.user?.username} '.capitalize ?? ''
-                                  : ' ',
-                              style: const TextStyle(
-                                color: ColorRes.darkGrey,
-                                fontSize: 16,
-                                fontFamily: FontRes.bold,
+                            Flexible(
+                              child: Text(
+                                conversation?.user?.username != null
+                                    ? '${conversation?.user?.username} '.capitalize ?? ''
+                                    : ' ',
+                                style: const TextStyle(
+                                  color: ColorRes.darkGrey,
+                                  fontSize: 16,
+                                  fontFamily: FontRes.bold,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
                               ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
                             ),
-                            Text(
-                              conversation?.user?.age != null ? "${conversation?.user?.age}" : '',
-                              style: const TextStyle(
-                                color: ColorRes.darkGrey,
-                                fontSize: 16,
+                            if (conversation?.user?.isHost == true) ...[
+                              const SizedBox(width: 4),
+                              Image.asset(AssetRes.tickMark, height: 16, width: 16),
+                            ],
+                            if (conversation?.user?.age != null && conversation!.user!.age!.isNotEmpty) ...[
+                              const SizedBox(width: 6),
+                              Text(
+                                conversation!.user!.age!,
+                                style: const TextStyle(
+                                  color: ColorRes.darkGrey,
+                                  fontSize: 16,
+                                ),
+                                maxLines: 1,
                               ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                            const SizedBox(width: 5),
-                            Visibility(
-                                visible: conversation != null &&
-                                    conversation?.user != null &&
-                                    conversation?.user?.isHost != null &&
-                                    conversation!.user!.isHost!,
-                                child: Image.asset(AssetRes.tickMark, height: 15, width: 15)),
+                            ],
                           ],
                         ),
                         Row(

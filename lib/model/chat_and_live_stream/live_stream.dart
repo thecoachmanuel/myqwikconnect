@@ -6,7 +6,7 @@ class LiveStreamUser {
   String? _fullName;
   String? _hostIdentity;
   int? _id;
-  bool? _isVerified;
+  int? _isVerified;
   int? _age;
   String? _address;
   List<String>? _joinedUser;
@@ -20,7 +20,7 @@ class LiveStreamUser {
     String? fullName,
     String? hostIdentity,
     int? id,
-    bool? isVerified,
+    int? isVerified,
     List<String>? joinedUser,
     int? userId,
     String? userImage,
@@ -65,7 +65,15 @@ class LiveStreamUser {
     _fullName = json?["fullName"];
     _hostIdentity = json?["hostIdentity"];
     _id = json?["id"];
-    _isVerified = json?["isVerified"];
+    // Support legacy bool isVerified (false=0, true=1) and new int (0/1/2)
+    final rawVerified = json?["isVerified"];
+    if (rawVerified is int) {
+      _isVerified = rawVerified;
+    } else if (rawVerified is bool) {
+      _isVerified = rawVerified ? 1 : 0;
+    } else {
+      _isVerified = 0;
+    }
     if (json?["joinedUser"] != null) {
       _joinedUser = [];
       json?["joinedUser"].forEach((e) {
@@ -87,7 +95,7 @@ class LiveStreamUser {
 
   List<String>? get joinedUser => _joinedUser;
 
-  bool? get isVerified => _isVerified;
+  int? get isVerified => _isVerified;
 
   int? get id => _id;
 

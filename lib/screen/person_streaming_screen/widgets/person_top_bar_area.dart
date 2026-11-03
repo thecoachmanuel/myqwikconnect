@@ -89,18 +89,21 @@ class PersonTopBarArea extends StatelessWidget {
                                     fontSize: 16,
                                   ),
                                 ),
-                                const SizedBox(width: 3),
-                                Stack(
-                                  alignment: Alignment.center,
-                                  children: [
-                                    Container(
-                                        height: 10,
-                                        width: 10,
-                                        color: ColorRes.white),
-                                    Image.asset(AssetRes.tickMark,
-                                        height: 18, width: 18),
-                                  ],
-                                ),
+                                // Only show verified tick for verified hosts (isVerified >= 2)
+                                if ((liveStreamUser?.isVerified ?? 0) >= 2) ...[
+                                  const SizedBox(width: 3),
+                                  Stack(
+                                    alignment: Alignment.center,
+                                    children: [
+                                      Container(
+                                          height: 10,
+                                          width: 10,
+                                          color: ColorRes.white),
+                                      Image.asset(AssetRes.tickMark,
+                                          height: 18, width: 18),
+                                    ],
+                                  ),
+                                ],
                               ],
                             ),
                             Expanded(
@@ -175,7 +178,7 @@ class PersonTopBarArea extends StatelessWidget {
                       ),
                       Center(
                         child: Text(
-                          "${NumberFormat.compact(locale: 'en').format(int.parse('${liveStreamUser?.watchingCount ?? '0'}'))} ${S.current.viewers}",
+                          "${NumberFormat.compact(locale: 'en').format(int.tryParse('${liveStreamUser?.watchingCount ?? 0}') ?? (liveStreamUser?.watchingCount ?? 0))} ${S.current.viewers}",
                           style: const TextStyle(
                             color: ColorRes.white,
                             fontSize: 13,

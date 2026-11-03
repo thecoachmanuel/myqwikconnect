@@ -122,7 +122,7 @@ class UserDetailScreenViewModel extends BaseViewModel {
       id: DateTime.now().millisecondsSinceEpoch,
       watchingCount: 0,
       joinedUser: [],
-      isVerified: otherUserData?.isVerified == 2,
+      isVerified: otherUserData?.isVerified,
       hostIdentity: otherUserData?.identity,
       collectedDiamond: 0,
       agoraToken: '',

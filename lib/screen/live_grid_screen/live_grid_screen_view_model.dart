@@ -101,7 +101,7 @@ class LiveGridScreenViewModel extends BaseViewModel {
                 id: DateTime.now().millisecondsSinceEpoch,
                 collectedDiamond: 0,
                 hostIdentity: userData?.identity,
-                isVerified: false,
+                isVerified: userData?.isVerified,
                 joinedUser: [],
                 address: userData?.address,
                 age: userData?.age,

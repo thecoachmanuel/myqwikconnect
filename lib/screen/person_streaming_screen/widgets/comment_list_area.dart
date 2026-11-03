@@ -32,9 +32,9 @@ class CommentListArea extends StatelessWidget {
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              ColorRes.themeColor,
-              Colors.transparent,
-              Colors.transparent,
+              ColorRes.black,
+              ColorRes.transparent,
+              ColorRes.transparent,
             ],
             stops: [0.0, 0.3, 1.0],
           ).createShader(bounds);

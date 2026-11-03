@@ -427,7 +427,8 @@ class PersonStreamingScreenViewModel extends BaseViewModel {
     minusCoinApi(price: data?.coinPrice ?? 0);
     Get.back();
     // Show brief "Gift Sent!" confirmation snackbar
-    CommonUI.snackBar(message: '🎁 Gift sent to ${liveStreamUser?.fullName ?? 'host'}!');
+    CommonUI.snackBar(
+        message: '🎁 Gift sent to ${liveStreamUser?.fullName ?? 'host'}!');
   }
 
   void initFirebase() async {

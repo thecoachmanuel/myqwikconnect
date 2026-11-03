@@ -459,6 +459,7 @@ class ApiProvider {
         headers: headers,
         body: {
           'email': email,
+          'identity': SessionManager.instance.getUser()?.identity ?? email,
           'amount': amount.toString(),
           'diamonds': diamonds.toString(),
           'plan_id': planId,
@@ -500,6 +501,7 @@ class ApiProvider {
         body: {
           'reference': reference,
           'user_id': SessionManager.instance.getUserID().toString(),
+          'identity': SessionManager.instance.getUser()?.identity ?? '',
           'diamonds': diamonds.toString(),
           'months': months.toString(),
           'type': type,

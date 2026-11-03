@@ -2,7 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import 'package:orange_ui/api_provider/api_provider.dart';
 import 'package:orange_ui/common/common_ui.dart';
-import 'package:orange_ui/common/confirmation_dialog.dart';
+import 'package:orange_ui/common/payment_auto_processing_dialog.dart';
 import 'package:orange_ui/model/get_diamond_pack.dart';
 import 'package:orange_ui/service/session_manager.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
@@ -77,42 +77,29 @@ class BottomDiamondShopModel extends BaseViewModel {
 
       final uri = Uri.tryParse(authUrl);
 
-      // Sandbox reference — show instant native confirmation without opening URL
+      // Sandbox reference — automatically verify and credit immediately (no manual button needed)
       if (reference != null && reference.startsWith('ORANGE_SANDBOX_')) {
-        Get.dialog(
-          ConfirmationDialog(
-            heading: '🧪 Demo Payment',
-            description:
-                'Sandbox mode is active. Tap "Complete" to simulate a successful payment of ${coinPlan.priceString} and receive ${coinPlan.coin} diamonds instantly.',
-            textButton: 'Complete Demo Purchase',
-            onTap: () async {
-              Get.back();
-              CommonUI.lottieLoader();
-              final verifyRes = await ApiProvider().verifyPaystack(
-                reference: reference,
-                diamonds: coinPlan.coin,
-                type: 'diamond',
-              );
-              Get.back();
-              if (verifyRes.status == true) {
-                CommonUI.snackBar(
-                    message: '💎 ${coinPlan.coin} diamonds added to your wallet!');
-                // Instantly update local wallet so the count reflects immediately
-                final currentUser = SessionManager.instance.getUser();
-                if (currentUser != null) {
-                  currentUser.wallet = (currentUser.wallet ?? 0) + coinPlan.coin;
-                  SessionManager.instance.setUser(currentUser);
-                }
-                // Also re-fetch from server in background for accuracy
-                ApiProvider().fetchMyUserProfile();
-                Get.back(result: coinPlan.coin);
-              } else {
-                CommonUI.snackBar(
-                    message: verifyRes.message ?? 'Demo payment failed.');
-              }
-            },
-          ),
+        CommonUI.lottieLoader();
+        final verifyRes = await ApiProvider().verifyPaystack(
+          reference: reference,
+          diamonds: coinPlan.coin,
+          type: 'diamond',
         );
+        Get.back(); // close loader
+        if (verifyRes.status == true) {
+          CommonUI.snackBar(
+              message: '💎 ${coinPlan.coin} diamonds added to your wallet!');
+          final currentUser = SessionManager.instance.getUser();
+          if (currentUser != null) {
+            currentUser.wallet = (currentUser.wallet ?? 0) + coinPlan.coin;
+            SessionManager.instance.setUser(currentUser);
+          }
+          ApiProvider().fetchMyUserProfile();
+          Get.back(result: coinPlan.coin);
+        } else {
+          CommonUI.snackBar(
+              message: verifyRes.message ?? 'Demo payment failed.');
+        }
         return;
       }
 
@@ -124,40 +111,28 @@ class BottomDiamondShopModel extends BaseViewModel {
         }
       }
 
-      // Show payment verification dialog
+      // Automatic payment verification — polls Paystack in background and auto-completes
       Get.dialog(
-        ConfirmationDialog(
-          heading: 'Confirm Payment',
+        PaymentAutoProcessingDialog(
+          reference: reference ?? '',
+          type: 'diamond',
+          diamonds: coinPlan.coin,
+          heading: 'Adding Diamonds...',
           description:
-              'Complete your payment of ${coinPlan.priceString} on Paystack, then tap Confirm below.',
-          textButton: 'Confirm Payment',
-          onTap: () async {
-            Get.back();
-            CommonUI.lottieLoader();
-            final verifyRes = await ApiProvider().verifyPaystack(
-              reference: reference ?? '',
-              diamonds: coinPlan.coin,
-              type: 'diamond',
-            );
-            Get.back();
-            if (verifyRes.status == true) {
-              CommonUI.snackBar(
-                  message: '💎 ${coinPlan.coin} diamonds added to your wallet!');
-              // Instantly update local wallet so the count reflects immediately
-              final currentUser = SessionManager.instance.getUser();
-              if (currentUser != null) {
-                currentUser.wallet = (currentUser.wallet ?? 0) + coinPlan.coin;
-                SessionManager.instance.setUser(currentUser);
-              }
-              // Also re-fetch from server in background for accuracy
-              ApiProvider().fetchMyUserProfile();
-              Get.back(result: coinPlan.coin);
-            } else {
-              CommonUI.snackBar(
-                  message: verifyRes.message ?? 'Payment verification failed: payment was not completed on Paystack.');
+              'Please complete your payment of ${coinPlan.priceString} in the Paystack window.\n\nYour diamonds will be added to your wallet automatically once approved — no need to confirm manually.',
+          onSuccess: (verifyRes) {
+            CommonUI.snackBar(
+                message: '💎 ${coinPlan.coin} diamonds added to your wallet!');
+            final currentUser = SessionManager.instance.getUser();
+            if (currentUser != null) {
+              currentUser.wallet = (currentUser.wallet ?? 0) + coinPlan.coin;
+              SessionManager.instance.setUser(currentUser);
             }
+            ApiProvider().fetchMyUserProfile();
+            Get.back(result: coinPlan.coin);
           },
         ),
+        barrierDismissible: false,
       );
     } catch (e) {
       Get.back();

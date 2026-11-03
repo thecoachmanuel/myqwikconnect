@@ -4,7 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import 'package:orange_ui/api_provider/api_provider.dart';
 import 'package:orange_ui/common/common_ui.dart';
-import 'package:orange_ui/common/confirmation_dialog.dart';
+import 'package:orange_ui/common/payment_auto_processing_dialog.dart';
 import 'package:orange_ui/model/get_package.dart';
 import 'package:orange_ui/model/user/registration_user.dart';
 import 'package:orange_ui/service/session_manager.dart';
@@ -98,46 +98,34 @@ class SubscriptionSheetController extends GetxController {
 
       final uri = Uri.tryParse(authUrl);
 
-      // Sandbox reference — show instant native dialog without opening external URL
+      // Sandbox reference — automatically verify and activate immediately (no manual button needed)
       if (reference != null && reference.startsWith('ORANGE_SANDBOX_')) {
-        final pkgLabel = selectedAdminPackage.value?.title ?? 'VIP';
-        Get.dialog(
-          ConfirmationDialog(
-            heading: '🧪 Demo VIP Activation',
-            description:
-                'Sandbox mode is active. Tap "Activate" to simulate a successful VIP subscription payment and activate $pkgLabel instantly.',
-            textButton: 'Activate VIP Demo',
-            onTap: () async {
-              Get.back();
-              CommonUI.lottieLoader();
-              final verifyRes = await ApiProvider().verifyPaystack(
-                reference: reference,
-                type: 'subscription',
-                months: monthsCount,
-              );
-              Get.back();
-              if (verifyRes.status == true) {
-                purchaseCallBack?.call();
-                UserData? user = SessionManager.instance.getUser();
-                user?.isVerified = 3;
-                user?.isPro = 1;
-                if (verifyRes.data != null) {
-                  user?.proExpireDate = verifyRes.data?.proExpireDate ?? verifyRes.data?.toString();
-                }
-                SessionManager.instance.setUser(user);
-                isSubscribe.value = true;
-                ApiProvider().updateProfile(isVerified: 3);
-                SessionManager.instance.updateFirebase();
-                CommonUI.snackBar(
-                    message: 'VIP Subscription activated successfully!');
-                Get.back(result: true);
-              } else {
-                CommonUI.snackBar(
-                    message: verifyRes.message ?? 'Demo activation failed.');
-              }
-            },
-          ),
+        CommonUI.lottieLoader();
+        final verifyRes = await ApiProvider().verifyPaystack(
+          reference: reference,
+          type: 'subscription',
+          months: monthsCount,
         );
+        Get.back(); // close loader
+        if (verifyRes.status == true) {
+          purchaseCallBack?.call();
+          UserData? user = SessionManager.instance.getUser();
+          user?.isVerified = 3;
+          user?.isPro = 1;
+          if (verifyRes.data != null) {
+            user?.proExpireDate = verifyRes.data?.proExpireDate ?? verifyRes.data?.toString();
+          }
+          SessionManager.instance.setUser(user);
+          isSubscribe.value = true;
+          ApiProvider().updateProfile(isVerified: 3);
+          SessionManager.instance.updateFirebase();
+          CommonUI.snackBar(
+              message: '👑 VIP Subscription activated successfully!');
+          Get.back(result: true);
+        } else {
+          CommonUI.snackBar(
+              message: verifyRes.message ?? 'Demo activation failed.');
+        }
         return;
       }
 
@@ -149,42 +137,33 @@ class SubscriptionSheetController extends GetxController {
         }
       }
 
+      // Automatic payment verification — polls Paystack in background and auto-completes
       Get.dialog(
-        ConfirmationDialog(
-          heading: '✅ Confirm VIP Payment',
+        PaymentAutoProcessingDialog(
+          reference: reference ?? '',
+          type: 'subscription',
+          months: monthsCount,
+          heading: 'Activating VIP...',
           description:
-              'After completing your payment on Paystack, tap "Confirm" to activate your VIP subscription instantly.',
-          textButton: 'Confirm VIP',
-          onTap: () async {
-            Get.back();
-            CommonUI.lottieLoader();
-            final verifyRes = await ApiProvider().verifyPaystack(
-              reference: reference ?? '',
-              type: 'subscription',
-              months: monthsCount,
-            );
-            Get.back();
-            if (verifyRes.status == true) {
-              purchaseCallBack?.call();
-              UserData? user = SessionManager.instance.getUser();
-              user?.isVerified = 3;
-              user?.isPro = 1;
-              if (verifyRes.data != null) {
-                user?.proExpireDate = verifyRes.data?.proExpireDate;
-              }
-              SessionManager.instance.setUser(user);
-              isSubscribe.value = true;
-              ApiProvider().updateProfile(isVerified: 3);
-              SessionManager.instance.updateFirebase();
-              CommonUI.snackBar(
-                  message: '👑 VIP Subscription activated successfully!');
-              Get.back(result: true);
-            } else {
-              CommonUI.snackBar(
-                  message: verifyRes.message ?? 'Payment verification failed');
+              'Please complete your payment in the Paystack window.\n\nYour VIP subscription will be activated automatically once payment is approved — no need to confirm manually.',
+          onSuccess: (verifyRes) {
+            purchaseCallBack?.call();
+            UserData? user = SessionManager.instance.getUser();
+            user?.isVerified = 3;
+            user?.isPro = 1;
+            if (verifyRes.data != null) {
+              user?.proExpireDate = verifyRes.data?.proExpireDate ?? verifyRes.data?.toString();
             }
+            SessionManager.instance.setUser(user);
+            isSubscribe.value = true;
+            ApiProvider().updateProfile(isVerified: 3);
+            SessionManager.instance.updateFirebase();
+            CommonUI.snackBar(
+                message: '👑 VIP Subscription activated successfully!');
+            Get.back(result: true);
           },
         ),
+        barrierDismissible: false,
       );
       return;
     } catch (_) {}

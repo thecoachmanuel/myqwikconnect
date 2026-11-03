@@ -163052,7 +163052,7 @@ r=A.Q(A.z("Allow Location Access",o,"allowLocationAccess",A.b([],s),o),o,o,o,o,o
 A.aB(a,B.y,m).toString
 q=t.N
 p=t.p
-q=A.ac(A.b([r,A.Q(A.bXl(A.z(u.R,o,u.o,A.b([],s),o),A.L(["appname","Orange"],q,q)),o,o,o,o,o,B.bv5,B.b7,o),B.yV],p),B.l,B.j,B.i,10)
+q=A.ac(A.b([r,A.Q(A.bXl(A.z(u.R,o,u.o,A.b([],s),o),A.L(["appname","QwikConnect"],q,q)),o,o,o,o,o,B.bv5,B.b7,o),B.yV],p),B.l,B.j,B.i,10)
 A.aB(a,B.y,m).toString
 r=A.hD(o,!0,o,o,o,o,o,new A.b40(),o,A.z("Allow Permission",o,"allowPermission",A.b([],s),o),o)
 A.aB(a,B.y,m).toString

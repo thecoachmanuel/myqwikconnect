@@ -2,7 +2,7 @@ import 'package:orange_ui/generated/l10n.dart';
 
 class AppRes {
   // AppName
-  static const String appName = 'Orange';
+  static const String appName = 'QwikConnect';
 
   // For Datetime
   static const String hmmA = "h:mm a";

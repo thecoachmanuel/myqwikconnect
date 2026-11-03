@@ -1,11 +1,11 @@
 {
-    "name": "Orange",
-    "short_name": "Orange",
+    "name": "QwikConnect",
+    "short_name": "QwikConnect",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#FE1B03",
     "theme_color": "#FE1B03",
-    "description": "Orange - Dating & Social App",
+    "description": "QwikConnect - Connect, Chat & Dating App",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

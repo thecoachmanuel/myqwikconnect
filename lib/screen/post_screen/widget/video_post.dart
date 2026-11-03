@@ -19,9 +19,16 @@ class VideoPost extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final thumbnail = (post?.content ?? []).isNotEmpty
+    final rawThumb = (post?.content ?? []).isNotEmpty
         ? (post?.content ?? []).first.thumbnail
         : null;
+    final isVideoThumb = rawThumb != null &&
+        (rawThumb.toLowerCase().endsWith('.mp4') ||
+            rawThumb.toLowerCase().endsWith('.mov') ||
+            rawThumb.toLowerCase().endsWith('.webm') ||
+            rawThumb.toLowerCase().endsWith('.avi') ||
+            rawThumb.toLowerCase().endsWith('.m4v'));
+    final thumbnail = isVideoThumb ? null : rawThumb;
 
     return InkWell(
       onTap: () {
@@ -38,12 +45,36 @@ class VideoPost extends StatelessWidget {
           children: [
             Container(
               constraints: BoxConstraints(maxHeight: Get.height / 1.7),
+              height: 240,
               width: double.infinity,
-              child: CustomImage(
-                image: thumbnail,
-                width: double.infinity,
-                fit: BoxFit.cover,
-              ),
+              color: const Color(0xFF1E293B),
+              child: (thumbnail != null && thumbnail.isNotEmpty)
+                  ? CustomImage(
+                      image: thumbnail,
+                      width: double.infinity,
+                      fit: BoxFit.cover,
+                    )
+                  : Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.videocam_rounded,
+                            size: 48,
+                            color: Colors.white.withValues(alpha: 0.5),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'Watch Video',
+                            style: TextStyle(
+                              color: Colors.white.withValues(alpha: 0.7),
+                              fontSize: 14,
+                              fontFamily: FontRes.medium,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
             ),
             Container(
                 height: 53,

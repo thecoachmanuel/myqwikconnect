@@ -45,8 +45,13 @@ class MapScreenViewModel extends BaseViewModel {
   void init() {
     selectedDistance = distanceList.first;
     manager = _initClusterManager();
-    final lat = double.tryParse(myUserData?.latitude ?? '') ?? center.latitude;
-    final lon = double.tryParse(myUserData?.longitude ?? '') ?? center.longitude;
+    final savedLatLng = SessionManager.instance.getLatLng();
+    final lat = (savedLatLng != null && savedLatLng.latitude != 0.0)
+        ? savedLatLng.latitude
+        : (double.tryParse(myUserData?.latitude ?? '') ?? center.latitude);
+    final lon = (savedLatLng != null && savedLatLng.longitude != 0.0)
+        ? savedLatLng.longitude
+        : (double.tryParse(myUserData?.longitude ?? '') ?? center.longitude);
     center = LatLng(lat, lon);
     position = Position(
         longitude: lon,
@@ -60,7 +65,25 @@ class MapScreenViewModel extends BaseViewModel {
         speed: 0.0,
         speedAccuracy: 0.0);
     getUserByCoordinatesApiCall(latitude: lat, longitude: lon, km: selectedDistance);
+    _requestRealLocation();
     notifyListeners();
+  }
+
+  void _requestRealLocation() async {
+    try {
+      final pos = await getUserCurrentLocation();
+      if (pos != null) {
+        position = pos;
+        center = LatLng(pos.latitude, pos.longitude);
+        SessionManager.instance.setLatLng(value: center);
+        getUserByCoordinatesApiCall(
+            latitude: pos.latitude, longitude: pos.longitude, km: selectedDistance);
+        try {
+          mapController.animateCamera(CameraUpdate.newLatLng(center));
+        } catch (_) {}
+        notifyListeners();
+      }
+    } catch (_) {}
   }
 
   void moveToMyLocation() async {

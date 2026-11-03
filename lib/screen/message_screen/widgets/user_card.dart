@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:orange_ui/common/common_fun.dart';
@@ -15,6 +14,7 @@ class UserCard extends StatelessWidget {
   final String? image;
   final bool newMsg;
   final bool? tickMark;
+  final bool isOnline;
 
   const UserCard({
     super.key,
@@ -25,6 +25,7 @@ class UserCard extends StatelessWidget {
     required this.image,
     required this.newMsg,
     required this.tickMark,
+    this.isOnline = false,
   });
 
   @override
@@ -44,13 +45,36 @@ class UserCard extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
-              CustomImage(
-                image: image,
-                fullname: name,
-                height: 53,
-                width: 53,
-                radius: 30,
-                fit: BoxFit.cover,
+              Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  CustomImage(
+                    image: image,
+                    fullname: name,
+                    height: 53,
+                    width: 53,
+                    radius: 30,
+                    fit: BoxFit.cover,
+                  ),
+                  Positioned(
+                    bottom: 1,
+                    right: 1,
+                    child: Container(
+                      width: 13,
+                      height: 13,
+                      decoration: BoxDecoration(
+                        color: isOnline
+                            ? const Color(0xFF22C55E)
+                            : const Color(0xFF9CA3AF),
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: Colors.white,
+                          width: 2,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
               const SizedBox(width: 12),
               Expanded(

@@ -106,15 +106,6 @@ class ChatTopBarArea extends StatelessWidget {
                         Row(
                           children: [
                             if (isOnline) ...[
-                              Container(
-                                width: 7,
-                                height: 7,
-                                margin: const EdgeInsets.only(right: 5),
-                                decoration: const BoxDecoration(
-                                  color: Color(0xFF22C55E),
-                                  shape: BoxShape.circle,
-                                ),
-                              ),
                               const Text(
                                 'Online',
                                 style: TextStyle(

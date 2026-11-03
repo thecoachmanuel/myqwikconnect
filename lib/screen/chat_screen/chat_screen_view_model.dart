@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
@@ -774,22 +775,32 @@ class ChatScreenViewModel extends BaseViewModel {
             localVideoPath: picked.path,
             caption: msg,
             uploadCallback: () async {
-              final [thumbRes, videoRes] = await Future.wait([
-                ApiProvider().getStoreFileGivePath(
-                  image: thumbnail,
-                  filename: 'thumb_${picked.name}.jpg',
-                ),
-                ApiProvider().getStoreFileGivePath(
-                  image: picked,
-                  bytes: videoBytes,
-                  filename: picked.name,
-                ),
-              ]);
+              // 1. Upload video file first
+              final videoRes = await ApiProvider().getStoreFileGivePath(
+                image: picked,
+                bytes: videoBytes,
+                filename: picked.name,
+              );
 
-              if (thumbRes.status == true && videoRes.status == true) {
-                return {'image': thumbRes.path, 'video': videoRes.path};
+              if (videoRes.status != true || (videoRes.path ?? '').isEmpty) {
+                return {};
               }
-              return {};
+
+              // 2. Try uploading thumbnail gracefully (optional)
+              String thumbUrl = videoRes.path!;
+              try {
+                if (!kIsWeb && thumbnail != null && thumbnail.existsSync()) {
+                  final thumbRes = await ApiProvider().getStoreFileGivePath(
+                    image: thumbnail,
+                    filename: 'thumb_${picked.name}.jpg',
+                  );
+                  if (thumbRes.status == true && (thumbRes.path ?? '').isNotEmpty) {
+                    thumbUrl = thumbRes.path!;
+                  }
+                }
+              } catch (_) {}
+
+              return {'image': thumbUrl, 'video': videoRes.path!};
             },
           );
         },

@@ -23,6 +23,33 @@ class MessageScreenViewModel extends BaseViewModel {
   StreamSubscription<QuerySnapshot<Conversation>>? subscription;
   UserData? userData;
   Appdata? settingAppData;
+  Map<int, bool> onlineUsers = {};
+  final Map<int, StreamSubscription> _presenceSubs = {};
+
+  bool isUserOnline(int? userId) {
+    if (userId == null) return false;
+    return onlineUsers[userId] ?? false;
+  }
+
+  void _listenToUsersPresence(List<Conversation> list) {
+    for (var conv in list) {
+      final targetId = conv.user?.userid;
+      if (targetId != null && targetId > 0 && !_presenceSubs.containsKey(targetId)) {
+        _presenceSubs[targetId] = db
+            .collection('user_presence')
+            .doc('$targetId')
+            .snapshots()
+            .listen((doc) {
+          if (doc.exists && doc.data() != null) {
+            onlineUsers[targetId] = doc.data()!['isOnline'] == true;
+          } else {
+            onlineUsers[targetId] = false;
+          }
+          notifyListeners();
+        }, onError: (_) {});
+      }
+    }
+  }
 
   void init() {
     getSettingData();
@@ -76,6 +103,7 @@ class MessageScreenViewModel extends BaseViewModel {
         userList = list;
         isLoading = false;
         _saveCachedUserList(userId, list);
+        _listenToUsersPresence(list);
         notifyListeners();
       }, onError: (err) {
         Get.log('MessageScreen getChatUsers stream error: $err');
@@ -107,6 +135,7 @@ class MessageScreenViewModel extends BaseViewModel {
         }
         if (list.isNotEmpty) {
           userList = list;
+          _listenToUsersPresence(list);
           notifyListeners();
         }
       }
@@ -130,6 +159,10 @@ class MessageScreenViewModel extends BaseViewModel {
   @override
   void dispose() {
     subscription?.cancel();
+    for (var sub in _presenceSubs.values) {
+      sub.cancel();
+    }
+    _presenceSubs.clear();
     super.dispose();
   }
 

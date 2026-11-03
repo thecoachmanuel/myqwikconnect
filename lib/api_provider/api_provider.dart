@@ -1068,18 +1068,22 @@ class ApiProvider {
         String keyName = entry.key;
         List<XFile?> files = entry.value;
         for (var xFile in files) {
-          if (xFile != null && xFile.path.isNotEmpty) {
-            if (kIsWeb) {
+          if (xFile != null) {
+            try {
               final bytes = await xFile.readAsBytes();
-              var multipartFile = http.MultipartFile.fromBytes(keyName, bytes,
-                  filename: xFile.name);
-              request.files.add(multipartFile);
-            } else {
-              File file = File(xFile.path);
-              var multipartFile = http.MultipartFile(
-                  keyName, file.readAsBytes().asStream(), file.lengthSync(),
-                  filename: xFile.name);
-              request.files.add(multipartFile);
+              if (bytes.isNotEmpty) {
+                final fileName = xFile.name.isNotEmpty
+                    ? xFile.name
+                    : 'upload_${DateTime.now().millisecondsSinceEpoch}.mp4';
+                var multipartFile = http.MultipartFile.fromBytes(
+                  keyName,
+                  bytes,
+                  filename: fileName,
+                );
+                request.files.add(multipartFile);
+              }
+            } catch (e) {
+              log('Error reading file for upload: $e');
             }
           }
         }

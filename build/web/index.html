@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+
 <head>
   <base href="/">
 
@@ -8,7 +9,8 @@
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content">
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content">
   <meta name="description" content="QwikConnect - Connect, Chat & Dating App">
   <meta name="theme-color" content="#FE1B03">
 
@@ -19,17 +21,19 @@
   <link rel="apple-touch-icon" href="icons/Icon-192.png">
 
   <!-- Favicon -->
-  <link rel="icon" type="image/png" href="favicon.png"/>
+  <link rel="icon" type="image/png" href="favicon.png" />
 
   <title>QwikConnect</title>
   <link rel="manifest" href="manifest.json">
-  <meta name="google-signin-client_id" content="260849839740-6r3qi066dh6lka0duktr89go7t9pm4vo.apps.googleusercontent.com">
+  <meta name="google-signin-client_id"
+    content="260849839740-6r3qi066dh6lka0duktr89go7t9pm4vo.apps.googleusercontent.com">
 
   <!-- Performance Preconnect -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="preconnect" href="https://www.gstatic.com" crossorigin>
-  <link rel="preload" href="https://fonts.gstatic.com/s/notocoloremoji/v25/0FlNmVPttA2sSVGGJLsDa5u0.ttf" as="font" type="font/ttf" crossorigin>
+  <link rel="preload" href="https://fonts.gstatic.com/s/notocoloremoji/v25/0FlNmVPttA2sSVGGJLsDa5u0.ttf" as="font"
+    type="font/ttf" crossorigin>
 
   <script src="https://maps.googleapis.com/maps/api/js?loading=async" async defer></script>
   <!-- Agora Web RTC SDK for video calling/streaming on Web -->
@@ -46,11 +50,14 @@
       src: url('https://fonts.gstatic.com/s/notocoloremoji/v25/0FlNmVPttA2sSVGGJLsDa5u0.ttf') format('truetype');
       font-display: swap;
     }
+
     * {
       box-sizing: border-box;
       -webkit-tap-highlight-color: transparent;
     }
-    html, body {
+
+    html,
+    body {
       margin: 0;
       padding: 0;
       width: 100%;
@@ -66,6 +73,7 @@
       -webkit-user-select: none;
       user-select: none;
     }
+
     #loading-indicator {
       position: fixed;
       top: 0;
@@ -81,6 +89,7 @@
       transition: opacity 0.3s ease-out;
       pointer-events: none;
     }
+
     .spinner {
       width: 44px;
       height: 44px;
@@ -89,13 +98,19 @@
       border-radius: 50%;
       animation: spin 0.8s linear infinite;
     }
+
     @keyframes spin {
-      to { transform: rotate(360deg); }
+      to {
+        transform: rotate(360deg);
+      }
     }
+
     #update-banner {
       display: none;
       position: fixed;
-      top: 0; left: 0; right: 0;
+      top: 0;
+      left: 0;
+      right: 0;
       z-index: 999999;
       background: linear-gradient(90deg, #FF6F43, #FE1B03);
       color: white;
@@ -105,15 +120,22 @@
       font-size: 14px;
       font-weight: 600;
       cursor: pointer;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
       animation: slideDown 0.3s ease-out;
     }
+
     @keyframes slideDown {
-      from { transform: translateY(-100%); }
-      to   { transform: translateY(0); }
+      from {
+        transform: translateY(-100%);
+      }
+
+      to {
+        transform: translateY(0);
+      }
     }
   </style>
 </head>
+
 <body>
   <div id="loading-indicator">
     <div class="spinner"></div>
@@ -127,7 +149,7 @@
       var loader = document.getElementById('loading-indicator');
       if (loader) {
         loader.style.opacity = '0';
-        setTimeout(function() {
+        setTimeout(function () {
           if (loader && loader.parentNode) {
             loader.parentNode.removeChild(loader);
           }
@@ -143,7 +165,7 @@
   <script src="flutter_bootstrap.js" async></script>
 
   <script>
-    (function() {
+    (function () {
       var BUILD_KEY = 'orange_app_build_version';
 
       async function checkVersionAndUpdate() {
@@ -166,8 +188,8 @@
             if ('caches' in window) {
               try {
                 var keys = await caches.keys();
-                await Promise.all(keys.map(function(k) { return caches.delete(k); }));
-              } catch (e) {}
+                await Promise.all(keys.map(function (k) { return caches.delete(k); }));
+              } catch (e) { }
             }
 
             // Show update banner so user can tap to get newest features
@@ -185,7 +207,7 @@
       }
 
       // Check on visibility change (user switching back to tab/PWA)
-      document.addEventListener('visibilitychange', function() {
+      document.addEventListener('visibilitychange', function () {
         if (document.visibilityState === 'visible') {
           checkVersionAndUpdate();
         }
@@ -198,7 +220,7 @@
 
       // Service worker handling
       if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.getRegistrations().then(function(registrations) {
+        navigator.serviceWorker.getRegistrations().then(function (registrations) {
           for (var i = 0; i < registrations.length; i++) {
             var registration = registrations[i];
             registration.update();
@@ -213,7 +235,7 @@
 
   <script>
     // Paystack Inline JS Bridge for seamless embedded payment in Orange Web
-    window.addEventListener('orange_open_paystack', function(e) {
+    window.addEventListener('orange_open_paystack', function (e) {
       var data = {};
       try {
         data = typeof e.detail === 'string' ? JSON.parse(e.detail) : (e.detail || {});
@@ -235,10 +257,10 @@
         console.warn('[Orange Paystack] PaystackPop script not loaded, retrying load...');
         var scr = document.createElement('script');
         scr.src = 'https://js.paystack.co/v1/inline.js';
-        scr.onload = function() {
+        scr.onload = function () {
           setupAndOpen();
         };
-        scr.onerror = function() {
+        scr.onerror = function () {
           sendResponse('error', data.ref, 'Failed to load Paystack Inline SDK');
         };
         document.head.appendChild(scr);
@@ -262,12 +284,12 @@
             amount: Number(data.amount) || 10000,
             ref: data.ref || ('ORANGE_' + Date.now()),
             currency: data.currency || 'NGN',
-            callback: function(response) {
+            callback: function (response) {
               console.log('[Orange Paystack] Payment callback:', response);
               var ref = (response && (response.reference || response.trxref)) || data.ref || '';
               sendResponse('success', ref);
             },
-            onClose: function() {
+            onClose: function () {
               console.log('[Orange Paystack] Popup closed/cancelled by user');
               sendResponse('cancelled', data.ref);
             }
@@ -288,4 +310,5 @@
     });
   </script>
 </body>
+
 </html>

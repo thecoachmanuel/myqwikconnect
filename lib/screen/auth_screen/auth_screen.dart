@@ -23,114 +23,113 @@ class AuthScreen extends StatelessWidget {
       viewModelBuilder: () => AuthScreenViewModel(),
       builder: (context, viewModel, child) {
         return Scaffold(
-          body: Stack(
-            children: [
-              Container(
-                width: double.infinity,
-                height: double.infinity,
-                foregroundDecoration: BoxDecoration(
-                    color: ColorRes.themeColor.withValues(alpha: 0.15)),
-                child: Image.asset(AssetRes.icLoginBackground,
-                    height: double.infinity, width: double.infinity),
-              ),
-              SafeArea(
-                bottom: false,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    // ── Logo + Slogan block ──────────────────────────────
-                    Padding(
-                      padding: const EdgeInsets.only(top: 8),
-                      child: Column(
-                        children: [
-                          // Exact Explore screen logo — Qwik Orange Gradient, Connect Black, a little bigger
-                          const QwikConnectLogo(
-                            fontSize: 44,
-                            connectColor: ColorRes.black,
-                          ),
-                          const SizedBox(height: 6),
-                          // Slogan
-                          Text(
-                            'Where young professionals meet real connections.',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              fontFamily: FontRes.semiBold,
-                              fontSize: 13.5,
-                              color: ColorRes.black.withValues(alpha: 0.85),
-                              letterSpacing: 0.2,
-                              height: 1.4,
-                              shadows: const [
-                                Shadow(
-                                  color: Colors.white,
-                                  blurRadius: 8,
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Container(
-                      padding: const EdgeInsets.only(
-                          left: 15, right: 15, bottom: 60, top: 25),
-                      decoration: const ShapeDecoration(
-                          shape: SmoothRectangleBorder(
-                            borderRadius: SmoothBorderRadius.vertical(
-                                top: SmoothRadius(
-                                    cornerRadius: 40, cornerSmoothing: 1)),
-                          ),
-                          color: ColorRes.white),
-                      child: Column(
-                        spacing: 10,
-                        children: [
-                          SocialLoginCard(
-                              image: AssetRes.googleLogo,
-                              text: S.current.continueWithGoogle,
-                              onTap: viewModel.onGoogleTap),
-                          SocialLoginCard(
-                              image: AssetRes.icEmail,
-                              text: S.of(context).continueWithEmail,
-                              onTap: () => viewModel.onLoginTap(1)),
-                          if (AppPlatform.isIOS)
-                            SocialLoginCard(
-                              image: AssetRes.appleLogo,
-                              text: S.current.continueWithApple,
-                              bgColor: ColorRes.black,
-                              iconColor: ColorRes.white,
-                              textColor: ColorRes.white,
-                              onTap: viewModel.onAppleTap,
-                            ),
-                          const SizedBox(height: 15),
-                          RichText(
-                            text: TextSpan(
-                              text: S.of(context).alreadyHaveAnAccount,
-                              style: const TextStyle(
-                                  color: ColorRes.dimGrey3,
-                                  fontFamily: FontRes.regular,
-                                  fontSize: 15),
-                              children: [
-                                TextSpan(
-                                  text: '  ${S.current.logIn.capitalize}',
-                                  style: const TextStyle(
-                                      color: ColorRes.themeColor,
-                                      fontFamily: FontRes.bold,
-                                      fontSize: 18),
-                                  recognizer: TapGestureRecognizer()
-                                    ..onTap = () {
-                                      viewModel.onLoginTap(0);
-                                    },
-                                ),
-                              ],
-                            ),
-                          )
-                        ],
-                      ),
-                    )
-                  ],
+          backgroundColor: ColorRes.white,
+          body: SafeArea(
+            bottom: false,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                const SizedBox(height: 12),
+                // ── Logo + Slogan (Pure white background, clean & separated, ZERO overlap) ──
+                const QwikConnectLogo(
+                  fontSize: 44,
+                  connectColor: ColorRes.black,
                 ),
-              )
-            ],
+                const SizedBox(height: 8),
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 24),
+                  child: Text(
+                    'Where young professionals meet real connections.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontFamily: FontRes.semiBold,
+                      fontSize: 14,
+                      color: ColorRes.davyGrey,
+                      letterSpacing: 0.1,
+                      height: 1.3,
+                    ),
+                  ),
+                ),
+
+                // ── Middle: Lady image pushed down below logo/slogan on pure white ──
+                Expanded(
+                  child: Container(
+                    width: double.infinity,
+                    alignment: Alignment.topCenter,
+                    color: ColorRes.white,
+                    child: Image.asset(
+                      AssetRes.icLoginBackground,
+                      fit: BoxFit.contain,
+                      alignment: Alignment.topCenter,
+                    ),
+                  ),
+                ),
+
+                // ── Bottom: Social Login Card ──
+                Container(
+                  padding: const EdgeInsets.only(
+                      left: 15, right: 15, bottom: 40, top: 20),
+                  decoration: const ShapeDecoration(
+                      shape: SmoothRectangleBorder(
+                        borderRadius: SmoothBorderRadius.vertical(
+                            top: SmoothRadius(
+                                cornerRadius: 36, cornerSmoothing: 1)),
+                      ),
+                      color: ColorRes.white,
+                      shadows: [
+                        BoxShadow(
+                            color: Color(0x0A000000),
+                            offset: Offset(0, -4),
+                            blurRadius: 16)
+                      ]),
+                  child: Column(
+                    spacing: 10,
+                    children: [
+                      SocialLoginCard(
+                          image: AssetRes.googleLogo,
+                          text: S.current.continueWithGoogle,
+                          onTap: viewModel.onGoogleTap),
+                      SocialLoginCard(
+                          image: AssetRes.icEmail,
+                          text: S.of(context).continueWithEmail,
+                          onTap: () => viewModel.onLoginTap(1)),
+                      if (AppPlatform.isIOS)
+                        SocialLoginCard(
+                          image: AssetRes.appleLogo,
+                          text: S.current.continueWithApple,
+                          bgColor: ColorRes.black,
+                          iconColor: ColorRes.white,
+                          textColor: ColorRes.white,
+                          onTap: viewModel.onAppleTap,
+                        ),
+                      const SizedBox(height: 15),
+                      RichText(
+                        text: TextSpan(
+                          text: S.of(context).alreadyHaveAnAccount,
+                          style: const TextStyle(
+                              color: ColorRes.dimGrey3,
+                              fontFamily: FontRes.regular,
+                              fontSize: 15),
+                          children: [
+                            TextSpan(
+                              text: '  ${S.current.logIn.capitalize}',
+                              style: const TextStyle(
+                                  color: ColorRes.themeColor,
+                                  fontFamily: FontRes.bold,
+                                  fontSize: 18),
+                              recognizer: TapGestureRecognizer()
+                                ..onTap = () {
+                                  viewModel.onLoginTap(0);
+                                },
+                            ),
+                          ],
+                        ),
+                      )
+                    ],
+                  ),
+                )
+              ],
+            ),
           ),
         );
       },

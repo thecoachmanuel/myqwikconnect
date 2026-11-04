@@ -28,32 +28,10 @@ class AuthScreen extends StatelessWidget {
               Container(
                 width: double.infinity,
                 height: double.infinity,
-                color: ColorRes.white,
-                child: Stack(
-                  fit: StackFit.expand,
-                  children: [
-                    Image.asset(
-                      AssetRes.icLoginBackground,
-                      height: double.infinity,
-                      width: double.infinity,
-                      fit: BoxFit.cover,
-                    ),
-                    // Studio white wash at the very top for flawless logo & slogan clarity
-                    Container(
-                      decoration: const BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topCenter,
-                          end: Alignment(0.0, -0.45),
-                          colors: [
-                            Colors.white,
-                            Colors.white70,
-                            Colors.transparent,
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
+                foregroundDecoration: BoxDecoration(
+                    color: ColorRes.themeColor.withValues(alpha: 0.15)),
+                child: Image.asset(AssetRes.icLoginBackground,
+                    height: double.infinity, width: double.infinity),
               ),
               SafeArea(
                 bottom: false,
@@ -74,14 +52,20 @@ class AuthScreen extends StatelessWidget {
                           const SizedBox(height: 6),
                           // Slogan
                           Text(
-                            'Where young professionals\nmeet real connections.',
+                            'Where young professionals meet real connections.',
                             textAlign: TextAlign.center,
                             style: TextStyle(
                               fontFamily: FontRes.semiBold,
-                              fontSize: 14,
+                              fontSize: 13.5,
                               color: ColorRes.black.withValues(alpha: 0.85),
                               letterSpacing: 0.2,
                               height: 1.4,
+                              shadows: const [
+                                Shadow(
+                                  color: Colors.white,
+                                  blurRadius: 8,
+                                ),
+                              ],
                             ),
                           ),
                         ],

@@ -24,109 +24,87 @@ class AuthScreen extends StatelessWidget {
       builder: (context, viewModel, child) {
         return Scaffold(
           backgroundColor: ColorRes.white,
-          body: Stack(
-            fit: StackFit.expand,
+          body: Column(
             children: [
-              // ── Layer 1: Folake Adeleke full-screen portrait ──────────────
-              Positioned.fill(
-                child: Image.asset(
-                  AssetRes.icLoginBackground,
-                  fit: BoxFit.cover,
-                  alignment: Alignment.topCenter,
-                ),
-              ),
-
-              // ── Layer 2: Subtle warm brand tint (matches commit 40e627a feel) ──
-              Positioned.fill(
+              // ── Top: Dedicated pure white logo section (SafeArea top) ──────
+              SafeArea(
+                bottom: false,
                 child: Container(
-                  decoration: BoxDecoration(
-                    color: ColorRes.themeColor.withValues(alpha: 0.12),
-                  ),
-                ),
-              ),
-
-              // ── Layer 3: Pure white logo header block at the top ──────────
-              // Dedicated white zone so logo is 100% legible with clean margins
-              Positioned(
-                top: 0,
-                left: 0,
-                right: 0,
-                child: SafeArea(
-                  bottom: false,
-                  child: Container(
-                    width: double.infinity,
-                    decoration: const BoxDecoration(
-                      color: Colors.white,
-                      // Soft bottom shadow so the logo block lifts cleanly
-                      // above the background image
-                      boxShadow: [
-                        BoxShadow(
-                          color: Color(0x18000000),
-                          offset: Offset(0, 6),
-                          blurRadius: 18,
-                          spreadRadius: 0,
-                        ),
-                      ],
-                    ),
-                    padding: const EdgeInsets.fromLTRB(24, 18, 24, 20),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        // QwikConnect logo — Qwik orange gradient, Connect black
-                        const QwikConnectLogo(
-                          fontSize: 42,
-                          connectColor: ColorRes.black,
-                        ),
-                        const SizedBox(height: 6),
-                        // Slogan
-                        Text(
-                          'Where young professionals meet real connections.',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontFamily: FontRes.semiBold,
-                            fontSize: 13.5,
-                            color: ColorRes.davyGrey,
-                            letterSpacing: 0.1,
-                            height: 1.35,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-
-              // ── Layer 4: Bottom login card anchored to the bottom ─────────
-              Positioned(
-                bottom: 0,
-                left: 0,
-                right: 0,
-                child: Container(
-                  padding: const EdgeInsets.only(
-                      left: 15, right: 15, bottom: 48, top: 25),
-                  decoration: const ShapeDecoration(
-                    shape: SmoothRectangleBorder(
-                      borderRadius: SmoothBorderRadius.vertical(
-                        top: SmoothRadius(
-                          cornerRadius: 40,
-                          cornerSmoothing: 1,
-                        ),
+                  width: double.infinity,
+                  color: Colors.white,
+                  padding: const EdgeInsets.fromLTRB(24, 20, 24, 20),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      // QwikConnect logo — Qwik orange gradient, Connect black
+                      const QwikConnectLogo(
+                        fontSize: 42,
+                        connectColor: ColorRes.black,
                       ),
-                    ),
-                    color: ColorRes.white,
-                    shadows: [
-                      BoxShadow(
-                        color: Color(0x14000000),
-                        offset: Offset(0, -6),
-                        blurRadius: 24,
+                      const SizedBox(height: 6),
+                      Text(
+                        'Where young professionals meet real connections.',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontFamily: FontRes.semiBold,
+                          fontSize: 13.5,
+                          color: ColorRes.davyGrey,
+                          letterSpacing: 0.1,
+                          height: 1.35,
+                        ),
                       ),
                     ],
                   ),
-                  // Respect system bottom insets (home bar on iOS/Android,
-                  // address bar on mobile browsers)
-                  child: SafeArea(
-                    top: false,
+                ),
+              ),
+
+              // ── Middle: Folake Adeleke portrait, fully visible below logo ──
+              Expanded(
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    Image.asset(
+                      AssetRes.icLoginBackground,
+                      fit: BoxFit.cover,
+                      alignment: Alignment.topCenter,
+                    ),
+                    // Subtle warm brand tint (matches 40e627a feel)
+                    Container(
+                      color: ColorRes.themeColor.withValues(alpha: 0.12),
+                    ),
+                  ],
+                ),
+              ),
+
+              // ── Bottom: White social login card ────────────────────────────
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.only(
+                    left: 15, right: 15, bottom: 0, top: 25),
+                decoration: const ShapeDecoration(
+                  shape: SmoothRectangleBorder(
+                    borderRadius: SmoothBorderRadius.vertical(
+                      top: SmoothRadius(
+                        cornerRadius: 40,
+                        cornerSmoothing: 1,
+                      ),
+                    ),
+                  ),
+                  color: ColorRes.white,
+                  shadows: [
+                    BoxShadow(
+                      color: Color(0x14000000),
+                      offset: Offset(0, -6),
+                      blurRadius: 24,
+                    ),
+                  ],
+                ),
+                // SafeArea bottom → respects mobile browser address bar / home bar
+                child: SafeArea(
+                  top: false,
+                  child: Padding(
+                    padding: const EdgeInsets.only(bottom: 24),
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [

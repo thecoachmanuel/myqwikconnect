@@ -36,98 +36,101 @@ class BottomButtons extends StatelessWidget {
             color: ColorRes.grey10,
             borderRadius: BorderRadius.circular(7),
           ),
-          child: Stack(
-            children: [
-              AnimatedAlign(
-                duration: const Duration(milliseconds: 200),
-                alignment: selectedGender == 1
-                    ? Alignment.centerLeft
-                    : selectedGender == 3
-                        ? Alignment.center
-                        : Alignment.centerRight,
-                child: Container(
-                  width: (Get.width / genderList.length) - 14 - (genderList.length * 5),
-                  margin: const EdgeInsets.all(5.0),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(7),
-                    gradient: StyleRes.linearGradient,
-                  ),
-                ),
-              ),
-              Row(
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final itemWidth =
+                  (constraints.maxWidth / genderList.length) - (genderList.length * 3.0);
+              return Stack(
                 children: [
-                  Padding(
-                    padding: const EdgeInsets.all(5.0),
-                    child: InkWell(
-                      borderRadius: BorderRadius.circular(7),
-                      onTap: () {
-                        onGenderSelect(1);
-                      },
-                      child: SizedBox(
-                        width: (Get.width / genderList.length) - 14 - (genderList.length * 5),
-                        child: Center(
-                          child: AnimatedDefaultTextStyle(
-                            duration: const Duration(milliseconds: 200),
-                            style: TextStyle(
-                              color: selectedGender == 1 ? ColorRes.white : ColorRes.davyGrey,
-                              fontSize: 13,
-                              fontFamily: FontRes.bold,
-                            ),
-                            child: Text(S.current.male.toUpperCase()),
-                          ),
-                        ),
+                  AnimatedAlign(
+                    duration: const Duration(milliseconds: 200),
+                    alignment: selectedGender == 1
+                        ? Alignment.centerLeft
+                        : selectedGender == 3
+                            ? Alignment.center
+                            : Alignment.centerRight,
+                    child: Container(
+                      width: itemWidth + 4,
+                      margin: const EdgeInsets.all(5.0),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(7),
+                        gradient: StyleRes.linearGradient,
                       ),
                     ),
                   ),
-                  Padding(
-                    padding: const EdgeInsets.all(5.0),
-                    child: InkWell(
-                      borderRadius: BorderRadius.circular(7),
-                      onTap: () {
-                        onGenderSelect(3);
-                      },
-                      child: SizedBox(
-                        width: (Get.width / genderList.length) - 14 - (genderList.length * 5),
-                        child: Center(
-                          child: AnimatedDefaultTextStyle(
-                            duration: const Duration(milliseconds: 200),
-                            style: TextStyle(
-                              color: selectedGender == 3 ? ColorRes.white : ColorRes.davyGrey,
-                              fontSize: 13,
-                              fontFamily: FontRes.bold,
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.all(5.0),
+                          child: InkWell(
+                            borderRadius: BorderRadius.circular(7),
+                            onTap: () => onGenderSelect(1),
+                            child: Center(
+                              child: AnimatedDefaultTextStyle(
+                                duration: const Duration(milliseconds: 200),
+                                style: TextStyle(
+                                  color: selectedGender == 1
+                                      ? ColorRes.white
+                                      : ColorRes.davyGrey,
+                                  fontSize: 13,
+                                  fontFamily: FontRes.bold,
+                                ),
+                                child: Text(S.current.male.toUpperCase()),
+                              ),
                             ),
-                            child: Text(S.current.both.toUpperCase()),
                           ),
                         ),
                       ),
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.all(5.0),
-                    child: InkWell(
-                      borderRadius: BorderRadius.circular(7),
-                      onTap: () {
-                        onGenderSelect(2);
-                      },
-                      child: SizedBox(
-                        width: (Get.width / genderList.length) - 14 - (genderList.length * 5),
-                        child: Center(
-                          child: AnimatedDefaultTextStyle(
-                            duration: const Duration(milliseconds: 200),
-                            style: TextStyle(
-                              color: selectedGender == 2 ? ColorRes.white : ColorRes.davyGrey,
-                              fontSize: 13,
-                              fontFamily: FontRes.bold,
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.all(5.0),
+                          child: InkWell(
+                            borderRadius: BorderRadius.circular(7),
+                            onTap: () => onGenderSelect(3),
+                            child: Center(
+                              child: AnimatedDefaultTextStyle(
+                                duration: const Duration(milliseconds: 200),
+                                style: TextStyle(
+                                  color: selectedGender == 3
+                                      ? ColorRes.white
+                                      : ColorRes.davyGrey,
+                                  fontSize: 13,
+                                  fontFamily: FontRes.bold,
+                                ),
+                                child: Text(S.current.both.toUpperCase()),
+                              ),
                             ),
-                            child: Text(S.current.female.toUpperCase()),
                           ),
                         ),
                       ),
-                    ),
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.all(5.0),
+                          child: InkWell(
+                            borderRadius: BorderRadius.circular(7),
+                            onTap: () => onGenderSelect(2),
+                            child: Center(
+                              child: AnimatedDefaultTextStyle(
+                                duration: const Duration(milliseconds: 200),
+                                style: TextStyle(
+                                  color: selectedGender == 2
+                                      ? ColorRes.white
+                                      : ColorRes.davyGrey,
+                                  fontSize: 13,
+                                  fontFamily: FontRes.bold,
+                                ),
+                                child: Text(S.current.female.toUpperCase()),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ],
-              ),
-            ],
+              );
+            },
           ),
         ),
         Padding(
@@ -137,7 +140,7 @@ class BottomButtons extends StatelessWidget {
             onTap: onMatchingStart,
             child: Container(
               height: 50,
-              width: Get.width,
+              width: double.infinity,
               decoration: BoxDecoration(
                 color: ColorRes.themeColor.withValues(alpha: 0.13),
                 borderRadius: BorderRadius.circular(10),

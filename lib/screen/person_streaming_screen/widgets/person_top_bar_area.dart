@@ -8,6 +8,7 @@ import 'package:orange_ui/generated/l10n.dart';
 import 'package:orange_ui/model/chat_and_live_stream/live_stream.dart';
 import 'package:orange_ui/utils/asset_res.dart';
 import 'package:orange_ui/utils/color_res.dart';
+import 'package:orange_ui/utils/const_res.dart';
 import 'package:orange_ui/utils/font_res.dart';
 
 class PersonTopBarArea extends StatelessWidget {
@@ -23,6 +24,13 @@ class PersonTopBarArea extends StatelessWidget {
       required this.onMoreBtnTap,
       this.liveStreamUser,
       required this.onUserTap});
+
+  /// Builds the full image URL — adds base URL if the path is relative
+  String _buildImageUrl(String? path) {
+    if (path == null || path.isEmpty) return '';
+    if (path.startsWith('http://') || path.startsWith('https://')) return path;
+    return '${ConstRes.aImageBaseUrl}$path';
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -53,8 +61,8 @@ class PersonTopBarArea extends StatelessWidget {
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(30),
                         child: CachedNetworkImage(
-                          imageUrl: '${liveStreamUser?.userImage}',
-                          cacheKey: '${liveStreamUser?.userImage}',
+                          imageUrl: _buildImageUrl(liveStreamUser?.userImage),
+                          cacheKey: liveStreamUser?.userImage ?? '',
                           errorWidget: (context, error, stackTrace) {
                             return Image.asset(AssetRes.themeLabel,
                                 width: 37, height: 37);

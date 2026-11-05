@@ -44,6 +44,8 @@ class PersonStreamingScreenViewModel extends BaseViewModel {
   List<int> gemsList = [];
 
   Timer? timer;
+  StreamSubscription? _liveHostSubscription;
+  StreamSubscription? _commentsSubscription;
 
   // bool isBroadcasting = false;
   bool muted = false;
@@ -483,21 +485,22 @@ class PersonStreamingScreenViewModel extends BaseViewModel {
     myUserData = SessionManager.instance.getUser();
     notifyListeners();
     countDown();
-    db
+
+    // Listen to the host document — if it's deleted, the live ended
+    _liveHostSubscription = db
         .collection(FirebaseRes.liveHostList)
         .doc('${liveStreamUser?.userId}')
-        .withConverter(
-          fromFirestore: (snapshot, options) =>
-              LiveStreamUser.fromJson(snapshot.data()),
-          toFirestore: (value, options) {
-            return LiveStreamUser().toJson();
-          },
-        )
         .snapshots()
-        .any((element) {
-      liveStreamUser = element.data();
-      notifyListeners();
-      return false;
+        .listen((snapshot) {
+      if (!snapshot.exists || snapshot.data() == null) {
+        // Host ended the live session — auto-exit viewer
+        _onHostEndedLive();
+        return;
+      }
+      try {
+        liveStreamUser = LiveStreamUser.fromJson(snapshot.data());
+        notifyListeners();
+      } catch (_) {}
     });
 
     collectionReference = db
@@ -505,7 +508,7 @@ class PersonStreamingScreenViewModel extends BaseViewModel {
         .doc('${liveStreamUser?.userId}')
         .collection(FirebaseRes.comments);
 
-    collectionReference
+    _commentsSubscription = collectionReference
         ?.orderBy(FirebaseRes.id, descending: true)
         .withConverter(
           fromFirestore: LiveStreamComment.fromFirestore,
@@ -514,14 +517,99 @@ class PersonStreamingScreenViewModel extends BaseViewModel {
           },
         )
         .snapshots()
-        .any((element) {
+        .listen((element) {
       commentList = [];
       for (int i = 0; i < element.docs.length; i++) {
         commentList.add(element.docs[i].data());
-        notifyListeners();
       }
-      return false;
+      notifyListeners();
     });
+  }
+
+  bool _hostEndedHandled = false;
+
+  void _onHostEndedLive() {
+    if (_hostEndedHandled) return;
+    _hostEndedHandled = true;
+
+    // Cancel subscriptions immediately so we don't re-trigger
+    _liveHostSubscription?.cancel();
+    _commentsSubscription?.cancel();
+
+    // Close any open dialog first
+    if (Get.isDialogOpen == true) Get.back();
+
+    Get.dialog(
+      Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        backgroundColor: ColorRes.white,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 28),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 56,
+                height: 56,
+                decoration: BoxDecoration(
+                  color: ColorRes.themeColor.withValues(alpha: 0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.live_tv_rounded,
+                    color: ColorRes.themeColor, size: 28),
+              ),
+              const SizedBox(height: 16),
+              const Text(
+                'Live Ended',
+                style: TextStyle(
+                  fontFamily: FontRes.bold,
+                  fontSize: 18,
+                  color: ColorRes.black,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                '${liveStreamUser?.fullName ?? 'The host'} has ended the live stream.',
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontFamily: FontRes.medium,
+                  fontSize: 14,
+                  color: ColorRes.davyGrey,
+                ),
+              ),
+              const SizedBox(height: 24),
+              GestureDetector(
+                onTap: () {
+                  Get.back(); // close dialog
+                  onExitTap();
+                },
+                child: Container(
+                  width: double.infinity,
+                  height: 46,
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFFFF6F43), Color(0xFFFE1B03)],
+                    ),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Center(
+                    child: Text(
+                      'Got it',
+                      style: TextStyle(
+                        color: ColorRes.white,
+                        fontFamily: FontRes.bold,
+                        fontSize: 15,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+      barrierDismissible: false,
+    );
   }
 
   void onUserTap() {
@@ -565,6 +653,8 @@ class PersonStreamingScreenViewModel extends BaseViewModel {
     users.clear();
     // destroy sdk and leave channel
     timer?.cancel();
+    _liveHostSubscription?.cancel();
+    _commentsSubscription?.cancel();
     _dispose();
     super.dispose();
   }

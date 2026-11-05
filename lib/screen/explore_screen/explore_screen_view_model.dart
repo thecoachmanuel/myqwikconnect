@@ -140,9 +140,10 @@ class ExploreScreenViewModel extends BaseViewModel {
       }
       if (isPurchaseConfig) {
         for (int i = 0; i < combinedList.length; i++) {
+          final bool userIsVip = isSubscribe.value || (userData?.isPro == 1) || (userData?.isVerified == 3);
           if (isPurchaseConfig &&
               SubscriptionManager.shared.packages.isNotEmpty &&
-              !isSubscribe.value &&
+              !userIsVip &&
               (i + 1) % 5 == 0 &&
               combinedList[i].id != -1) {
             combinedList.insert(i, UserData(id: -1));
@@ -268,7 +269,8 @@ class ExploreScreenViewModel extends BaseViewModel {
         if (currentCombinedIndex == 0) return;
 
         final reverseSwipePrice = settingAppData?.reverseSwipePrice ?? 0;
-        if (userData?.isFake != 1 && !isSubscribe.value) {
+        final bool isVip = isSubscribe.value || userData?.isPro == 1 || userData?.isVerified == 3;
+        if (userData?.isFake != 1 && !isVip) {
           if (reverseSwipePrice <= walletCoin && walletCoin != 0) {
             if (!isCheckboxSelected) {
               await Get.dialog(ReverseSwipeDialog(

@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:orange_ui/common/app_image_file.dart';
 import 'package:orange_ui/generated/l10n.dart';
 import 'package:orange_ui/screen/live_stream_application_screen/live_stream_application_screen_view_model.dart';
+import 'package:orange_ui/service/session_manager.dart';
 import 'package:orange_ui/utils/asset_res.dart';
 import 'package:orange_ui/utils/color_res.dart';
 import 'package:orange_ui/utils/font_res.dart';
@@ -103,12 +104,24 @@ class CenterAreaLiveStream extends StatelessWidget {
               ),
               Padding(
                 padding: const EdgeInsets.only(left: 5, top: 12, bottom: 6),
-                child: Text(
-                  S.current.intro,
-                  style: const TextStyle(
-                      fontSize: 15,
-                      fontFamily: FontRes.extraBold,
-                      color: ColorRes.davyGrey),
+                child: Row(
+                  children: [
+                    Text(
+                      S.current.intro,
+                      style: const TextStyle(
+                          fontSize: 15,
+                          fontFamily: FontRes.extraBold,
+                          color: ColorRes.davyGrey),
+                    ),
+                    if ((SessionManager.instance.getSettings()?.appdata?.isLiveVideoRequired ?? 0) == 0)
+                      const Text(
+                        " (Optional)",
+                        style: TextStyle(
+                            fontSize: 12,
+                            fontFamily: FontRes.semiBold,
+                            color: ColorRes.dimGrey2),
+                      ),
+                  ],
                 ),
               ),
               Visibility(

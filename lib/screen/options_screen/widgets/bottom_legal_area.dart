@@ -35,6 +35,10 @@ class BottomLegalArea extends StatelessWidget {
             title: S.current.privacyPolicy, onTap: onPrivacyPolicyTap),
         const SizedBox(height: 8),
         TextWithArrowCard(title: S.current.termsOfUse, onTap: onTermsOfUseTap),
+        const SizedBox(height: 8),
+        TextWithArrowCard(
+            title: 'About QwikConnect',
+            onTap: () => model.onNavigateWebViewScreen(2)),
         SizedBox(height: AppBar().preferredSize.height / 1.5),
         InkWell(
           borderRadius: BorderRadius.circular(10),

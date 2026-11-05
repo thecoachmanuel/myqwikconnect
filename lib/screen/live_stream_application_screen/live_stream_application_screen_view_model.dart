@@ -94,7 +94,8 @@ class LiveStreamApplicationScreenViewModel extends BaseViewModel {
       isLanguages = true;
       i++;
       return false;
-    } else if (videoImageFile == null || videoImageFile!.isEmpty) {
+    } else if (((SessionManager.instance.getSettings()?.appdata?.isLiveVideoRequired ?? 0) == 1) &&
+        (videoImageFile == null || videoImageFile!.isEmpty)) {
       isIntroVideo = true;
       i++;
       return false;

@@ -20,12 +20,13 @@ class WebViewScreenViewModel extends BaseViewModel {
 
   void init(String url, String appBarTitle) {
     title = appBarTitle;
-    final isTermsOrPrivacy = url.toLowerCase().contains('term') ||
+    final isLegalOrAbout = url.toLowerCase().contains('term') ||
         url.toLowerCase().contains('privac') ||
+        url.toLowerCase().contains('about') ||
         url.toLowerCase().contains('policy');
 
-    // On web, or for Terms/Privacy documents, prefer the instant native reader
-    if (kIsWeb || isTermsOrPrivacy) {
+    // On web, or for Terms/Privacy/About documents, prefer the instant native reader
+    if (kIsWeb || isLegalOrAbout) {
       showNativeReader = true;
       _loadContent(url);
     } else {
@@ -50,10 +51,13 @@ class WebViewScreenViewModel extends BaseViewModel {
   void _loadContent(String url) {
     final settings = SessionManager.instance.getSettings();
     final isTerms = url.toLowerCase().contains('term');
+    final isAbout = url.toLowerCase().contains('about');
 
-    String? found = isTerms
-        ? settings?.appdata?.termsofuse
-        : settings?.appdata?.privacypolicy;
+    String? found = isAbout
+        ? settings?.appdata?.about
+        : (isTerms
+            ? settings?.appdata?.termsofuse
+            : settings?.appdata?.privacypolicy);
 
     if (found != null && found.trim().isNotEmpty) {
       contentText = found;
@@ -63,7 +67,7 @@ class WebViewScreenViewModel extends BaseViewModel {
       notifyListeners();
     }
 
-    final endpoint = isTerms ? 'viewTerms' : 'viewPrivacy';
+    final endpoint = isAbout ? 'viewAbout' : (isTerms ? 'viewTerms' : 'viewPrivacy');
     http.post(
       Uri.parse('${ConstRes.aBaseUrl}$endpoint'),
       headers: {Urls.apiKeyName: ConstRes.apiKey},
@@ -73,14 +77,18 @@ class WebViewScreenViewModel extends BaseViewModel {
         final data = jsonDecode(res.body);
         final page = data['data'];
         if (page != null) {
-          final text = isTerms
-              ? (page['termsofuse'] ?? page['terms'])
-              : (page['privacy'] ?? page['privacypolicy']);
+          final text = isAbout
+              ? page['about']
+              : (isTerms
+                  ? (page['termsofuse'] ?? page['terms'])
+                  : (page['privacy'] ?? page['privacypolicy']));
           if (text != null && text.toString().trim().isNotEmpty) {
             contentText = text.toString();
             final appdata = settings?.appdata;
             if (appdata != null) {
-              if (isTerms) {
+              if (isAbout) {
+                appdata.about = text.toString();
+              } else if (isTerms) {
                 appdata.termsofuse = text.toString();
               } else {
                 appdata.privacypolicy = text.toString();
@@ -93,13 +101,13 @@ class WebViewScreenViewModel extends BaseViewModel {
         }
       }
       if (contentText.isEmpty) {
-        contentText = isTerms ? _defaultTerms : _defaultPrivacy;
+        contentText = isAbout ? _defaultAbout : (isTerms ? _defaultTerms : _defaultPrivacy);
         notifyListeners();
       }
     }).catchError((_) {
       isLoading = false;
       if (contentText.isEmpty) {
-        contentText = isTerms ? _defaultTerms : _defaultPrivacy;
+        contentText = isAbout ? _defaultAbout : (isTerms ? _defaultTerms : _defaultPrivacy);
         notifyListeners();
       }
     });
@@ -112,14 +120,16 @@ class WebViewScreenViewModel extends BaseViewModel {
       );
     }
 
+    final isPrivacy = title.toLowerCase().contains('privac');
+    final isAbout = title.toLowerCase().contains('about');
+
     final raw = contentText.isNotEmpty
         ? contentText
-        : (title.toLowerCase().contains('privac')
+        : (isPrivacy
             ? _defaultPrivacy
-            : _defaultTerms);
+            : (isAbout ? _defaultAbout : _defaultTerms));
 
     final cleanSections = _parseHtmlIntoSections(raw);
-    final isPrivacy = title.toLowerCase().contains('privac');
 
     return Container(
       color: const Color(0xFFF9FAFB),
@@ -129,7 +139,7 @@ class WebViewScreenViewModel extends BaseViewModel {
         separatorBuilder: (_, __) => const SizedBox(height: 12),
         itemBuilder: (context, index) {
           if (index == 0) {
-            // Modern Orange Hero Card
+            // Modern QwikConnect Hero Card
             return Container(
               margin: const EdgeInsets.only(bottom: 8),
               padding: const EdgeInsets.all(20),
@@ -158,7 +168,9 @@ class WebViewScreenViewModel extends BaseViewModel {
                       shape: BoxShape.circle,
                     ),
                     child: Icon(
-                      isPrivacy ? Icons.security_rounded : Icons.gavel_rounded,
+                      isPrivacy
+                          ? Icons.security_rounded
+                          : (isAbout ? Icons.info_outline_rounded : Icons.gavel_rounded),
                       color: Colors.white,
                       size: 28,
                     ),
@@ -169,7 +181,11 @@ class WebViewScreenViewModel extends BaseViewModel {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          title.isNotEmpty ? title : (isPrivacy ? 'Privacy Policy' : 'Terms of Use'),
+                          title.isNotEmpty
+                              ? title
+                              : (isPrivacy
+                                  ? 'Privacy Policy'
+                                  : (isAbout ? 'About QwikConnect' : 'Terms of Use')),
                           style: const TextStyle(
                             color: Colors.white,
                             fontFamily: FontRes.bold,
@@ -179,8 +195,10 @@ class WebViewScreenViewModel extends BaseViewModel {
                         const SizedBox(height: 4),
                         Text(
                           isPrivacy
-                              ? 'How Orange protects and manages your data'
-                              : 'Orange platform rules and user agreements',
+                              ? 'How QwikConnect protects and manages your data'
+                              : (isAbout
+                                  ? 'Connecting authentic people across Nigeria and beyond'
+                                  : 'QwikConnect platform rules and user agreements'),
                           style: TextStyle(
                             color: Colors.white.withValues(alpha: 0.9),
                             fontFamily: FontRes.regular,
@@ -313,9 +331,23 @@ class WebViewScreenViewModel extends BaseViewModel {
     return list;
   }
 
+  static const String _defaultAbout = '''
+<h3>About QwikConnect</h3>
+<p>Welcome to QwikConnect, Nigeria's premier interactive dating and social discovery platform designed to connect authentic individuals through genuine interests, proximity discovery, real-time messaging, and high-definition live streaming.</p>
+<h3>Our Mission</h3>
+<p>Our mission is to create a vibrant, safe, and empowering space where meaningful relationships flourish. Whether seeking love, friendship, or creative collaboration, QwikConnect makes authentic human connections effortless and fun.</p>
+<h3>Core Features</h3>
+<p>• Smart Proximity Discovery: Match with interesting verified profiles near you using interactive map filtering.</p>
+<p>• Interactive Live Streaming: Stream your passions, join live broadcasts, and support creators with virtual gifts.</p>
+<p>• Verified Security: Rigorous face and photo verification ensures you connect with genuine, verified community members.</p>
+<p>• Seamless In-App Virtual Economy: Secure diamond packs and wallet management powered by Paystack.</p>
+<h3>Contact & Community Support</h3>
+<p>Have questions, partnership inquiries, or need assistance? Reach our dedicated support team at support@qwikconnect.ng.</p>
+''';
+
   static const String _defaultTerms = '''
 <h3>1. Acceptance of Terms</h3>
-<p>By creating an account, downloading, or using the Orange Dating & Live Stream platform, you agree to be bound by these Terms of Service. If you disagree with any terms, please discontinue use.</p>
+<p>By creating an account, downloading, or using the QwikConnect Dating & Live Stream platform, you agree to be bound by these Terms of Service. If you disagree with any terms, please discontinue use.</p>
 <h3>2. Eligibility & Age Verification</h3>
 <p>You must be at least 18 years of age to access or use this service. Registration by minors is strictly prohibited.</p>
 <h3>3. Community Guidelines & Safety</h3>
@@ -328,7 +360,7 @@ class WebViewScreenViewModel extends BaseViewModel {
 
   static const String _defaultPrivacy = '''
 <h3>1. Introduction</h3>
-<p>Your privacy is important to us. Orange Dating & Live Stream values and protects the personal data you share with us.</p>
+<p>Your privacy is important to us. QwikConnect Dating & Live Stream values and protects the personal data you share with us.</p>
 <h3>2. Information We Collect</h3>
 <p>We collect account details (name, email, age, gender), location coordinates (for proximity matching with your permission), and profile photos.</p>
 <h3>3. Privacy Controls</h3>

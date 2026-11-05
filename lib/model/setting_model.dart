@@ -422,6 +422,8 @@ class Appdata {
     this.streamAndGiftCommission,
     this.termsofuse,
     this.privacypolicy,
+    this.about,
+    this.isLiveVideoRequired = 0,
     this.webMobileView = 1,
     this.feedVideoEnabled = 0,
     this.chatVideoEnabled = 0,
@@ -452,6 +454,12 @@ class Appdata {
     streamAndGiftCommission = json['stream_and_gift_commission'];
     termsofuse = json['termsofuse'];
     privacypolicy = json['privacypolicy'];
+    about = json['about'];
+    isLiveVideoRequired = json['is_live_video_required'] != null
+        ? (json['is_live_video_required'] is int
+            ? json['is_live_video_required']
+            : int.tryParse(json['is_live_video_required'].toString()) ?? 0)
+        : 0;
     googleMapKey = json['google_map_key'];
     webMobileView = json['web_mobile_view'] != null
         ? (json['web_mobile_view'] is int
@@ -494,6 +502,8 @@ class Appdata {
   int? streamAndGiftCommission;
   String? termsofuse;
   String? privacypolicy;
+  String? about;
+  int? isLiveVideoRequired;
   String? googleMapKey;
   int? webMobileView;
   int? feedVideoEnabled;
@@ -525,6 +535,8 @@ class Appdata {
     map['stream_and_gift_commission'] = streamAndGiftCommission;
     map['termsofuse'] = termsofuse;
     map['privacypolicy'] = privacypolicy;
+    map['about'] = about;
+    map['is_live_video_required'] = isLiveVideoRequired;
     map['google_map_key'] = googleMapKey;
     map['web_mobile_view'] = webMobileView;
     map['feed_video_enabled'] = feedVideoEnabled;

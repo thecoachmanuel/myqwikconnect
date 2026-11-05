@@ -41,6 +41,20 @@ class AuthScreenViewModel extends BaseViewModel {
       return;
     }
 
+    final fbUser = FirebaseAuth.instance.currentUser;
+    if (fbUser != null && ((fbUser.email ?? '').isNotEmpty || (fbUser.phoneNumber ?? '').isNotEmpty)) {
+      final identity = (fbUser.email?.isNotEmpty == true) ? fbUser.email! : (fbUser.phoneNumber ?? '');
+      registration(
+        email: identity,
+        loginType: fbUser.providerData.any((p) => p.providerId == 'google.com')
+            ? LoginType.google.value
+            : LoginType.email.value,
+        fullName: fbUser.displayName ?? identity.split('@')[0],
+        firebaseUid: fbUser.uid,
+      );
+      return;
+    }
+
     if (kIsWeb) {
       FirebaseAuth.instance.getRedirectResult().then((credential) {
         if (credential.user != null) {

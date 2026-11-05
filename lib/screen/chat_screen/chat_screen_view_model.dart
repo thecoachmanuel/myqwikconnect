@@ -487,6 +487,8 @@ class ChatScreenViewModel extends BaseViewModel {
     // Always send free for fake users or subscribed users or free message
     if (registrationUserData?.isFake == 1 ||
         isSubscribe.value ||
+        registrationUserData?.isPro == 1 ||
+        registrationUserData?.isVerified == 3 ||
         messagePrice <= 0) {
       firebaseMsgUpdate(
           msgType: FirebaseRes.msg, textMessage: textMessage, customTime: time);
@@ -546,7 +548,10 @@ class ChatScreenViewModel extends BaseViewModel {
   }
 
   void onPlusButtonClick(int type) {
-    if (registrationUserData?.isFake == 1 || isSubscribe.value) {
+    if (registrationUserData?.isFake == 1 ||
+        isSubscribe.value ||
+        registrationUserData?.isPro == 1 ||
+        registrationUserData?.isVerified == 3) {
       openMediaPicker(type);
       return;
     }
@@ -678,6 +683,8 @@ class ChatScreenViewModel extends BaseViewModel {
 
     if (registrationUserData?.isFake == 1 ||
         isSubscribe.value ||
+        registrationUserData?.isPro == 1 ||
+        registrationUserData?.isVerified == 3 ||
         messagePrice <= 0) {
       executeUpload();
     } else {

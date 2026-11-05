@@ -139,11 +139,18 @@ class OptionalScreenViewModel extends BaseViewModel {
   }
 
   void onNavigateWebViewScreen(int type) {
+    String title = type == 0
+        ? S.current.privacyPolicy
+        : type == 1
+            ? S.current.termsOfUse
+            : 'About QwikConnect';
+    String url = type == 0
+        ? Urls.aPrivacyPolicy
+        : type == 1
+            ? Urls.aTermsOfUse
+            : Urls.aAbout;
     Get.to(
-      () => WebViewScreen(
-          appBarTitle:
-              type == 0 ? S.current.privacyPolicy : S.current.termsOfUse,
-          url: type == 0 ? Urls.aPrivacyPolicy : Urls.aTermsOfUse),
+      () => WebViewScreen(appBarTitle: title, url: url),
     );
   }
 

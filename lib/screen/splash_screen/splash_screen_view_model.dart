@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -23,18 +24,38 @@ class SplashScreenViewModel extends BaseViewModel {
       return;
     }
 
-    // 🌐 If not logged in on Web, immediately route to /auth
-    if (kIsWeb) {
-      _hasNavigated = true;
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        Get.offAllNamed('/auth');
+    // Check Firebase Auth in case session in local storage was reset or not yet synced
+    final fbUser = FirebaseAuth.instance.currentUser;
+    if (fbUser != null && ((fbUser.email ?? '').isNotEmpty || (fbUser.phoneNumber ?? '').isNotEmpty)) {
+      final identity = (fbUser.email?.isNotEmpty == true) ? fbUser.email! : (fbUser.phoneNumber ?? '');
+      ApiProvider().registration(
+        email: identity,
+        fullName: fbUser.displayName ?? '',
+        deviceToken: '',
+        loginType: fbUser.providerData.any((p) => p.providerId == 'google.com') ? 1 : 2,
+        firebaseUid: fbUser.uid,
+      ).then((res) {
+        if (!_hasNavigated) {
+          _hasNavigated = true;
+          if (res.status == true && res.data != null && (res.data?.id ?? 0) > 0) {
+            SessionManager.instance.setUser(res.data);
+            SessionManager.instance.setBool(key: SessionKeys.isLogin, value: true);
+            Get.offAllNamed('/dashboard');
+          } else {
+            Get.offAllNamed('/auth');
+          }
+        }
+      }).catchError((_) {
+        if (!_hasNavigated) {
+          _hasNavigated = true;
+          Get.offAllNamed('/auth');
+        }
       });
-      _syncInBackground();
       return;
     }
 
-    // Safety watchdog: ensure screen transitions within 1200ms
-    Timer(const Duration(milliseconds: 1200), () {
+    // Safety watchdog: ensure screen transitions within 800ms
+    Timer(const Duration(milliseconds: 800), () {
       if (!_hasNavigated) {
         _hasNavigated = true;
         final loggedIn = SessionManager.instance.getBool(key: SessionKeys.isLogin);

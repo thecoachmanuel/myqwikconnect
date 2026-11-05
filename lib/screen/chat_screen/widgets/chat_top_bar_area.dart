@@ -40,16 +40,13 @@ class ChatTopBarArea extends StatelessWidget {
                 const SizedBox(width: 15),
                 Stack(
                   children: [
-                    GestureDetector(
-                      onTap: onUserTap,
-                      child: CustomImage(
-                        image: conversation?.user?.image,
-                        fullname: conversation?.user?.username,
-                        height: 38,
-                        width: 38,
-                        radius: 19,
-                        fit: BoxFit.cover,
-                      ),
+                    CustomImage(
+                      image: conversation?.user?.image,
+                      fullname: conversation?.user?.username,
+                      height: 38,
+                      width: 38,
+                      radius: 19,
+                      fit: BoxFit.cover,
                     ),
                     if (isOnline)
                       Positioned(

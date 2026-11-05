@@ -177,6 +177,7 @@ class Urls {
   static const String aStartedAt = 'started_at';
   static const String aPrivacyPolicy = 'privacypolicy';
   static const String aTermsOfUse = 'termsOfUse';
+  static const String aAbout = 'viewAbout';
   static const String aBlockedUsers = 'blocked_users';
   static const String lat = 'lat';
   static const String long = 'long';
@@ -185,7 +186,7 @@ class Urls {
   static const String aUserInfo = 'userInfo';
   static const String aIsBroadcasting = 'isBroadcasting';
   static const String aChannelId = 'channelId';
-  static const String aTopicName = 'Orange';
+  static const String aTopicName = 'QwikConnect';
   static const String aDataUserId = 'data_user_id';
   static const String aConversationId = 'conversation_id';
   static const String aTitle = 'title';

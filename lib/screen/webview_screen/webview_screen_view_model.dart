@@ -12,7 +12,9 @@ import 'package:stacked/stacked.dart';
 import 'package:webview_flutter_plus/webview_flutter_plus.dart';
 
 class WebViewScreenViewModel extends BaseViewModel {
-  WebViewControllerPlus controller = WebViewControllerPlus();
+  // Constructed lazily: `webview_flutter` has no web implementation, so
+  // building this eagerly would throw on Flutter Web and blank the screen.
+  WebViewControllerPlus? controller;
   bool showNativeReader = true;
   bool isLoading = false;
   String contentText = '';
@@ -333,42 +335,69 @@ class WebViewScreenViewModel extends BaseViewModel {
 
   static const String _defaultAbout = '''
 <h3>About QwikConnect</h3>
-<p>Welcome to QwikConnect, Nigeria's premier interactive dating and social discovery platform designed to connect authentic individuals through genuine interests, proximity discovery, real-time messaging, and high-definition live streaming.</p>
+<p>Welcome to QwikConnect — a modern dating, chat and social discovery platform built to help authentic people meet, connect and build real relationships.</p>
+<p>QwikConnect brings together smart proximity discovery, verified profiles, real-time messaging, stories and high-definition live streaming in one fast, friendly experience.</p>
 <h3>Our Mission</h3>
-<p>Our mission is to create a vibrant, safe, and empowering space where meaningful relationships flourish. Whether seeking love, friendship, or creative collaboration, QwikConnect makes authentic human connections effortless and fun.</p>
-<h3>Core Features</h3>
-<p>• Smart Proximity Discovery: Match with interesting verified profiles near you using interactive map filtering.</p>
-<p>• Interactive Live Streaming: Stream your passions, join live broadcasts, and support creators with virtual gifts.</p>
-<p>• Verified Security: Rigorous face and photo verification ensures you connect with genuine, verified community members.</p>
-<p>• Seamless In-App Virtual Economy: Secure diamond packs and wallet management powered by Paystack.</p>
-<h3>Contact & Community Support</h3>
-<p>Have questions, partnership inquiries, or need assistance? Reach our dedicated support team at support@qwikconnect.ng.</p>
+<p>To connect authentic people through real conversations, verified identities and shared interests — in a safe, respectful and exciting space where lasting relationships can grow.</p>
+<h3>Our Vision</h3>
+<p>To become Africa's most trusted dating and social community, where everyone can express themselves freely and connect with confidence, without fake profiles or harassment.</p>
+<h3>What You Can Do on QwikConnect</h3>
+<p>• Smart Proximity Discovery: find and match with verified profiles near you using distance filters and an interactive map.</p>
+<p>• Verified Profiles: face and photo verification keep the community genuine and free from impersonation.</p>
+<p>• Real-Time Chat & Calls: send messages, share photos and enjoy high-quality audio and video conversations.</p>
+<p>• Interactive Live Streaming: go live, watch talented creators and support them with virtual gifts.</p>
+<p>• Stories & Posts: share moments and stay close to the people who matter.</p>
+<p>• Privacy First: stay in control with "Show Me on Map", "Go Anonymous" mode and granular privacy controls.</p>
+<p>• Secure Virtual Economy: buy diamond packs and manage your wallet securely through Paystack.</p>
+<h3>Our Community Values</h3>
+<p>• Respect: kindness and consent always come first.</p>
+<p>• Authenticity: real people, real profiles, real conversations.</p>
+<p>• Safety: active moderation, reporting tools and verification to protect everyone.</p>
+<p>• Inclusion: a welcoming space for all adults, whatever their background.</p>
+<h3>Contact Us</h3>
+<p>Have questions, partnership enquiries or need help? Our support team is always happy to hear from you at support@qwikconnect.ng.</p>
 ''';
 
   static const String _defaultTerms = '''
 <h3>1. Acceptance of Terms</h3>
-<p>By creating an account, downloading, or using the QwikConnect Dating & Live Stream platform, you agree to be bound by these Terms of Service. If you disagree with any terms, please discontinue use.</p>
-<h3>2. Eligibility & Age Verification</h3>
-<p>You must be at least 18 years of age to access or use this service. Registration by minors is strictly prohibited.</p>
-<h3>3. Community Guidelines & Safety</h3>
-<p>Respect others. Harassment, abuse, hate speech, inappropriate or non-consensual content, and fraudulent impersonation are strictly banned and will result in immediate account termination.</p>
-<h3>4. Virtual Diamonds & Payments</h3>
-<p>Virtual diamonds may be purchased via Paystack. Diamonds enable in-app gifting, direct messaging, and premium discovery. Diamond redemptions are subject to minimum earning thresholds.</p>
-<h3>5. Live Streaming & Content Rules</h3>
-<p>Broadcasters must follow all community safety guidelines. Live broadcasts violating safety policies are terminated in real time.</p>
+<p>By creating an account, downloading or using the QwikConnect platform, you agree to be bound by these Terms of Service. If you disagree with any part of them, please discontinue use.</p>
+<h3>2. Eligibility & Age Requirement</h3>
+<p>You must be at least 18 years of age to create an account and use QwikConnect. Registration by minors is strictly prohibited.</p>
+<h3>3. Account Security & Verification</h3>
+<p>You are responsible for keeping your login details confidential. Submitting fraudulent documents or impersonating others will result in permanent account termination.</p>
+<h3>4. Community Guidelines</h3>
+<p>Respect others. Harassment, bullying, hate speech, non-consensual or explicit content, spam and fraudulent impersonation are strictly banned and will result in immediate account termination.</p>
+<h3>5. Live Streaming & Social Features</h3>
+<p>Broadcasters must follow all community safety guidelines. Live broadcasts violating safety policies are ended in real time and the account may be suspended.</p>
+<h3>6. Diamonds, Virtual Gifts & Payments</h3>
+<p>Virtual diamonds may be purchased via Paystack and can be used for in-app gifting, direct messaging and premium discovery. All purchases are final and non-refundable. Payouts require completed verification and minimum thresholds.</p>
+<h3>7. Location Features & Privacy Controls</h3>
+<p>QwikConnect offers proximity-based matching and map discovery. You stay in control with "Show Me on Map" and "Go Anonymous" mode at any time.</p>
+<h3>8. Termination</h3>
+<p>We may suspend or delete your account at any time for any breach of these Terms. You may delete your account from the Settings menu.</p>
+<h3>9. Contact Us</h3>
+<p>For questions about these Terms, reach us in the in-app support centre or email support@qwikconnect.ng.</p>
 ''';
 
   static const String _defaultPrivacy = '''
 <h3>1. Introduction</h3>
-<p>Your privacy is important to us. QwikConnect Dating & Live Stream values and protects the personal data you share with us.</p>
+<p>Your privacy matters to us. This Privacy Policy explains how QwikConnect collects, uses, stores and shares your personal information.</p>
 <h3>2. Information We Collect</h3>
-<p>We collect account details (name, email, age, gender), location coordinates (for proximity matching with your permission), and profile photos.</p>
-<h3>3. Privacy Controls</h3>
-<p>You have full control over your privacy settings, including Show Me on Map and Go Anonymous mode at any time.</p>
-<h3>4. Data Security</h3>
-<p>We apply high industry encryption and security measures to protect your communications and personal data.</p>
-<h3>5. Contact Us</h3>
-<p>If you have any questions or data requests, please contact our support team in the app.</p>
+<p>Account details (name, username, email, phone, date of birth, gender, preferences, bio and photos), location data (with your consent, for nearby matches and map features), messages and media you share, verification documents, and device/usage information.</p>
+<h3>3. How We Use Your Information</h3>
+<p>To provide and improve matching and live streaming, deliver messaging and calls, enable proximity discovery, verify authenticity, detect fraud and process virtual diamond transactions and payouts.</p>
+<h3>4. Privacy Controls & Ephemeral Media</h3>
+<p>Toggle "Show Me on Map" or enable "Go Anonymous" at any time. Stories expire and are removed from storage after 24 hours.</p>
+<h3>5. Information Sharing & Third Parties</h3>
+<p>We do not sell your personal data. We share it only with trusted providers needed to run the App (such as Google Firebase, Agora and Paystack), or where required by law.</p>
+<h3>6. Data Retention & Security</h3>
+<p>We apply strong technical and organisational measures to protect your data. Inactive accounts and expired media are removed periodically.</p>
+<h3>7. Your Rights</h3>
+<p>Depending on your jurisdiction you may access, correct, download or delete your personal data — in the App settings or by contacting our Data Protection Officer.</p>
+<h3>8. Children's Privacy</h3>
+<p>Our services are strictly for people aged 18 and older. We do not knowingly collect data from minors.</p>
+<h3>9. Contact Us</h3>
+<p>For privacy questions or data requests, contact our privacy team at privacy@qwikconnect.ng.</p>
 ''';
 }
 

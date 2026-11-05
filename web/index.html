@@ -35,8 +35,69 @@
   <link rel="preload" href="https://fonts.gstatic.com/s/notocoloremoji/v25/0FlNmVPttA2sSVGGJLsDa5u0.ttf" as="font"
     type="font/ttf" crossorigin>
 
-  <!-- Google Maps JS API — Maps JavaScript API key -->
-  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBbmbDWnAIU1RXh5xmylq8TR-AaweKHqyQ&libraries=places&loading=async" async defer></script>
+  <!-- Google Maps JS API — loaded at runtime with the key stored in the backend
+       settings (Admin → Setting → Google Maps API Key). When no key is
+       configured the API loads without a key, so Google renders its
+       "development purposes only" map. If a configured key is rejected
+       (invalid, not authorised, or billing disabled) we remember that and fall
+       back to the keyless development map on the next load. -->
+  <script>
+    window.__orangeMapsPromise = null;
+    window.orangeLoadGoogleMaps = function (apiKey) {
+      if (window.__orangeMapsPromise) {
+        return window.__orangeMapsPromise;
+      }
+
+      var key = (apiKey || '').trim();
+      var lastFailedKey = '';
+      try { lastFailedKey = sessionStorage.getItem('orange_maps_key_bad') || ''; } catch (e) { }
+      // Only skip the key when it is the exact key that Google rejected before.
+      if (key && lastFailedKey === key) {
+        key = '';
+      }
+
+      window.__orangeMapsPromise = new Promise(function (resolve) {
+        if (window.google && window.google.maps) {
+          resolve(true);
+          return;
+        }
+
+        window.gm_authFailure = function () {
+          // Key rejected (billing disabled / not authorised / invalid).
+          // Remember it and reload so the map falls back to dev mode.
+          try { sessionStorage.setItem('orange_maps_key_bad', (apiKey || '').trim()); } catch (e) { }
+          if (!window.__orangeMapsReloading) {
+            window.__orangeMapsReloading = true;
+            try { window.location.reload(); } catch (e) { }
+          }
+        };
+
+        function inject(useKey, done) {
+          var src = 'https://maps.googleapis.com/maps/api/js?libraries=places';
+          if (useKey) {
+            src += '&key=' + encodeURIComponent(useKey);
+          }
+          var script = document.createElement('script');
+          script.src = src;
+          script.async = true;
+          script.defer = true;
+          script.onload = function () { done(true); };
+          script.onerror = function () { done(false); };
+          document.head.appendChild(script);
+        }
+
+        inject(key, function (ok) {
+          if (!ok && key) {
+            // Script blocked or failed to load — retry without a key.
+            inject('', function (ok2) { resolve(ok2); });
+            return;
+          }
+          resolve(ok);
+        });
+      });
+      return window.__orangeMapsPromise;
+    };
+  </script>
   <!-- Agora Web RTC SDK for video calling/streaming on Web -->
   <script src="https://download.agora.io/sdk/release/AgoraRTC_N-4.22.0.js"></script>
   <script src="https://download.agora.io/sdk/release/iris-web-rtc_n450_w4220_0.8.6.js"></script>

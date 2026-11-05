@@ -17,6 +17,7 @@ import 'package:orange_ui/generated/l10n.dart';
 import 'package:orange_ui/model/user/registration_user.dart';
 import 'package:orange_ui/screen/map_screen/widgets/custom_marker.dart';
 import 'package:orange_ui/screen/map_screen/widgets/user_pop_up.dart';
+import 'package:orange_ui/service/google_maps_loader.dart';
 import 'package:orange_ui/service/session_manager.dart';
 import 'package:orange_ui/utils/color_res.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -37,6 +38,10 @@ class MapScreenViewModel extends BaseViewModel {
   UserData? myUserData = SessionManager.instance.getUser();
   bool isListView = false;
 
+  /// On web the Maps JavaScript API has to be fetched before the map can be
+  /// built. On Android/iOS the native SDK already has the key from the manifest.
+  bool isMapReady = !googleMapsScriptRequired;
+
   void toggleView() {
     isListView = !isListView;
     notifyListeners();
@@ -45,6 +50,7 @@ class MapScreenViewModel extends BaseViewModel {
   void init() {
     selectedDistance = distanceList.first;
     manager = _initClusterManager();
+    _loadGoogleMapsScript();
     final savedLatLng = SessionManager.instance.getLatLng();
     final lat = (savedLatLng != null && savedLatLng.latitude != 0.0)
         ? savedLatLng.latitude
@@ -64,9 +70,19 @@ class MapScreenViewModel extends BaseViewModel {
         headingAccuracy: 0.0,
         speed: 0.0,
         speedAccuracy: 0.0);
-    getUserByCoordinatesApiCall(latitude: lat, longitude: lon, km: selectedDistance);
+    getUserByCoordinatesApiCall(
+        latitude: lat, longitude: lon, km: selectedDistance);
     _requestRealLocation();
     notifyListeners();
+  }
+
+  void _loadGoogleMapsScript() {
+    if (!googleMapsScriptRequired) return;
+    final apiKey = SessionManager.instance.getSettings()?.appdata?.googleMapKey;
+    ensureGoogleMapsLoaded(apiKey).whenComplete(() {
+      isMapReady = true;
+      notifyListeners();
+    });
   }
 
   void _requestRealLocation() async {
@@ -81,7 +97,9 @@ class MapScreenViewModel extends BaseViewModel {
           longitude: pos.longitude.toString(),
         );
         getUserByCoordinatesApiCall(
-            latitude: pos.latitude, longitude: pos.longitude, km: selectedDistance);
+            latitude: pos.latitude,
+            longitude: pos.longitude,
+            km: selectedDistance);
         try {
           mapController.animateCamera(CameraUpdate.newLatLng(center));
         } catch (_) {}
@@ -103,10 +121,15 @@ class MapScreenViewModel extends BaseViewModel {
         );
         try {
           mapController.animateCamera(CameraUpdate.newCameraPosition(
-            CameraPosition(target: center, zoom: getZoomLevel(selectedDistance.toDouble())),
+            CameraPosition(
+                target: center,
+                zoom: getZoomLevel(selectedDistance.toDouble())),
           ));
         } catch (_) {}
-        getUserByCoordinatesApiCall(latitude: pos.latitude, longitude: pos.longitude, km: selectedDistance);
+        getUserByCoordinatesApiCall(
+            latitude: pos.latitude,
+            longitude: pos.longitude,
+            km: selectedDistance);
         notifyListeners();
       }
     } catch (_) {}
@@ -134,10 +157,14 @@ class MapScreenViewModel extends BaseViewModel {
     } catch (_) {}
 
     double lat = position?.latitude ??
-        (myUserData?.latitude != null ? double.tryParse(myUserData!.latitude!) : null) ??
+        (myUserData?.latitude != null
+            ? double.tryParse(myUserData!.latitude!)
+            : null) ??
         center.latitude;
     double long = position?.longitude ??
-        (myUserData?.longitude != null ? double.tryParse(myUserData!.longitude!) : null) ??
+        (myUserData?.longitude != null
+            ? double.tryParse(myUserData!.longitude!)
+            : null) ??
         center.longitude;
 
     center = LatLng(lat, long);
@@ -156,10 +183,14 @@ class MapScreenViewModel extends BaseViewModel {
     } catch (_) {}
     Get.back();
     double lat = position?.latitude ??
-        (myUserData?.latitude != null ? double.tryParse(myUserData!.latitude!) : null) ??
+        (myUserData?.latitude != null
+            ? double.tryParse(myUserData!.latitude!)
+            : null) ??
         center.latitude;
     double long = position?.longitude ??
-        (myUserData?.longitude != null ? double.tryParse(myUserData!.longitude!) : null) ??
+        (myUserData?.longitude != null
+            ? double.tryParse(myUserData!.longitude!)
+            : null) ??
         center.longitude;
 
     selectedDistance = value;

@@ -39,6 +39,12 @@ class MapScreen extends StatelessWidget {
               // Main Map or List view
               if (model.isListView)
                 _buildNearbyListView(context, model)
+              else if (!model.isMapReady)
+                SizedBox(
+                  height: Get.height,
+                  width: Get.width,
+                  child: CommonUI.lottieWidget(),
+                )
               else
                 SizedBox(
                   height: Get.height,

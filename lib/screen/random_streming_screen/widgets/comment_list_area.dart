@@ -3,6 +3,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:orange_ui/model/chat_and_live_stream/live_stream.dart';
+import 'package:orange_ui/utils/asset_res.dart';
 import 'package:orange_ui/utils/color_res.dart';
 import 'package:orange_ui/utils/const_res.dart';
 import 'package:orange_ui/utils/firebase_res.dart';
@@ -76,25 +77,46 @@ class CommentListArea extends StatelessWidget {
                                 comment.comment ?? '',
                                 style: const TextStyle(color: ColorRes.white, fontSize: 12, fontFamily: FontRes.medium),
                               )
-                            : ClipRRect(
-                                borderRadius: BorderRadius.circular(15),
-                                child: BackdropFilter(
-                                  filter: ImageFilter.blur(sigmaY: 15, sigmaX: 15),
-                                  child: Container(
-                                    height: 54,
-                                    width: 54,
-                                    padding: const EdgeInsets.all(5),
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(15),
-                                      color: ColorRes.black.withValues(alpha: 0.33),
-                                    ),
-                                    child: Image.network(
-                                      '${ConstRes.aImageBaseUrl}${comment.comment}',
-                                      width: 40,
-                                      height: 35,
-                                      fit: BoxFit.cover,
-                                    ),
+                            : Container(
+                                margin: const EdgeInsets.only(top: 3),
+                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(16),
+                                  gradient: LinearGradient(
+                                    colors: [
+                                      ColorRes.themeColor.withValues(alpha: 0.45),
+                                      ColorRes.lightOrange.withValues(alpha: 0.35),
+                                    ],
                                   ),
+                                  border: Border.all(color: ColorRes.themeColor.withValues(alpha: 0.5)),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Image.asset(AssetRes.diamond, width: 14, height: 14),
+                                    const SizedBox(width: 6),
+                                    const Text(
+                                      'Sent a gift',
+                                      style: TextStyle(
+                                        color: ColorRes.white,
+                                        fontSize: 12,
+                                        fontFamily: FontRes.bold,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    ClipRRect(
+                                      borderRadius: BorderRadius.circular(8),
+                                      child: Image.network(
+                                        comment.comment?.startsWith('http') == true
+                                            ? comment.comment!
+                                            : '${ConstRes.aImageBaseUrl}${comment.comment}',
+                                        width: 32,
+                                        height: 32,
+                                        fit: BoxFit.contain,
+                                        errorBuilder: (_, __, ___) => Image.asset(AssetRes.gift, width: 28, height: 28),
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
                       ],

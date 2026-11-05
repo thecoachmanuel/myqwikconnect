@@ -27,59 +27,59 @@ class BottomTextField extends StatelessWidget {
         children: [
           Row(
             children: [
-              Container(
-                width: Get.width - 60,
-                margin: const EdgeInsets.only(left: 5),
-                padding: const EdgeInsets.all(2),
-                decoration: BoxDecoration(
-                  color: ColorRes.black.withValues(alpha: 0.33),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Expanded(
-                      child: TextField(
-                        style: TextStyle(
-                          fontSize: 13,
-                          color: ColorRes.white.withValues(alpha: 0.70),
-                        ),
-                        keyboardType: TextInputType.multiline,
-                        minLines: 1,
-                        maxLines: 5,
-                        controller: commentController,
-                        focusNode: commentFocus,
-                        decoration: InputDecoration(
-                          isDense: true,
-                          border: InputBorder.none,
-                          hintText: S.current.comment,
-                          contentPadding: const EdgeInsets.only(
-                              left: 14, bottom: 10, top: 0),
-                          hintStyle: TextStyle(
-                            color: ColorRes.white.withValues(alpha: 0.45),
+              Expanded(
+                child: Container(
+                  margin: const EdgeInsets.only(left: 10, right: 8),
+                  padding: const EdgeInsets.all(2),
+                  decoration: BoxDecoration(
+                    color: ColorRes.black.withValues(alpha: 0.33),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Expanded(
+                        child: TextField(
+                          style: TextStyle(
                             fontSize: 13,
+                            color: ColorRes.white.withValues(alpha: 0.70),
+                          ),
+                          keyboardType: TextInputType.multiline,
+                          minLines: 1,
+                          maxLines: 5,
+                          controller: commentController,
+                          focusNode: commentFocus,
+                          decoration: InputDecoration(
+                            isDense: true,
+                            border: InputBorder.none,
+                            hintText: S.current.comment,
+                            contentPadding: const EdgeInsets.only(
+                                left: 14, bottom: 10, top: 0),
+                            hintStyle: TextStyle(
+                              color: ColorRes.white.withValues(alpha: 0.45),
+                              fontSize: 13,
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                    InkWell(
-                      borderRadius: BorderRadius.circular(30),
-                      onTap: onMsgSend,
-                      child: Container(
-                        height: 36,
-                        width: 36,
-                        padding: const EdgeInsets.fromLTRB(10, 9, 6, 9),
-                        decoration: const BoxDecoration(
-                          shape: BoxShape.circle,
-                          gradient: StyleRes.linearGradient,
+                      InkWell(
+                        borderRadius: BorderRadius.circular(30),
+                        onTap: onMsgSend,
+                        child: Container(
+                          height: 36,
+                          width: 36,
+                          padding: const EdgeInsets.fromLTRB(10, 9, 6, 9),
+                          decoration: const BoxDecoration(
+                            shape: BoxShape.circle,
+                            gradient: StyleRes.linearGradient,
+                          ),
+                          child: Image.asset(AssetRes.share),
                         ),
-                        child: Image.asset(AssetRes.share),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
-              const Spacer(),
               InkWell(
                 onTap: onGiftTap,
                 child: Container(

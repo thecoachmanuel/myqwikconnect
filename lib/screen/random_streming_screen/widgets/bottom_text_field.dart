@@ -20,7 +20,6 @@ class BottomTextField extends StatelessWidget {
     return SafeArea(
       top: false,
       child: Container(
-        width: Get.width,
         height: 50,
         margin: const EdgeInsets.symmetric(horizontal: 10),
         padding: const EdgeInsets.symmetric(horizontal: 5),

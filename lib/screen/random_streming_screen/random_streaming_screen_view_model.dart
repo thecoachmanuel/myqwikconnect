@@ -16,7 +16,10 @@ import 'package:orange_ui/screen/livestream_end_screen/livestream_end_screen.dar
 import 'package:orange_ui/service/firebase_notification_manager.dart';
 import 'package:orange_ui/service/session_manager.dart';
 import 'package:orange_ui/utils/app_res.dart';
+import 'package:orange_ui/utils/asset_res.dart';
+import 'package:orange_ui/utils/color_res.dart';
 import 'package:orange_ui/utils/const_res.dart';
+import 'package:orange_ui/utils/font_res.dart';
 import 'package:orange_ui/utils/urls.dart';
 import 'package:orange_ui/utils/firebase_res.dart';
 import 'package:stacked/stacked.dart';
@@ -34,6 +37,7 @@ class RandomStreamingScreenViewModel extends BaseViewModel {
 
   bool isBroadcaster = true;
   bool muted = false;
+  bool isVideoHidden = false;
   bool localUserJoined = false;
   bool startStop = true;
   bool isLoading = false;
@@ -256,6 +260,16 @@ class RandomStreamingScreenViewModel extends BaseViewModel {
     }
   }
 
+  void onVideoToggle() async {
+    isVideoHidden = !isVideoHidden;
+    notifyListeners();
+    try {
+      await engine.muteLocalVideoStream(isVideoHidden);
+    } catch (e) {
+      debugPrint('muteLocalVideoStream error: $e');
+    }
+  }
+
   void onSpeakerTap() {
     muted = !muted;
     notifyListeners();
@@ -267,7 +281,68 @@ class RandomStreamingScreenViewModel extends BaseViewModel {
     }
   }
 
-  void onDiamondTap() {}
+  void onDiamondTap() {
+    final collected = liveStreamUser.collectedDiamond ?? 0;
+    Get.bottomSheet(
+      Container(
+        padding: const EdgeInsets.all(22),
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
+        ),
+        child: SafeArea(
+          top: false,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                height: 4,
+                width: 44,
+                margin: const EdgeInsets.only(bottom: 18),
+                decoration: BoxDecoration(
+                  color: ColorRes.grey5,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              Container(
+                height: 56,
+                width: 56,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: ColorRes.themeColor.withValues(alpha: 0.12),
+                ),
+                child: Center(
+                  child: Image.asset(AssetRes.diamond, width: 28, height: 28),
+                ),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                '$collected Diamonds Collected',
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontFamily: FontRes.bold,
+                  color: ColorRes.black,
+                ),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                'Viewers send gifts that convert directly to diamonds. When you finish this live stream, your earnings will be added to your QwikConnect wallet for withdrawal.',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 13,
+                  fontFamily: FontRes.regular,
+                  color: ColorRes.darkGrey.withValues(alpha: 0.7),
+                  height: 1.4,
+                ),
+              ),
+              const SizedBox(height: 18),
+            ],
+          ),
+        ),
+      ),
+      isScrollControlled: true,
+    );
+  }
 
   void onCommentSend() {
     if (commentController.text.trim().isNotEmpty) {

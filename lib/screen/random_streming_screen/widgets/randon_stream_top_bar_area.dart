@@ -2,6 +2,7 @@ import 'package:figma_squircle/figma_squircle.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import 'package:orange_ui/common/qwik_connect_logo.dart';
 import 'package:orange_ui/generated/l10n.dart';
 import 'package:orange_ui/model/chat_and_live_stream/live_stream.dart';
 import 'package:orange_ui/service/extention/int_extention.dart';
@@ -14,16 +15,22 @@ class RandomStreamTopBarArea extends StatelessWidget {
   final VoidCallback onDiamondTap;
   final VoidCallback onCameraTap;
   final VoidCallback onSpeakerTap;
+  final VoidCallback? onVideoToggle;
+  final bool isVideoHidden;
   final bool mute;
   final LiveStreamUser? user;
 
-  const RandomStreamTopBarArea({super.key,
-      required this.onEndBtnTap,
-      required this.onDiamondTap,
-      required this.onCameraTap,
-      required this.onSpeakerTap,
-      required this.mute,
-      this.user});
+  const RandomStreamTopBarArea({
+    super.key,
+    required this.onEndBtnTap,
+    required this.onDiamondTap,
+    required this.onCameraTap,
+    required this.onSpeakerTap,
+    this.onVideoToggle,
+    this.isVideoHidden = false,
+    required this.mute,
+    this.user,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -35,7 +42,7 @@ class RandomStreamTopBarArea extends StatelessWidget {
             height: 45,
             width: Get.width,
             margin: const EdgeInsets.symmetric(horizontal: 10),
-            padding: const EdgeInsets.symmetric(horizontal: 5),
+            padding: const EdgeInsets.symmetric(horizontal: 10),
             decoration: BoxDecoration(
               color: ColorRes.black.withValues(alpha: 0.33),
               borderRadius: BorderRadius.circular(30),
@@ -44,16 +51,24 @@ class RandomStreamTopBarArea extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    Center(
-                      child: Image.asset(AssetRes.themeLabelWhite,
-                          height: 20, width: 69),
-                    ),
-                    const SizedBox(width: 2),
-                    Text(
-                      S.current.live,
-                      style: const TextStyle(
-                        color: ColorRes.white,
-                        fontSize: 13,
+                    const QwikConnectLogo(
+                        fontSize: 16, connectColor: ColorRes.white),
+                    const SizedBox(width: 6),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: ColorRes.themeColor.withValues(alpha: 0.8),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Text(
+                        S.current.live.toUpperCase(),
+                        style: const TextStyle(
+                          color: ColorRes.white,
+                          fontSize: 10,
+                          fontFamily: FontRes.bold,
+                          letterSpacing: 0.5,
+                        ),
                       ),
                     ),
                     const Spacer(),
@@ -109,8 +124,8 @@ class RandomStreamTopBarArea extends StatelessWidget {
             decoration: ShapeDecoration(
               color: ColorRes.black.withValues(alpha: 0.33),
               shape: SmoothRectangleBorder(
-                  borderRadius: SmoothBorderRadius(
-                      cornerRadius: 30, cornerSmoothing: 1)),
+                  borderRadius:
+                      SmoothBorderRadius(cornerRadius: 30, cornerSmoothing: 1)),
             ),
             child: Row(
               spacing: 5,
@@ -137,6 +152,7 @@ class RandomStreamTopBarArea extends StatelessWidget {
                     ),
                   ),
                 ),
+                // Flip camera button
                 GestureDetector(
                   behavior: HitTestBehavior.opaque,
                   onTap: onCameraTap,
@@ -157,6 +173,32 @@ class RandomStreamTopBarArea extends StatelessWidget {
                     ),
                   ),
                 ),
+                // Video Hide / Unhide button
+                if (onVideoToggle != null)
+                  GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onTap: onVideoToggle,
+                    child: Container(
+                      height: 37,
+                      width: 37,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: isVideoHidden
+                            ? const Color(0xFFEF4444).withValues(alpha: 0.8)
+                            : ColorRes.black.withValues(alpha: 0.33),
+                      ),
+                      child: Center(
+                        child: Icon(
+                          isVideoHidden
+                              ? Icons.videocam_off_rounded
+                              : Icons.videocam_rounded,
+                          color: ColorRes.white,
+                          size: 19,
+                        ),
+                      ),
+                    ),
+                  ),
+                // Mute / Unmute microphone button
                 GestureDetector(
                   behavior: HitTestBehavior.opaque,
                   onTap: onSpeakerTap,
@@ -165,7 +207,9 @@ class RandomStreamTopBarArea extends StatelessWidget {
                     width: 37,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: ColorRes.black.withValues(alpha: 0.33),
+                      color: mute
+                          ? const Color(0xFFEF4444).withValues(alpha: 0.8)
+                          : ColorRes.black.withValues(alpha: 0.33),
                     ),
                     child: Center(
                       child: Image.asset(

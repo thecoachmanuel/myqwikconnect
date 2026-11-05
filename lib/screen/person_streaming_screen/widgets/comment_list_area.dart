@@ -93,24 +93,48 @@ class CommentListArea extends StatelessWidget {
                                 ),
                               )
                             : Container(
-                                height: 54,
-                                width: 54,
-                                padding: const EdgeInsets.all(5),
+                                margin: const EdgeInsets.only(top: 3),
+                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                                 decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(15),
-                                  color: ColorRes.black.withValues(alpha: 0.33),
+                                  borderRadius: BorderRadius.circular(16),
+                                  gradient: LinearGradient(
+                                    colors: [
+                                      ColorRes.themeColor.withValues(alpha: 0.45),
+                                      ColorRes.lightOrange.withValues(alpha: 0.35),
+                                    ],
+                                  ),
+                                  border: Border.all(color: ColorRes.themeColor.withValues(alpha: 0.5)),
                                 ),
-                                child: ClipRRect(
-                                  borderRadius: BorderRadius.circular(10),
-                                  child: CachedNetworkImage(
-                                      imageUrl: '${ConstRes.aImageBaseUrl}${commentList[index].comment}',
-                                      cacheKey: '${ConstRes.aImageBaseUrl}${commentList[index].comment}',
-                                      errorWidget: (context, url, error) {
-                                        return Image.asset(AssetRes.themeLabel, width: 40, height: 35);
-                                      },
-                                      width: 40,
-                                      height: 35,
-                                      fit: BoxFit.cover),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Image.asset(AssetRes.diamond, width: 14, height: 14),
+                                    const SizedBox(width: 6),
+                                    const Text(
+                                      'Sent a gift',
+                                      style: TextStyle(
+                                        color: ColorRes.white,
+                                        fontSize: 12,
+                                        fontFamily: FontRes.bold,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    ClipRRect(
+                                      borderRadius: BorderRadius.circular(8),
+                                      child: CachedNetworkImage(
+                                        imageUrl: commentList[index].comment?.startsWith('http') == true
+                                            ? commentList[index].comment!
+                                            : '${ConstRes.aImageBaseUrl}${commentList[index].comment}',
+                                        cacheKey: '${ConstRes.aImageBaseUrl}${commentList[index].comment}',
+                                        errorWidget: (context, url, error) {
+                                          return Image.asset(AssetRes.gift, width: 28, height: 28);
+                                        },
+                                        width: 32,
+                                        height: 32,
+                                        fit: BoxFit.contain,
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
                       ],

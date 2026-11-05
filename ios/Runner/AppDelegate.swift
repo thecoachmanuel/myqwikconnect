@@ -22,7 +22,7 @@ import app_links
       UNUserNotificationCenter.current().delegate = self as UNUserNotificationCenterDelegate
     }
     GeneratedPluginRegistrant.register(with: self)
-    GMSServices.provideAPIKey("---- GOOGLE MAP KEY ----")
+    GMSServices.provideAPIKey("AIzaSyBbmbDWnAIU1RXh5xmylq8TR-AaweKHqyQ")
     if let url = AppLinks.shared.getLink(launchOptions: launchOptions) {
                       // We have a link, propagate it to your Flutter app or not
                       AppLinks.shared.handleLink(url: url)

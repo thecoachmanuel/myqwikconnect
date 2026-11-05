@@ -21,6 +21,7 @@ import 'package:orange_ui/service/session_manager.dart';
 import 'package:orange_ui/utils/app_res.dart';
 import 'package:orange_ui/utils/color_res.dart';
 import 'package:orange_ui/utils/const_res.dart';
+import 'package:orange_ui/utils/urls.dart';
 import 'package:orange_ui/utils/firebase_res.dart';
 import 'package:orange_ui/utils/font_res.dart';
 import 'package:stacked/stacked.dart';
@@ -238,8 +239,9 @@ class PersonStreamingScreenViewModel extends BaseViewModel {
         appId: ConstRes.agoraAppId,
         channelProfile: ChannelProfileType.channelProfileLiveBroadcasting,
       ));
-      // Enable the video module
+      // Enable video and audio modules for audience
       await _engine.enableVideo();
+      await _engine.enableAudio();
 
       // Add event handler BEFORE joining channel
       _engine.registerEventHandler(
@@ -250,11 +252,33 @@ class PersonStreamingScreenViewModel extends BaseViewModel {
                 'Agora audience joined channel: ${connection.channelId}');
             notifyListeners();
           },
-          // Occurs when a remote user join the channel
+          // Occurs when a remote host joins or publishes
           onUserJoined: (RtcConnection connection, int remoteUid, int elapsed) {
             debugPrint('Agora remote host joined: $remoteUid');
             _remoteUid = remoteUid;
             notifyListeners();
+          },
+          // Occurs when the first remote video frame is decoded
+          onFirstRemoteVideoDecoded: (RtcConnection connection, int remoteUid,
+              int width, int height, int elapsed) {
+            debugPrint('Agora first remote video decoded from host: $remoteUid');
+            _remoteUid = remoteUid;
+            notifyListeners();
+          },
+          // Occurs when token will expire
+          onTokenPrivilegeWillExpire: (RtcConnection connection, String oldToken) {
+            debugPrint('Agora audience token will expire, renewing...');
+            ApiProvider().callPost(
+              completion: (res) async {
+                if (res is Map && res['token'] != null) {
+                  try {
+                    await _engine.renewToken(res['token'].toString());
+                  } catch (_) {}
+                }
+              },
+              url: Urls.aGenerateAgoraToken,
+              param: {Urls.channelName: channelId},
+            );
           },
           // Occurs when a remote user leaves the channel
           onUserOffline: (RtcConnection connection, int remoteUid,
@@ -289,9 +313,32 @@ class PersonStreamingScreenViewModel extends BaseViewModel {
           clientRoleType: ClientRoleType.clientRoleAudience,
           audienceLatencyLevel:
               AudienceLatencyLevelType.audienceLatencyLevelUltraLowLatency,
+          autoSubscribeAudio: true,
+          autoSubscribeVideo: true,
         ),
         uid: 0,
       );
+
+      // If token was empty, fetch fresh token asynchronously from backend in case App Certificate is enabled
+      if (rtcToken.isEmpty && channelId.isNotEmpty) {
+        try {
+          ApiProvider().callPost(
+            completion: (res) async {
+              if (res is Map && res['token'] != null && res['token'].toString().isNotEmpty) {
+                final fresh = res['token'].toString();
+                if (!fresh.startsWith('AGORA_TOKEN_')) {
+                  token = fresh;
+                  try {
+                    await _engine.renewToken(fresh);
+                  } catch (_) {}
+                }
+              }
+            },
+            url: Urls.aGenerateAgoraToken,
+            param: {Urls.channelName: channelId},
+          );
+        } catch (_) {}
+      }
     } catch (e) {
       debugPrint('Agora audience initialize error: $e');
     } finally {

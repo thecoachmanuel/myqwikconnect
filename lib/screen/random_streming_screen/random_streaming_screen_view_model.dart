@@ -17,6 +17,7 @@ import 'package:orange_ui/service/firebase_notification_manager.dart';
 import 'package:orange_ui/service/session_manager.dart';
 import 'package:orange_ui/utils/app_res.dart';
 import 'package:orange_ui/utils/const_res.dart';
+import 'package:orange_ui/utils/urls.dart';
 import 'package:orange_ui/utils/firebase_res.dart';
 import 'package:stacked/stacked.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
@@ -111,6 +112,20 @@ class RandomStreamingScreenViewModel extends BaseViewModel {
               UserOfflineReasonType reason) {
             notifyListeners();
           },
+          onTokenPrivilegeWillExpire: (RtcConnection connection, String oldToken) {
+            debugPrint('Agora broadcaster token will expire, renewing...');
+            ApiProvider().callPost(
+              completion: (res) async {
+                if (res is Map && res['token'] != null) {
+                  try {
+                    await engine.renewToken(res['token'].toString());
+                  } catch (_) {}
+                }
+              },
+              url: Urls.aGenerateAgoraToken,
+              param: {Urls.channelName: channelId},
+            );
+          },
           onError: (ErrorCodeType err, String msg) {
             debugPrint('Agora broadcaster error: $err, $msg');
           },
@@ -129,7 +144,9 @@ class RandomStreamingScreenViewModel extends BaseViewModel {
           options: const ChannelMediaOptions(
               clientRoleType: ClientRoleType.clientRoleBroadcaster,
               audienceLatencyLevel:
-                  AudienceLatencyLevelType.audienceLatencyLevelUltraLowLatency),
+                  AudienceLatencyLevelType.audienceLatencyLevelUltraLowLatency,
+              publishCameraTrack: true,
+              publishMicrophoneTrack: true),
           uid: 0);
     } catch (e) {
       debugPrint('Agora initialize error: $e');

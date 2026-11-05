@@ -1,5 +1,4 @@
 import 'package:figma_squircle/figma_squircle.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:orange_ui/common/common_fun.dart';
@@ -34,7 +33,7 @@ class CreateStoryScreen extends StatelessWidget {
                     child: ClipSmoothRect(
                       radius: SmoothBorderRadius(
                           cornerRadius: 20, cornerSmoothing: 1),
-                      child: kIsWeb ? _buildWebCameraView(context, viewModel) : RetrytechPlugin.shared.cameraView,
+                      child: RetrytechPlugin.shared.cameraView,
                     ),
                   ),
                 ),
@@ -149,109 +148,6 @@ class CreateStoryScreen extends StatelessWidget {
       },
     );
   }
-
-  Widget _buildWebCameraView(BuildContext context, CreateStoryScreenViewModel viewModel) {
-    return Container(
-      decoration: BoxDecoration(
-        color: const Color(0xFF141414),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
-      ),
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          Positioned.fill(
-            child: CustomPaint(
-              painter: _ViewfinderPainter(),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24.0),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                GestureDetector(
-                  onTap: viewModel.captureImage,
-                  child: Container(
-                    width: 76,
-                    height: 76,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      gradient: const LinearGradient(
-                        colors: [ColorRes.lightOrange, ColorRes.themeColor],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: ColorRes.themeColor.withValues(alpha: 0.4),
-                          blurRadius: 18,
-                          offset: const Offset(0, 6),
-                        ),
-                      ],
-                    ),
-                    child: const Icon(Icons.camera_alt_rounded, size: 38, color: Colors.white),
-                  ),
-                ),
-                const SizedBox(height: 18),
-                const Text(
-                  'Camera Ready',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontFamily: FontRes.bold,
-                    fontSize: 20,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'Tap the red shutter below to take a photo or hold to record video for your status story.',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.75),
-                    fontFamily: FontRes.regular,
-                    fontSize: 13,
-                    height: 1.4,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _ViewfinderPainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = Colors.white.withValues(alpha: 0.25)
-      ..strokeWidth = 2
-      ..style = PaintingStyle.stroke;
-
-    const cornerLen = 24.0;
-    const margin = 24.0;
-
-    // Top-left
-    canvas.drawLine(const Offset(margin, margin), const Offset(margin + cornerLen, margin), paint);
-    canvas.drawLine(const Offset(margin, margin), const Offset(margin, margin + cornerLen), paint);
-
-    // Top-right
-    canvas.drawLine(Offset(size.width - margin, margin), Offset(size.width - margin - cornerLen, margin), paint);
-    canvas.drawLine(Offset(size.width - margin, margin), Offset(size.width - margin, margin + cornerLen), paint);
-
-    // Bottom-left
-    canvas.drawLine(Offset(margin, size.height - margin), Offset(margin + cornerLen, size.height - margin), paint);
-    canvas.drawLine(Offset(margin, size.height - margin), Offset(margin, size.height - margin - cornerLen), paint);
-
-    // Bottom-right
-    canvas.drawLine(Offset(size.width - margin, size.height - margin), Offset(size.width - margin - cornerLen, size.height - margin), paint);
-    canvas.drawLine(Offset(size.width - margin, size.height - margin), Offset(size.width - margin, margin + cornerLen), paint);
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
 class PermissionNotGrantedWidget extends StatelessWidget {

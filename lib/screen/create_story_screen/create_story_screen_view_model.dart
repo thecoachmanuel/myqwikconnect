@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
@@ -28,37 +27,12 @@ class CreateStoryScreenViewModel extends BaseViewModel {
   CreateStoryScreenViewModel();
 
   void init() {
-    if (kIsWeb) {
-      Future.delayed(const Duration(milliseconds: 300), () {
-        captureImage();
-      });
-      return;
-    }
     Future.delayed(const Duration(milliseconds: 100), () {
-      try {
-        RetrytechPlugin.shared.initCamera();
-      } catch (_) {}
+      RetrytechPlugin.shared.initCamera();
     });
   }
 
-  void captureImage() async {
-    if (kIsWeb) {
-      try {
-        final image = await imagePicker.pickImage(
-          source: ImageSource.camera,
-          maxWidth: AppRes.maxWidth,
-          maxHeight: AppRes.maxHeight,
-          imageQuality: AppRes.quality,
-        );
-        if (image == null) return;
-        final bgColor = await image.path.getGradientFromImage;
-        Get.to(() => CameraPreviewScreen(
-            xFile: image, value: CameraType.image, bgColor: bgColor));
-      } catch (e) {
-        selectImageFromMedia();
-      }
-      return;
-    }
+  void captureImage() {
     RetrytechPlugin.shared.captureImage().then((value) async {
       imageCache.clear();
       imageCache.clearLiveImages();
@@ -70,35 +44,16 @@ class CreateStoryScreenViewModel extends BaseViewModel {
   }
 
   void onCameraFlip() {
-    if (!kIsWeb) {
-      try {
-        RetrytechPlugin.shared.toggleCamera;
-      } catch (_) {}
-    }
+    RetrytechPlugin.shared.toggleCamera;
   }
 
   void onCaptureVideoStart(LongPressStartDetails details) async {
-    if (kIsWeb) {
-      try {
-        final video = await imagePicker.pickVideo(
-          source: ImageSource.camera,
-          maxDuration: const Duration(seconds: 30),
-        );
-        if (video != null) {
-          Get.to(() => CameraPreviewScreen(xFile: video, value: CameraType.video));
-        }
-      } catch (e) {
-        selectVideoFromMedia();
-      }
-      return;
-    }
     HapticFeedback.mediumImpact();
     RetrytechPlugin.shared.startRecording;
     setCurrentTimerClock();
   }
 
   void onCaptureVideoEnd(LongPressEndDetails details) {
-    if (kIsWeb) return;
     timer?.cancel();
     RetrytechPlugin.shared.stopRecording.then((value) {
       if (value == null) return;
@@ -198,11 +153,7 @@ class CreateStoryScreenViewModel extends BaseViewModel {
   @override
   void dispose() {
     timer?.cancel();
-    if (!kIsWeb) {
-      try {
-        RetrytechPlugin.shared.disposeCamera;
-      } catch (_) {}
-    }
+    RetrytechPlugin.shared.disposeCamera;
     super.dispose();
   }
 }
